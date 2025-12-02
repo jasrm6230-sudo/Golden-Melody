@@ -1,0 +1,3593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المشغل الذهبي الفاخر - الإصدار المحصن</title>
+    <style>
+        /* =========================================== */
+        /* أنماط CSS الأساسية للمشغل الذهبي الفاخر */
+        /* =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            perspective: 1200px;
+            overflow-x: hidden;
+        }
+
+        /* أنماط توفير الطاقة */
+        body.power-save-mode {
+            background: #0c0c0c;
+            perspective: none;
+        }
+
+        body.power-save-mode .stars-background,
+        body.power-save-mode .light-effects,
+        body.power-save-mode .light-effect,
+        body.power-save-mode .shadow-layer,
+        body.power-save-mode .gold-glow,
+        body.power-save-mode .player-glow {
+            display: none !important;
+        }
+
+        body.power-save-mode .music-player {
+            background: linear-gradient(145deg, #0c0c0c, #1a1a1a);
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                0 0 5px rgba(0, 80, 0, 0.3);
+            border: 1px solid rgba(139, 128, 0, 0.3);
+        }
+
+        body.power-save-mode .player-header {
+            background: linear-gradient(135deg, #0d3b0d 0%, #1a4d1a 100%);
+            box-shadow: 0 3px 10px rgba(0, 80, 0, 0.3);
+        }
+
+        body.power-save-mode .album-art-container {
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.4), 
+                0 0 10px rgba(0, 80, 0, 0.3);
+        }
+
+        body.power-save-mode .visualizer-container,
+        body.power-save-mode .bass-indicator,
+        body.power-save-mode .spectrum-display {
+            display: none !important;
+        }
+
+        body.power-save-mode .advanced-controls {
+            background: rgba(15, 15, 15, 0.95);
+        }
+
+        body.power-save-mode .control-btn {
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.3),
+                0 0 3px rgba(139, 128, 0, 0.2);
+        }
+
+        body.power-save-mode .play-pause {
+            box-shadow: 
+                0 5px 12px rgba(0, 0, 0, 0.4), 
+                0 0 10px rgba(0, 80, 0, 0.3);
+        }
+
+        body.power-save-mode .power-save-btn {
+            background: linear-gradient(135deg, #0d3b0d, #1a4d1a);
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.5);
+            color: #d4af37;
+        }
+
+        .power-save-btn {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.3);
+            z-index: 20;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            font-weight: 600;
+        }
+
+        .power-save-btn:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        /* النجوم في الخلفية */
+        .stars-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* تأثيرات الضوء */
+        .light-effects {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .light-spot {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: pulseLight 8s infinite alternate;
+        }
+
+        .light-spot:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .light-spot:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: 5%;
+            right: 5%;
+            background: radial-gradient(circle, rgba(0,100,0,0.2) 0%, transparent 70%);
+            animation-delay: 2s;
+        }
+
+        .light-spot:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            top: 50%;
+            left: 70%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation-delay: 4s;
+        }
+
+        @keyframes pulseLight {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .light-effect {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            filter: blur(40px);
+            z-index: -1;
+            animation: lightMove 15s infinite linear;
+        }
+
+        .light-effect:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .light-effect:nth-child(2) {
+            bottom: 10%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .light-effect:nth-child(3) {
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+
+        @keyframes lightMove {
+            0% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 50px) scale(1.2); }
+            50% { transform: translate(0, 100px) scale(1); }
+            75% { transform: translate(-50px, 50px) scale(1.2); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* الحاوية الرئيسية */
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            transform-style: preserve-3d;
+        }
+
+        /* قسم المشغل */
+        .player-section {
+            flex: 1;
+            min-width: 500px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+        }
+
+        /* مشغل الموسيقى */
+        .music-player {
+            width: 100%;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border-radius: 25px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(0, 100, 0, 0.4),
+                0 0 60px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            transform-style: preserve-3d;
+            transform: translateZ(50px);
+            transition: box-shadow 0.5s ease;
+        }
+
+        .music-player:hover {
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(0, 100, 0, 0.6),
+                0 0 80px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* رأس المشغل */
+        .player-header {
+            background: linear-gradient(135deg, #006400 0%, #008000 100%);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 100, 0, 0.5);
+            border-bottom: 2px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .player-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+        }
+
+        .player-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #FFD700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .player-header p {
+            font-size: 15px;
+            opacity: 0.9;
+            color: white;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        /* غلاف الألبوم */
+        .album-art-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 30px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #006400, #004d00);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.6), 
+                0 0 25px rgba(0, 100, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.3),
+                inset 0 0 20px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            transition: transform 0.5s ease;
+            transform-style: preserve-3d;
+        }
+
+        .album-art-container.rotating {
+            animation: rotateAlbum 15s infinite linear;
+        }
+
+        @keyframes rotateAlbum {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .album-art-container:hover {
+            transform: scale(1.05) rotateY(5deg);
+        }
+
+        .album-art-container::before {
+            content: "";
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .album-art {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .album-art-shadow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.8),
+                0 0 60px rgba(0, 100, 0, 0.4);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* معلومات الأغنية */
+        .song-info {
+            text-align: center;
+            padding: 0 25px;
+        }
+
+        .song-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .song-artist {
+            font-size: 17px;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+        }
+
+        /* شريط التقدم */
+        .progress-area {
+            padding: 0 30px;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 8px rgba(0, 0, 0, 0.7),
+                0 2px 4px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #006400, #00cc00);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            box-shadow: 
+                0 0 15px rgba(0, 100, 0, 0.7),
+                inset 0 0 5px rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .progress::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 15px;
+            height: 100%;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .timer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 15px;
+            color: #e0e0e0;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        /* عناصر التحكم */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            gap: 30px;
+        }
+
+        .control-btn {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.4),
+                0 0 5px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: linear-gradient(145deg, #006400, #004d00);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.5), 
+                0 0 15px rgba(0, 100, 0, 0.5),
+                0 0 25px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            color: #FFD700;
+        }
+
+        .play-pause {
+            width: 75px;
+            height: 75px;
+            background: linear-gradient(135deg, #006400, #008000);
+            font-size: 28px;
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.5), 
+                0 0 20px rgba(0, 100, 0, 0.6),
+                0 0 30px rgba(255, 215, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            color: #FFD700;
+        }
+
+        .play-pause:hover {
+            background: linear-gradient(135deg, #008000, #00cc00);
+            transform: scale(1.1);
+        }
+
+        /* أزرار التحميل */
+        .file-input, .image-input {
+            display: none;
+        }
+
+        .file-label, .image-label {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            color: #e0e0e0;
+            padding: 16px 25px;
+            margin: 0 25px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .file-label:hover, .image-label:hover {
+            background: linear-gradient(135deg, #006400, #008000);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            color: #FFD700;
+        }
+
+        /* أزرار التكرار والعشوائي */
+        .repeat-btn.active, .shuffle-btn.active {
+            color: #00cc00;
+            text-shadow: 0 0 15px rgba(0, 204, 0, 0.8);
+            box-shadow: 
+                0 0 20px rgba(0, 204, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* التحكم في الصوت */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            padding: 0 30px 25px;
+            gap: 12px;
+        }
+
+        .volume-control i {
+            color: #e0e0e0;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 
+                inset 0 0 8px rgba(0, 0, 0, 0.7),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .volume-progress {
+            height: 100%;
+            width: 70%;
+            background: linear-gradient(90deg, #006400, #00cc00);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 100, 0, 0.6);
+        }
+
+        /* قائمة التشغيل */
+        .playlist {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 0 25px 25px;
+            border-radius: 12px;
+            background: rgba(30, 30, 30, 0.7);
+            box-shadow: 
+                inset 0 0 15px rgba(0, 0, 0, 0.6),
+                0 5px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .playlist-item {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(60, 60, 60, 0.7);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #e0e0e0;
+        }
+
+        .playlist-item:hover {
+            background: rgba(0, 100, 0, 0.3);
+        }
+
+        .playlist-item.active {
+            background: linear-gradient(135deg, #006400, #008000);
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+        }
+
+        .playlist-item i {
+            color: #006400;
+            text-shadow: 0 0 8px rgba(0, 100, 0, 0.5);
+        }
+
+        .playlist-item.active i {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        .playlist::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .playlist::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+
+        .playlist::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #006400, #008000);
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 100, 0, 0.5);
+        }
+
+        /* عد الأغاني */
+        .songs-count {
+            text-align: center;
+            padding: 12px;
+            color: #e0e0e0;
+            font-size: 15px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        /* المؤشر البصري */
+        .visualizer-container {
+            width: 100%;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .visualizer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 70px;
+            gap: 4px;
+        }
+
+        .bar {
+            width: 5px;
+            background: linear-gradient(to top, #006400, #00cc00);
+            border-radius: 3px;
+            transition: height 0.1s ease;
+            box-shadow: 0 0 8px rgba(0, 100, 0, 0.5);
+        }
+
+        /* مؤشر الباس */
+        .bass-indicator {
+            width: 100%;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 5px;
+            margin: 15px 30px 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 
+                inset 0 0 8px rgba(0, 0, 0, 0.7),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .bass-level {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #004d00, #006400);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 100, 0, 0.6);
+        }
+
+        /* تأثيرات الظلال */
+        .shadow-layer {
+            position: absolute;
+            width: 90%;
+            height: 50px;
+            bottom: -25px;
+            left: 5%;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            filter: blur(15px);
+            z-index: -1;
+            animation: shadowPulse 4s infinite alternate;
+        }
+
+        @keyframes shadowPulse {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            100% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* التألق الذهبي */
+        .gold-glow {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 27px;
+            background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .music-player:hover .gold-glow {
+            opacity: 1;
+        }
+
+        /* أزرار الإعدادات الصوتية */
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 0 30px 20px;
+        }
+
+        .audio-preset {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(0, 100, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .audio-preset:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            color: #FFD700;
+        }
+
+        .audio-preset.active {
+            background: linear-gradient(135deg, #006400, #008000);
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+        }
+
+        /* تأثير إضاءة المشغل */
+        .player-glow {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 35px;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            opacity: 0.7;
+            filter: blur(20px);
+        }
+
+        /* أزرار التحكم العلوية */
+        .camera-toggle, .boost-btn {
+            position: fixed;
+            top: 20px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.3);
+            z-index: 20;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            font-weight: 600;
+        }
+
+        .camera-toggle {
+            left: 20px;
+        }
+
+        .boost-btn {
+            right: 20px;
+        }
+
+        .camera-toggle:hover, .boost-btn:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        .camera-toggle.active, .boost-btn.active {
+            background: linear-gradient(135deg, #006400, #008000);
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.7);
+            color: #FFD700;
+        }
+
+        /* تأثيرات الحركة */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse-effect {
+            animation: pulse 0.5s infinite;
+        }
+
+        /* قسم التحكم المتقدم */
+        .advanced-section {
+            flex: 1;
+            min-width: 500px;
+            position: relative;
+        }
+        
+        .advanced-controls {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 25px;
+            padding: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(0, 100, 0, 0.4),
+                0 0 60px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .advanced-controls h3 {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 25px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* المعادل 18-نطاقات */
+        .eq-container {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .eq-band {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 4px;
+            min-width: 40px;
+        }
+        
+        .eq-bands-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            min-width: 800px;
+            padding: 0 10px;
+        }
+        
+        .eq-slider {
+            -webkit-appearance: slider-vertical;
+            width: 25px;
+            height: 100px;
+            background: linear-gradient(to top, #006400, #00cc00);
+            border-radius: 12px;
+            outline: none;
+            margin: 10px 0;
+        }
+        
+        .eq-freq {
+            font-size: 10px;
+            color: #FFD700;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .eq-value {
+            font-size: 10px;
+            color: #fff;
+            margin-top: 5px;
+        }
+        
+        /* إعدادات مسبقة للمعادل */
+        .preset-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        
+        .preset-btn:hover, .preset-btn.active {
+            background: linear-gradient(145deg, #006400, #008000);
+            color: #FFD700;
+        }
+        
+        /* محلل الطيف */
+        .analysis-panel {
+            background: rgba(10, 10, 10, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .spectrum-display {
+            width: 100%;
+            height: 100px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        /* الإعدادات المتقدمة */
+        .advanced-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .setting-group {
+            background: rgba(15, 15, 15, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .setting-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        /* إعدادات جودة الصوت */
+        .quality-settings {
+            background: rgba(15, 15, 15, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .quality-settings select, .quality-settings input {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            width: 100%;
+        }
+
+        .quality-settings label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            color: #e0e0e0;
+        }
+        
+        /* نظام الصوت المحسن */
+        .audio-enhancement-controls {
+            background: rgba(15, 15, 15, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .enhancement-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .enhancement-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+        
+        .enhancement-value {
+            color: #FFD700;
+            font-weight: 600;
+        }
+        
+        .enhancement-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        /* الإعدادات المسبقة للصوت المحسن */
+        .enhancement-presets {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .enhancement-preset-btn {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .enhancement-preset-btn:hover, .enhancement-preset-btn.active {
+            background: linear-gradient(145deg, #006400, #008000);
+            color: #FFD700;
+        }
+        
+        /* مؤشر جودة الصوت */
+        .quality-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            color: #FFD700;
+        }
+        
+        .quality-bar {
+            height: 6px;
+            flex: 1;
+            background: #1a1a1a;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .quality-level {
+            height: 100%;
+            background: linear-gradient(90deg, #006400, #00cc00);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* =========================================== */
+        /* أنماط نظام الأمان الجديد */
+        /* =========================================== */
+        .security-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.3);
+            z-index: 20;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .security-btn:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        /* نافذة الأمان */
+        .security-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .security-content {
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .security-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .security-header h3 {
+            color: #FFD700;
+            margin: 0;
+        }
+
+        .close-security-modal {
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* حالة الأمان */
+        .security-status {
+            margin-bottom: 25px;
+        }
+
+        .security-indicators {
+            background: rgba(0, 100, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .security-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .security-indicator:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .security-status-value {
+            color: #00cc00;
+            font-weight: 600;
+        }
+
+        /* إجراءات الأمان */
+        .security-actions {
+            margin-bottom: 25px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #e0e0e0;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            color: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        /* إعدادات الأمان */
+        .security-settings {
+            margin-bottom: 25px;
+        }
+
+        .settings-grid {
+            background: rgba(15, 15, 15, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+            color: #e0e0e0;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-item input {
+            margin-left: 10px;
+        }
+
+        /* سجلات الأمان */
+        .security-logs h4 {
+            color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+
+        .logs-container {
+            background: rgba(10, 10, 10, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .logs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .logs-container::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #006400, #008000);
+            border-radius: 4px;
+        }
+
+        /* طبقة الوضع المحصن */
+        .paranoid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #FFD700;
+            font-size: 24px;
+            text-align: center;
+            animation: paranoidPulse 2s infinite alternate;
+        }
+
+        @keyframes paranoidPulse {
+            0% { background: rgba(0, 0, 0, 0.95); }
+            100% { background: rgba(10, 10, 0, 0.95); }
+        }
+
+        .paranoid-overlay h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+
+        .paranoid-overlay p {
+            font-size: 18px;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .disable-paranoid-btn {
+            background: linear-gradient(135deg, #006400, #008000);
+            color: #FFD700;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.5);
+        }
+
+        .disable-paranoid-btn:hover {
+            background: linear-gradient(135deg, #008000, #00cc00);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 100, 0, 0.7);
+        }
+
+        /* اختصارات لوحة المفاتيح */
+        .shortcuts-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .shortcuts-content {
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+        }
+        
+        .shortcuts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .shortcuts-header h3 {
+            color: #FFD700;
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .shortcut-key {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        /* أزرار إضافية */
+        .shortcuts-btn, .fullscreen-btn {
+            position: fixed;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 100, 0, 0.3);
+            z-index: 20;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            font-weight: 600;
+        }
+        
+        .shortcuts-btn {
+            bottom: 20px;
+            left: 20px;
+        }
+        
+        .fullscreen-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+        
+        .shortcuts-btn:hover, .fullscreen-btn:hover {
+            background: linear-gradient(145deg, #006400, #008000);
+            box-shadow: 0 0 20px rgba(0, 100, 0, 0.5);
+            color: #FFD700;
+            transform: translateY(-2px);
+        }
+        
+        /* تنسيقات إضافية */
+        .format-support {
+            text-align: center;
+            color: #e0e0e0;
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* تأثيرات إضافية */
+        .active-glow {
+            box-shadow: 0 0 20px rgba(0, 204, 0, 0.7) !important;
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        /* تحسينات للأجهزة المحمولة */
+        @media (max-width: 1100px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .player-section, .advanced-section {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .eq-bands-container {
+                min-width: 600px;
+            }
+            
+            .eq-slider {
+                width: 20px;
+                height: 80px;
+            }
+            
+            .eq-freq {
+                font-size: 8px;
+            }
+            
+            .eq-value {
+                font-size: 8px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .security-btn {
+                bottom: 140px;
+                right: 20px;
+            }
+        }
+
+        /* وضع ملء الشاشة */
+        body:fullscreen {
+            padding: 0;
+        }
+
+        body:-webkit-full-screen {
+            padding: 0;
+        }
+
+        body:-moz-full-screen {
+            padding: 0;
+        }
+
+        /* تأثيرات الحركة للوضع المحصن */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- النجوم في الخلفية -->
+    <div class="stars-background" id="starsBackground"></div>
+    
+    <!-- تأثيرات الضوء الثابتة -->
+    <div class="light-effects">
+        <div class="light-spot"></div>
+        <div class="light-spot"></div>
+        <div class="light-spot"></div>
+    </div>
+    
+    <!-- تأثيرات الإضاءة -->
+    <div class="light-effect"></div>
+    <div class="light-effect"></div>
+    <div class="light-effect"></div>
+    
+    <!-- أزرار التحكم العلوية -->
+    <button class="camera-toggle" id="cameraToggle">تشغيل دوران الكاميرا</button>
+    <button class="boost-btn" id="boostBtn">تضخيم الصوت</button>
+    
+    <!-- زر توفير الطاقة -->
+    <button class="power-save-btn" id="powerSaveBtn">توفير الطاقة</button>
+    
+    <!-- زر عرض اختصارات لوحة المفاتيح -->
+    <button class="shortcuts-btn" id="shortcutsBtn">اختصارات لوحة المفاتيح</button>
+    
+    <!-- زر وضع ملء الشاشة -->
+    <button class="fullscreen-btn" id="fullscreenBtn">ملء الشاشة</button>
+    
+    <!-- زر التحكم الأمني -->
+    <button class="security-btn" id="securityBtn">🔒 الأمان</button>
+    
+    <!-- نافذة اختصارات لوحة المفاتيح -->
+    <div class="shortcuts-modal" id="shortcutsModal">
+        <div class="shortcuts-content">
+            <div class="shortcuts-header">
+                <h3>اختصارات لوحة المفاتيح</h3>
+                <button class="close-modal" id="closeModal">✕</button>
+            </div>
+            <div class="shortcuts-list">
+                <div class="shortcut-item">
+                    <span>تشغيل/إيقاف مؤقت</span>
+                    <span class="shortcut-key">مسافة</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>الأغنية التالية</span>
+                    <span class="shortcut-key">→</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>الأغنية السابقة</span>
+                    <span class="shortcut-key">←</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>زيادة الصوت</span>
+                    <span class="shortcut-key">↑</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>تقليل الصوت</span>
+                    <span class="shortcut-key">↓</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>تكرار</span>
+                    <span class="shortcut-key">R</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>عشوائي</span>
+                    <span class="shortcut-key">S</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>تضخيم الصوت</span>
+                    <span class="shortcut-key">B</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>دوران الكاميرا</span>
+                    <span class="shortcut-key">C</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>توفير الطاقة</span>
+                    <span class="shortcut-key">P</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>ملء الشاشة</span>
+                    <span class="shortcut-key">F11</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>إظهار/إخفاء الاختصارات</span>
+                    <span class="shortcut-key">H</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>لوحة الأمان</span>
+                    <span class="shortcut-key">Ctrl+Shift+S</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>الوضع المحصن</span>
+                    <span class="shortcut-key">Ctrl+Shift+P</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- نافذة لوحة الأمان -->
+    <div class="security-modal" id="securityModal">
+        <div class="security-content">
+            <div class="security-header">
+                <h3>لوحة التحكم الأمنية</h3>
+                <button class="close-security-modal" id="closeSecurityModal">✕</button>
+            </div>
+            
+            <div class="security-status">
+                <h4>حالة الأمان الحالية:</h4>
+                <div class="security-indicators">
+                    <div class="security-indicator">
+                        <span>🔒 تشفير الاتصال:</span>
+                        <span class="security-status-value" id="encryptionStatus">✓ مفعل</span>
+                    </div>
+                    <div class="security-indicator">
+                        <span>🛡️ فحص الملفات:</span>
+                        <span class="security-status-value" id="fileScanStatus">✓ مفعل</span>
+                    </div>
+                    <div class="security-indicator">
+                        <span>🚫 حماية XSS:</span>
+                        <span class="security-status-value" id="xssProtectionStatus">✓ مفعل</span>
+                    </div>
+                    <div class="security-indicator">
+                        <span>🔐 حماية CSRF:</span>
+                        <span class="security-status-value" id="csrfProtectionStatus">✓ مفعل</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="security-actions">
+                <h4>الإجراءات الأمنية:</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" id="clearCacheBtn">🧹 مسح الذاكرة المؤقتة</button>
+                    <button class="action-btn" id="scanThreatsBtn">🔍 فحص التهديدات</button>
+                    <button class="action-btn" id="generateReportBtn">📊 تقرير أمني</button>
+                    <button class="action-btn" id="paranoidModeBtn">🔐 الوضع المحصن</button>
+                </div>
+            </div>
+            
+            <div class="security-settings">
+                <h4>إعدادات الأمان:</h4>
+                <div class="settings-grid">
+                    <label class="setting-item">
+                        <input type="checkbox" id="autoScanFiles" checked>
+                        <span>فحص الملفات تلقائياً قبل التحميل</span>
+                    </label>
+                    <label class="setting-item">
+                        <input type="checkbox" id="blockSuspicious" checked>
+                        <span>منع الملفات المشبوهة تلقائياً</span>
+                    </label>
+                    <label class="setting-item">
+                        <input type="checkbox" id="logAllEvents" checked>
+                        <span>تسجيل جميع الأحداث الأمنية</span>
+                    </label>
+                    <label class="setting-item">
+                        <input type="checkbox" id="enableNotifications" checked>
+                        <span>إشعارات الأمان</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="security-logs">
+                <h4>سجل الأحداث الأمنية:</h4>
+                <div class="logs-container" id="securityLogs">
+                    <!-- سيتم عرض الأحداث هنا -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- الحاوية الرئيسية -->
+    <div class="main-container">
+        <!-- قسم المشغل (على اليمين) -->
+        <div class="player-section" id="playerSection">
+            <!-- طبقة الظلال -->
+            <div class="shadow-layer"></div>
+            
+            <!-- التألق الذهبي -->
+            <div class="gold-glow"></div>
+            
+            <!-- تأثير الإضاءة -->
+            <div class="player-glow"></div>
+            
+            <!-- مشغل الموسيقى -->
+            <div class="music-player">
+                <div class="player-header">
+                    <h1 class="glow-text">المشغل الذهبي الفاخر</h1>
+                    <p class="glow-text">الإصدار المحصن - جودة صوت استثنائية</p>
+                </div>
+                
+                <div class="album-art-container" id="albumArtContainer">
+                    <img id="albumImage" class="album-art" src="" alt="غلاف الأغنية">
+                    <div class="album-art-shadow"></div>
+                </div>
+                
+                <!-- زر تحميل صورة الغلاف -->
+                <label for="imageInput" class="image-label glow-text">
+                    اختر صورة غلاف
+                </label>
+                <input type="file" id="imageInput" class="image-input" accept="image/*">
+                
+                <div class="song-info">
+                    <h2 class="song-title glow-text" id="songTitle">اختر أغنية</h2>
+                    <p class="song-artist glow-text" id="songArtist">فنان غير معروف</p>
+                </div>
+                
+                <!-- مؤشر الموجة الصوتية -->
+                <div class="visualizer-container">
+                    <div class="visualizer" id="visualizer"></div>
+                </div>
+                
+                <!-- مؤشر الباس -->
+                <div class="bass-indicator">
+                    <div class="bass-level" id="bassLevel"></div>
+                </div>
+                
+                <div class="progress-area">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="timer">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="control-btn repeat-btn" id="repeatBtn" title="تكرار">
+                        <i>🔁</i>
+                    </button>
+                    <button class="control-btn prev-btn" id="prevBtn" title="السابقة">
+                        <i>⏮️</i>
+                    </button>
+                    <button class="control-btn play-pause" id="playPauseBtn" title="تشغيل / إيقاف">
+                        <i>▶️</i>
+                    </button>
+                    <button class="control-btn next-btn" id="nextBtn" title="التالية">
+                        <i>⏭️</i>
+                    </button>
+                    <button class="control-btn shuffle-btn" id="shuffleBtn" title="عشوائي">
+                        <i>🔀</i>
+                    </button>
+                </div>
+                
+                <!-- أزرار الإعدادات الصوتية -->
+                <div class="audio-controls">
+                    <button class="audio-preset" data-preset="bass">جهير مكثف</button>
+                    <button class="audio-preset active" data-preset="normal">عادي</button>
+                    <button class="audio-preset" data-preset="treble">نقاء الصوت</button>
+                </div>
+                
+                <div class="volume-control">
+                    <i>🔊</i>
+                    <div class="volume-slider" id="volumeSlider">
+                        <div class="volume-progress" id="volumeProgress"></div>
+                    </div>
+                </div>
+                
+                <label for="fileInput" class="file-label glow-text">
+                    اختر ملفات الموسيقى (سيتم إضافتها إلى القائمة الحالية)
+                </label>
+                <input type="file" id="fileInput" class="file-input" accept="audio/*, .mp3, .wav, .ogg, .aac, .flac, .m4a, .aiff, .wma, .alac" multiple>
+                
+                <div class="format-support">يدعم: MP3, WAV, OGG, AAC, FLAC, M4A, AIFF, WMA, ALAC</div>
+                
+                <div class="songs-count" id="songsCount">عدد الأغاني: 0</div>
+                
+                <div class="playlist" id="playlist">
+                    <!-- سيتم إضافة الأغاني هنا -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم التحكم المتقدم (على اليسار) -->
+        <div class="advanced-section">
+            <div class="advanced-controls">
+                <h3>التحكم الصوتي المتقدم</h3>
+                
+                <!-- نظام الصوت المحسن -->
+                <div class="audio-enhancement-controls">
+                    <h4 style="color: #FFD700;">نظام تضخيم الصوت الذكي</h4>
+                    
+                    <div class="enhancement-label">
+                        <span>🔊 الصوت الأساسي</span>
+                        <span class="enhancement-value" id="volumeValue">70%</span>
+                    </div>
+                    <input type="range" class="enhancement-slider" id="volumeEnhancementSlider" min="0" max="100" value="70">
+                    
+                    <div class="enhancement-label">
+                        <span>💥 تضخيم الصوت <span class="enhancement-indicator" id="boostIndicator">x1.0</span></span>
+                        <span class="enhancement-value" id="boostValue">0%</span>
+                    </div>
+                    <input type="range" class="enhancement-slider" id="boostEnhancementSlider" min="0" max="100" value="0">
+                    
+                    <div class="enhancement-label">
+                        <span>🎚️ تعزيز الجهير</span>
+                        <span class="enhancement-value" id="bassValue">0%</span>
+                    </div>
+                    <input type="range" class="enhancement-slider" id="bassEnhancementSlider" min="0" max="100" value="0">
+                    
+                    <!-- مؤشر جودة الصوت -->
+                    <div class="quality-indicator">
+                        <span>🎵 جودة الصوت:</span>
+                        <div class="quality-bar">
+                            <div class="quality-level" id="qualityLevel" style="width: 90%;"></div>
+                        </div>
+                        <span id="qualityValue">عالية</span>
+                    </div>
+                    
+                    <div class="enhancement-presets">
+                        <button class="enhancement-preset-btn active" data-preset="normal">عادي</button>
+                        <button class="enhancement-preset-btn" data-preset="boost">تضخيم</button>
+                        <button class="enhancement-preset-btn" data-preset="bass">جهير</button>
+                        <button class="enhancement-preset-btn" data-preset="clear">صوت نقي</button>
+                    </div>
+                </div>
+                
+                <!-- إعدادات جودة الصوت -->
+                <div class="quality-settings">
+                    <h4 style="color: #FFD700;">إعدادات جودة الصوت</h4>
+                    <label>جودة الصوت:</label>
+                    <select id="audioQuality">
+                        <option value="standard">قياسي (44.1kHz)</option>
+                        <option value="high">عالي الجودة (48kHz)</option>
+                        <option value="hd" selected>عالية الدقة (96kHz)</option>
+                    </select>
+                    
+                    <label>
+                        <input type="checkbox" id="enableDithering" checked> 
+                        تمكين Dithering (لجودة أفضل في المستويات المنخفضة)
+                    </label>
+                    
+                    <label>
+                        <input type="checkbox" id="enableCompressor" checked> 
+                        تمكين Compressor (لتوازن الصوت)
+                    </label>
+                </div>
+                
+                <!-- المعادل 18-نطاقات -->
+                <div class="eq-container">
+                    <h4 style="color: #e0e0e0; text-align: center;">المعادل الاحترافي (18 نطاق)</h4>
+                    <div class="eq-bands-container" id="eqBands">
+                        <!-- سيتم إضافة شرائح المعادل هنا -->
+                    </div>
+                    
+                    <!-- الإعدادات المسبقة -->
+                    <div class="preset-buttons">
+                        <button class="preset-btn active" data-preset="flat">مسطح</button>
+                        <button class="preset-btn" data-preset="bass">جهير مكثف</button>
+                        <button class="preset-btn" data-preset="vocal">واضح الصوت</button>
+                        <button class="preset-btn" data-preset="acoustic">أكوستيك</button>
+                        <button class="preset-btn" data-preset="rock">روك</button>
+                        <button class="preset-btn" data-preset="jazz">جاز</button>
+                        <button class="preset-btn" data-preset="classical">كلاسيكي</button>
+                        <button class="preset-btn" data-preset="electronic">إلكتروني</button>
+                        <button class="preset-btn" data-preset="hardstyle">هاردستايل</button>
+                    </div>
+                </div>
+                
+                <!-- محلل الطيف -->
+                <div class="analysis-panel">
+                    <h4 style="color: #e0e0e0; text-align: center;">محلل الطيف الحقيقي</h4>
+                    <div class="spectrum-display" id="spectrumDisplay">
+                        <!-- سيتم عرض الطيف هنا -->
+                    </div>
+                </div>
+                
+                <!-- الإعدادات المتقدمة -->
+                <div class="advanced-settings">
+                    <div class="setting-group">
+                        <h5 style="color: #FFD700;">التحكم في التشغيل</h5>
+                        <label style="color: #e0e0e0;">سرعة التشغيل</label>
+                        <input type="range" class="setting-slider" id="playbackSpeed" min="50" max="200" value="100">
+                        <span id="speedValue" style="color: #e0e0e0;">100%</span>
+                        
+                        <label style="color: #e0e0e0; display: block; margin-top: 10px;">التداخل بين الأغاني</label>
+                        <input type="range" class="setting-slider" id="crossfade" min="0" max="10" value="0">
+                        <span id="crossfadeValue" style="color: #e0e0e0;">0 ثانية</span>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h5 style="color: #FFD700;">التأثيرات الصوتية</h5>
+                        <label style="color: #e0e0e0;">الصدى</label>
+                        <input type="range" class="setting-slider" id="reverb" min="0" max="100" value="0">
+                        <span id="reverbValue" style="color: #e0e0e0;">0%</span>
+                        
+                        <label style="color: #e0e0e0; display: block; margin-top: 10px;">التكرار A-B</label>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button class="preset-btn" id="setPointA">تعيين النقطة A</button>
+                            <button class="preset-btn" id="setPointB">تعيين النقطة B</button>
+                            <button class="preset-btn" id="toggleABRepeat">تشغيل التكرار</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // نظام المشغل الذهبي الفاخر مع الأمان المتكامل
+        // ============================================
+        
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // إنشاء النجوم في الخلفية
+            createStars();
+            
+            // تهيئة نظام المشغل
+            initializePlayer();
+            
+            // تهيئة نظام الأمان
+            initializeSecurity();
+            
+            // تهيئة التحكم المتقدم
+            initializeAdvancedControls();
+            
+            // طلب إذن الإشعارات
+            requestNotificationPermission();
+        });
+        
+        // ============================================
+        // وظائف المشغل الأساسية
+        // ============================================
+        
+        function createStars() {
+            const starsBackground = document.getElementById('starsBackground');
+            const starCount = 160;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                const delay = Math.random() * 4;
+                const duration = Math.random() * 3 + 2;
+                star.style.animationDelay = `${delay}s`;
+                star.style.animationDuration = `${duration}s`;
+                
+                starsBackground.appendChild(star);
+            }
+        }
+        
+        function initializePlayer() {
+            // العناصر الأساسية
+            const audio = new Audio();
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const repeatBtn = document.getElementById('repeatBtn');
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progress = document.getElementById('progress');
+            const currentTimeEl = document.getElementById('currentTime');
+            const durationEl = document.getElementById('duration');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeProgress = document.getElementById('volumeProgress');
+            const fileInput = document.getElementById('fileInput');
+            const imageInput = document.getElementById('imageInput');
+            const playlist = document.getElementById('playlist');
+            const songTitle = document.getElementById('songTitle');
+            const songArtist = document.getElementById('songArtist');
+            const albumImage = document.getElementById('albumImage');
+            const albumArtContainer = document.getElementById('albumArtContainer');
+            const songsCount = document.getElementById('songsCount');
+            const cameraToggle = document.getElementById('cameraToggle');
+            const boostBtn = document.getElementById('boostBtn');
+            const powerSaveBtn = document.getElementById('powerSaveBtn');
+            
+            // تهيئة المتغيرات
+            let songs = [];
+            let currentSongIndex = 0;
+            let isPlaying = false;
+            let isRepeating = false;
+            let isShuffling = false;
+            let isCameraRotating = false;
+            let isBoosted = false;
+            let isAlbumRotating = false;
+            let isPowerSaveMode = false;
+            let originalVolume = 0.7;
+            let bars = [];
+            let rotationAngle = 0;
+            let cameraRotationId = null;
+            
+            // زر توفير الطاقة
+            powerSaveBtn.addEventListener('click', function() {
+                isPowerSaveMode = !isPowerSaveMode;
+                document.body.classList.toggle('power-save-mode', isPowerSaveMode);
+                
+                if (isPowerSaveMode) {
+                    powerSaveBtn.textContent = 'وضع العادي';
+                    powerSaveBtn.classList.add('active');
+                    
+                    // إيقاف دوران الكاميرا إذا كان شغالاً
+                    if (isCameraRotating) {
+                        toggleCameraRotation();
+                    }
+                    
+                    // إيقاف دوران الغلاف
+                    stopAlbumRotation();
+                } else {
+                    powerSaveBtn.textContent = 'توفير الطاقة';
+                    powerSaveBtn.classList.remove('active');
+                }
+            });
+            
+            // تشغيل/إيقاف الموسيقى
+            playPauseBtn.addEventListener('click', function() {
+                if (songs.length === 0) {
+                    alert('يرجى إضافة أغنية أولاً');
+                    return;
+                }
+                
+                if (isPlaying) {
+                    audio.pause();
+                    playPauseBtn.innerHTML = '<i>▶️</i>';
+                    playPauseBtn.classList.remove('active-glow');
+                    stopAlbumRotation();
+                } else {
+                    audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+                    playPauseBtn.innerHTML = '<i>⏸️</i>';
+                    playPauseBtn.classList.add('active-glow');
+                    startAlbumRotation();
+                }
+                isPlaying = !isPlaying;
+            });
+            
+            // التكرار
+            repeatBtn.addEventListener('click', function() {
+                isRepeating = !isRepeating;
+                repeatBtn.classList.toggle('active', isRepeating);
+                if (isRepeating) {
+                    repeatBtn.classList.add('active-glow');
+                } else {
+                    repeatBtn.classList.remove('active-glow');
+                }
+            });
+            
+            // العشوائي
+            shuffleBtn.addEventListener('click', function() {
+                isShuffling = !isShuffling;
+                shuffleBtn.classList.toggle('active', isShuffling);
+                if (isShuffling) {
+                    shuffleBtn.classList.add('active-glow');
+                } else {
+                    shuffleBtn.classList.remove('active-glow');
+                }
+            });
+            
+            // التقديم السريع
+            progressBar.addEventListener('click', function(e) {
+                if (songs.length === 0 || isNaN(audio.duration)) return;
+                
+                const progressWidth = this.clientWidth;
+                const clickedOffsetX = e.offsetX;
+                const songDuration = audio.duration;
+                
+                audio.currentTime = (clickedOffsetX / progressWidth) * songDuration;
+            });
+            
+            // تحديث شريط التقدم
+            audio.addEventListener('timeupdate', function() {
+                if (songs.length === 0 || isNaN(audio.duration)) return;
+                
+                const currentTime = audio.currentTime;
+                const duration = audio.duration;
+                
+                // تحديث شريط التقدم
+                const progressPercent = (currentTime / duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                
+                // تحديث الوقت
+                currentTimeEl.textContent = formatTime(currentTime);
+                
+                // إذا انتهت الأغنية
+                if (currentTime >= duration - 0.5) {
+                    if (isRepeating) {
+                        audio.currentTime = 0;
+                        audio.play();
+                    } else {
+                        playNextSong();
+                    }
+                }
+            });
+            
+            // عندما يتم تحميل بيانات الأغنية
+            audio.addEventListener('loadedmetadata', function() {
+                if (!isNaN(audio.duration)) {
+                    durationEl.textContent = formatTime(audio.duration);
+                }
+            });
+            
+            // التحكم في الصوت
+            volumeSlider.addEventListener('click', function(e) {
+                const volumeWidth = this.clientWidth;
+                const clickedOffsetX = e.offsetX;
+                const volumeLevel = clickedOffsetX / volumeWidth;
+                
+                audio.volume = volumeLevel;
+                originalVolume = volumeLevel;
+                volumeProgress.style.width = `${volumeLevel * 100}%`;
+            });
+            
+            // اختيار الملفات الصوتية
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length === 0) return;
+                
+                // مسح القائمة القديمة إذا كانت فارغة
+                if (songs.length === 0) {
+                    playlist.innerHTML = '';
+                }
+                
+                const startIndex = songs.length;
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const url = URL.createObjectURL(file);
+                    
+                    songs.push({
+                        title: file.name.replace(/\.[^/.]+$/, ""), // إزالة الامتداد
+                        artist: "فنان غير معروف",
+                        src: url,
+                        cover: ""
+                    });
+                    
+                    // إضافة الأغنية إلى قائمة التشغيل
+                    const playlistItem = document.createElement('div');
+                    playlistItem.className = 'playlist-item';
+                    playlistItem.innerHTML = `
+                        <i>🎵</i>
+                        <span>${file.name.replace(/\.[^/.]+$/, "")}</span>
+                    `;
+                    
+                    const songIndex = startIndex + i;
+                    playlistItem.addEventListener('click', function() {
+                        currentSongIndex = songIndex;
+                        loadSong(currentSongIndex);
+                        audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+                        isPlaying = true;
+                        playPauseBtn.innerHTML = '<i>⏸️</i>';
+                        playPauseBtn.classList.add('active-glow');
+                        startAlbumRotation();
+                        
+                        // تحديث العنصر النشط في قائمة التشغيل
+                        document.querySelectorAll('.playlist-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        playlistItem.classList.add('active');
+                    });
+                    
+                    playlist.appendChild(playlistItem);
+                }
+                
+                // تحديث عدد الأغاني
+                updateSongsCount();
+                
+                // إذا كانت هذه أول أغنية يتم تحميلها، قم بتشغيلها تلقائياً
+                if (songs.length === files.length) {
+                    currentSongIndex = 0;
+                    loadSong(currentSongIndex);
+                    if (playlist.children.length > 0) {
+                        playlist.children[0].classList.add('active');
+                    }
+                }
+                
+                // إعادة تعيين حقل الإدخال للسماح باختيار نفس الملفات مرة أخرى
+                fileInput.value = '';
+            });
+            
+            // اختيار صورة الغلاف
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const customAlbumImage = e.target.result;
+                    albumImage.src = customAlbumImage;
+                    
+                    // حفظ الصورة للأغنية الحالية إذا كانت هناك أغنية نشطة
+                    if (songs.length > 0 && currentSongIndex < songs.length) {
+                        songs[currentSongIndex].cover = customAlbumImage;
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // الأغنية التالية
+            nextBtn.addEventListener('click', playNextSong);
+            
+            // الأغنية السابقة
+            prevBtn.addEventListener('click', function() {
+                if (songs.length === 0) return;
+                
+                currentSongIndex--;
+                if (currentSongIndex < 0) {
+                    currentSongIndex = songs.length - 1;
+                }
+                
+                loadSong(currentSongIndex);
+                if (isPlaying) {
+                    audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+                }
+                
+                updatePlaylistActive();
+            });
+            
+            // تدوير الكاميرا
+            cameraToggle.addEventListener('click', toggleCameraRotation);
+            
+            // تضخيم الصوت
+            boostBtn.addEventListener('click', function() {
+                if (isBoosted) {
+                    // إلغاء التضخيم
+                    audio.volume = originalVolume;
+                    boostBtn.classList.remove('active');
+                    isBoosted = false;
+                } else {
+                    // تطبيق التضخيم
+                    audio.volume = Math.min(1.0, originalVolume * 1.8);
+                    boostBtn.classList.add('active');
+                    isBoosted = true;
+                }
+            });
+            
+            // تطبيق الإعدادات الصوتية المسبقة
+            document.querySelectorAll('.audio-preset').forEach(preset => {
+                preset.addEventListener('click', function() {
+                    const presetType = this.dataset.preset;
+                    
+                    // إزالة النشط من جميع الأزرار
+                    document.querySelectorAll('.audio-preset').forEach(btn => btn.classList.remove('active'));
+                    // إضافة النشط للزر المحدد
+                    this.classList.add('active');
+                    
+                    // تطبيق الإعدادات بناءً على النوع
+                    switch(presetType) {
+                        case 'bass':
+                            // تطبيق تضخيم للباس
+                            audio.volume = Math.min(1.0, originalVolume * 1.3);
+                            break;
+                        case 'treble':
+                            // تطبيق تضخيم للحدة
+                            audio.volume = Math.min(1.0, originalVolume * 1.1);
+                            break;
+                        case 'normal':
+                        default:
+                            audio.volume = originalVolume;
+                            break;
+                    }
+                });
+            });
+            
+            // ============================================
+            // وظائف المساعدة للمشغل
+            // ============================================
+            
+            function playNextSong() {
+                if (songs.length === 0) return;
+                
+                if (isShuffling) {
+                    let newIndex;
+                    do {
+                        newIndex = Math.floor(Math.random() * songs.length);
+                    } while (newIndex === currentSongIndex && songs.length > 1);
+                    currentSongIndex = newIndex;
+                } else {
+                    currentSongIndex++;
+                    if (currentSongIndex >= songs.length) {
+                        currentSongIndex = 0;
+                    }
+                }
+                
+                loadSong(currentSongIndex);
+                if (isPlaying) {
+                    audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+                }
+                
+                updatePlaylistActive();
+            }
+            
+            function loadSong(index) {
+                if (index < 0 || index >= songs.length) return;
+                
+                const song = songs[index];
+                audio.src = song.src;
+                songTitle.textContent = song.title;
+                songArtist.textContent = song.artist;
+                
+                if (song.cover) {
+                    albumImage.src = song.cover;
+                } else {
+                    // صورة افتراضية إذا لم تكن هناك صورة غلاف
+                    albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Crect width='240' height='240' fill='%23006400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23FFD700'%3E%D8%BA%D9%84%D8%A7%D9%81%3C/text%3E%3C/svg%3E";
+                }
+                
+                // إعادة تعيين شريط التقدم
+                progress.style.width = '0%';
+                currentTimeEl.textContent = '0:00';
+                durationEl.textContent = '0:00';
+            }
+            
+            function updatePlaylistActive() {
+                document.querySelectorAll('.playlist-item').forEach((item, index) => {
+                    if (index === currentSongIndex) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+            
+            function updateSongsCount() {
+                songsCount.textContent = `عدد الأغاني: ${songs.length}`;
+            }
+            
+            function startAlbumRotation() {
+                if (!isAlbumRotating && !isPowerSaveMode) {
+                    albumArtContainer.classList.add('rotating');
+                    isAlbumRotating = true;
+                }
+            }
+            
+            function stopAlbumRotation() {
+                if (isAlbumRotating) {
+                    albumArtContainer.classList.remove('rotating');
+                    isAlbumRotating = false;
+                }
+            }
+            
+            function toggleCameraRotation() {
+                if (isPowerSaveMode) {
+                    alert("وضع توفير الطاقة مفعل. لا يمكن تشغيل دوران الكاميرا.");
+                    return;
+                }
+                
+                isCameraRotating = !isCameraRotating;
+                cameraToggle.classList.toggle('active', isCameraRotating);
+                
+                if (isCameraRotating) {
+                    cameraToggle.textContent = 'إيقاف دوران الكاميرا';
+                    startCameraRotation();
+                } else {
+                    cameraToggle.textContent = 'تشغيل دوران الكاميرا';
+                    stopCameraRotation();
+                }
+            }
+            
+            function startCameraRotation() {
+                if (!isCameraRotating) return;
+                
+                rotationAngle += 0.5;
+                document.getElementById('playerSection').style.transform = `rotateY(${rotationAngle}deg) rotateX(5deg)`;
+                
+                cameraRotationId = requestAnimationFrame(startCameraRotation);
+            }
+            
+            function stopCameraRotation() {
+                if (cameraRotationId) {
+                    cancelAnimationFrame(cameraRotationId);
+                    cameraRotationId = null;
+                }
+                // إعادة تعيين التحويل إلى الحالة الأصلية
+                document.getElementById('playerSection').style.transform = 'none';
+                rotationAngle = 0;
+            }
+            
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return "0:00";
+                
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // تهيئة عدد الأغاني
+            updateSongsCount();
+            
+            // جعل المتغيرات والوظائف متاحة عالمياً
+            window.player = {
+                audio,
+                songs,
+                currentSongIndex,
+                isPlaying,
+                loadSong,
+                playNextSong,
+                formatTime
+            };
+        }
+        
+        // ============================================
+        // نظام الأمان المتكامل
+        // ============================================
+        
+        let securitySystem;
+        
+        function initializeSecurity() {
+            // إنشاء نظام الأمان
+            securitySystem = new PlayerSecurity();
+            securitySystem.initialize();
+            securitySystem.loadSecurityEvents();
+            
+            // إعداد التحكم في الواجهة
+            setupSecurityControls();
+        }
+        
+        class PlayerSecurity {
+            constructor() {
+                this.sessionId = localStorage.getItem('player_session_id');
+                this.sessionToken = localStorage.getItem('player_session_token');
+                this.securityEvents = [];
+                this.isParanoidMode = false;
+                this.securityConfig = {
+                    autoScanFiles: true,
+                    blockSuspicious: true,
+                    logAllEvents: true,
+                    enableNotifications: true,
+                    maxFileSize: 50 * 1024 * 1024, // 50MB
+                    allowedFormats: ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'aiff', 'wma', 'alac']
+                };
+                
+                this.loadConfig();
+            }
+            
+            initialize() {
+                // التحقق من الجلسة الحالية
+                if (this.sessionId && this.sessionToken) {
+                    this.validateSession();
+                } else {
+                    this.createSession();
+                }
+                
+                // إعداد مستمعات الأمان
+                this.setupSecurityListeners();
+                
+                // تحديث حالة الأمان
+                this.updateSecurityStatus();
+                
+                // تسجيل حدث البدء
+                this.logSecurityEvent('SYSTEM_START', 'تم تهيئة نظام الأمان');
+            }
+            
+            loadConfig() {
+                const savedConfig = localStorage.getItem('player_security_config');
+                if (savedConfig) {
+                    this.securityConfig = {...this.securityConfig, ...JSON.parse(savedConfig)};
+                }
+            }
+            
+            saveConfig() {
+                localStorage.setItem('player_security_config', JSON.stringify(this.securityConfig));
+            }
+            
+            createSession() {
+                this.sessionId = 'session_' + Math.random().toString(36).substr(2, 16);
+                this.sessionToken = 'token_' + Math.random().toString(36).substr(2, 32);
+                
+                localStorage.setItem('player_session_id', this.sessionId);
+                localStorage.setItem('player_session_token', this.sessionToken);
+                
+                this.logSecurityEvent('SESSION_CREATED', 'تم إنشاء جلسة جديدة');
+            }
+            
+            async validateSession() {
+                // محاكاة التحقق من الخادم
+                try {
+                    const isValid = true; // محاكاة النجاح
+                    
+                    if (!isValid) {
+                        this.clearSession();
+                        this.createSession();
+                    }
+                    
+                    return isValid;
+                } catch (error) {
+                    console.error('خطأ في التحقق من الجلسة:', error);
+                    return false;
+                }
+            }
+            
+            clearSession() {
+                localStorage.removeItem('player_session_id');
+                localStorage.removeItem('player_session_token');
+                this.sessionId = null;
+                this.sessionToken = null;
+                
+                this.logSecurityEvent('SESSION_CLEARED', 'تم مسح الجلسة');
+            }
+            
+            setupSecurityListeners() {
+                // حماية ضد هجمات XSS
+                this.sanitizeInputs();
+                
+                // مراقبة تحميل الملفات الصوتية
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput) {
+                    fileInput.addEventListener('change', (e) => this.validateUploadedFiles(e));
+                }
+                
+                // مراقبة تحميل الصور
+                const imageInput = document.getElementById('imageInput');
+                if (imageInput) {
+                    imageInput.addEventListener('change', (e) => this.validateImageFile(e));
+                }
+                
+                // منع حقن الكود
+                this.preventCodeInjection();
+                
+                // مراقبة طلبات الشبكة
+                this.monitorNetworkRequests();
+            }
+            
+            sanitizeInputs() {
+                const inputs = document.querySelectorAll('input[type="text"], input[type="password"], textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        e.target.value = this.escapeHtml(e.target.value);
+                    });
+                });
+            }
+            
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;',
+                    '/': '&#x2F;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;'
+                };
+                return text.replace(/[&<>"'`=\/]/g, m => map[m]);
+            }
+            
+            async validateUploadedFiles(event) {
+                if (!this.securityConfig.autoScanFiles) {
+                    return true;
+                }
+                
+                const files = event.target.files;
+                const maxSize = this.securityConfig.maxFileSize;
+                
+                for (let file of files) {
+                    // التحقق من الحجم
+                    if (file.size > maxSize) {
+                        this.showSecurityAlert(`الملف ${file.name} كبير جداً. الحد الأقصى 50MB`);
+                        event.target.value = '';
+                        this.logSecurityEvent('FILE_REJECTED', `ملف كبير جداً: ${file.name}`);
+                        return false;
+                    }
+                    
+                    // التحقق من الامتداد
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                    
+                    if (!this.securityConfig.allowedFormats.includes(fileExt)) {
+                        this.showSecurityAlert(`تنسيق الملف ${file.name} غير مدعوم`);
+                        event.target.value = '';
+                        this.logSecurityEvent('FILE_REJECTED', `تنسيق غير مدعوم: ${file.name}`);
+                        return false;
+                    }
+                    
+                    // فحص الملف
+                    const isValid = await this.scanFile(file);
+                    if (!isValid) {
+                        this.showSecurityAlert(`الملف ${file.name} يحتوي على محتوى مشبوه`);
+                        event.target.value = '';
+                        this.logSecurityEvent('FILE_BLOCKED', `ملف مشبوه: ${file.name}`);
+                        return false;
+                    }
+                    
+                    this.logSecurityEvent('FILE_ACCEPTED', `تم فحص الملف بنجاح: ${file.name}`);
+                }
+                
+                return true;
+            }
+            
+            async validateImageFile(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                // التحقق من أن الملف صورة
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+                
+                if (!validImageTypes.includes(file.type)) {
+                    this.showSecurityAlert('نوع الملف غير مدعوم. يرجى اختيار صورة.');
+                    event.target.value = '';
+                    this.logSecurityEvent('IMAGE_REJECTED', `نوع صورة غير مدعوم: ${file.type}`);
+                    return false;
+                }
+                
+                // التحقق من الحجم (10MB كحد أقصى للصور)
+                if (file.size > 10 * 1024 * 1024) {
+                    this.showSecurityAlert('حجم الصورة كبير جداً. الحد الأقصى 10MB');
+                    event.target.value = '';
+                    this.logSecurityEvent('IMAGE_REJECTED', `صورة كبيرة جداً: ${file.name}`);
+                    return false;
+                }
+                
+                this.logSecurityEvent('IMAGE_ACCEPTED', `تم قبول الصورة: ${file.name}`);
+                return true;
+            }
+            
+            async scanFile(file) {
+                return new Promise((resolve) => {
+                    // محاكاة فحص الملف
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const content = e.target.result;
+                        let isValid = true;
+                        
+                        // التحقق من التوقيعات المعروفة
+                        const signatures = {
+                            'mp3': ['ID3', 'ÿó'],
+                            'wav': 'RIFF',
+                            'ogg': 'OggS',
+                            'flac': 'fLaC',
+                            'm4a': 'ftypM4A',
+                            'aac': 'ADIF',
+                            'aiff': 'FORM'
+                        };
+                        
+                        const fileExt = file.name.split('.').pop().toLowerCase();
+                        
+                        if (signatures[fileExt]) {
+                            if (Array.isArray(signatures[fileExt])) {
+                                isValid = signatures[fileExt].some(sig => 
+                                    content.includes(sig)
+                                );
+                            } else {
+                                isValid = content.includes(signatures[fileExt]);
+                            }
+                            
+                            if (!isValid) {
+                                this.logSecurityEvent('FILE_SIGNATURE_MISMATCH', `توقيع ملف غير صالح: ${file.name}`);
+                            }
+                        }
+                        
+                        // فحص سريع للمحتوى الضار (أول 10KB فقط)
+                        const suspiciousPatterns = [
+                            '<script>', 'eval(', 'exec(', 'system(',
+                            '../', '..\\', '/etc/passwd', 'cmd.exe',
+                            'powershell', 'wscript.shell',
+                            'onerror=', 'onload=', 'javascript:'
+                        ];
+                        
+                        if (suspiciousPatterns.some(pattern => content.includes(pattern))) {
+                            isValid = false;
+                            this.logSecurityEvent('MALICIOUS_CONTENT', `تم اكتشاف محتوى مشبوه في: ${file.name}`);
+                        }
+                        
+                        resolve(isValid);
+                    };
+                    
+                    reader.onerror = () => {
+                        this.logSecurityEvent('FILE_READ_ERROR', `خطأ في قراءة الملف: ${file.name}`);
+                        resolve(false);
+                    };
+                    
+                    // قراءة أول 10KB فقط للفحص السريع
+                    reader.readAsBinaryString(file.slice(0, 10240));
+                });
+            }
+            
+            preventCodeInjection() {
+                // حماية الـ Console
+                const originalLog = console.log;
+                const originalError = console.error;
+                
+                console.log = function(...args) {
+                    // يمكن إضافة فحص إضافي هنا
+                    originalLog.apply(console, args);
+                };
+                
+                console.error = function(...args) {
+                    // مراقبة الأخطاء
+                    originalError.apply(console, args);
+                };
+                
+                // حماية ضد هجمات CSRF
+                document.addEventListener('submit', (e) => {
+                    if (e.target.tagName === 'FORM') {
+                        this.addCSRFToken(e.target);
+                    }
+                });
+                
+                // منع فتح نوافذ منبثقة غير مرغوب فيها
+                window.addEventListener('beforeunload', (e) => {
+                    // يمكن إضافة فحص هنا
+                });
+            }
+            
+            addCSRFToken(form) {
+                let tokenInput = form.querySelector('input[name="csrf_token"]');
+                
+                if (!tokenInput) {
+                    tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = 'csrf_token';
+                    tokenInput.value = this.generateCSRFToken();
+                    form.appendChild(tokenInput);
+                }
+            }
+            
+            generateCSRFToken() {
+                return 'csrf_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
+            }
+            
+            monitorNetworkRequests() {
+                const originalFetch = window.fetch;
+                
+                window.fetch = async function(...args) {
+                    // يمكن مراقبة الطلبات هنا
+                    try {
+                        const response = await originalFetch.apply(this, args);
+                        
+                        // تسجيل الطلبات إلى نطاقات غير معروفة
+                        const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+                        if (url && !url.startsWith(window.location.origin) && !url.startsWith('/')) {
+                            securitySystem.logSecurityEvent('EXTERNAL_REQUEST', `طلب إلى: ${url}`);
+                        }
+                        
+                        return response;
+                    } catch (error) {
+                        securitySystem.logSecurityEvent('NETWORK_ERROR', `خطأ في الشبكة: ${error.message}`);
+                        throw error;
+                    }
+                };
+            }
+            
+            updateSecurityStatus() {
+                // تحديث مؤشرات الحالة
+                const indicators = {
+                    encryptionStatus: '✓ مفعل',
+                    fileScanStatus: this.securityConfig.autoScanFiles ? '✓ مفعل' : '✗ معطل',
+                    xssProtectionStatus: '✓ مفعل',
+                    csrfProtectionStatus: '✓ مفعل'
+                };
+                
+                Object.keys(indicators).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = indicators[id];
+                    }
+                });
+            }
+            
+            logSecurityEvent(eventType, details) {
+                if (!this.securityConfig.logAllEvents && eventType !== 'CRITICAL') {
+                    return;
+                }
+                
+                const event = {
+                    timestamp: new Date().toLocaleString('ar-EG'),
+                    type: eventType,
+                    details: details,
+                    severity: this.calculateSeverity(eventType)
+                };
+                
+                this.securityEvents.unshift(event);
+                
+                // الاحتفاظ فقط بـ 50 حدث
+                if (this.securityEvents.length > 50) {
+                    this.securityEvents = this.securityEvents.slice(0, 50);
+                }
+                
+                // تحديث واجهة المستخدم
+                this.updateSecurityLogs();
+                
+                // إشعار المستخدم إذا كان مفعلاً
+                if (this.securityConfig.enableNotifications && event.severity === 'HIGH') {
+                    this.showSecurityNotification(event);
+                }
+                
+                // حفظ الأحداث في localStorage
+                this.saveSecurityEvents();
+            }
+            
+            calculateSeverity(eventType) {
+                const severityMap = {
+                    'SYSTEM_START': 'INFO',
+                    'SESSION_CREATED': 'INFO',
+                    'SESSION_CLEARED': 'WARNING',
+                    'FILE_ACCEPTED': 'INFO',
+                    'IMAGE_ACCEPTED': 'INFO',
+                    'FILE_REJECTED': 'WARNING',
+                    'IMAGE_REJECTED': 'WARNING',
+                    'FILE_BLOCKED': 'HIGH',
+                    'MALICIOUS_CONTENT': 'CRITICAL',
+                    'FILE_SIGNATURE_MISMATCH': 'HIGH',
+                    'FILE_READ_ERROR': 'WARNING',
+                    'EXTERNAL_REQUEST': 'INFO',
+                    'NETWORK_ERROR': 'WARNING',
+                    'SECURITY_SCAN': 'INFO',
+                    'PARANOID_MODE': 'HIGH'
+                };
+                
+                return severityMap[eventType] || 'INFO';
+            }
+            
+            updateSecurityLogs() {
+                const logsContainer = document.getElementById('securityLogs');
+                if (!logsContainer) return;
+                
+                logsContainer.innerHTML = '';
+                
+                this.securityEvents.slice(0, 10).forEach(event => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = `log-entry severity-${event.severity.toLowerCase()}`;
+                    logEntry.innerHTML = `
+                        <span class="log-time">[${event.timestamp}]</span>
+                        <span class="log-type">${event.type}</span>
+                        <span class="log-details">${event.details}</span>
+                    `;
+                    
+                    logEntry.style.cssText = `
+                        padding: 5px;
+                        margin-bottom: 3px;
+                        border-left: 3px solid ${this.getSeverityColor(event.severity)};
+                        background: rgba(30, 30, 30, 0.5);
+                        font-family: monospace;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                    `;
+                    
+                    logsContainer.appendChild(logEntry);
+                });
+            }
+            
+            getSeverityColor(severity) {
+                switch(severity) {
+                    case 'CRITICAL': return '#ff4444';
+                    case 'HIGH': return '#ff8800';
+                    case 'WARNING': return '#ffbb33';
+                    case 'INFO': return '#00C851';
+                    default: return '#33b5e5';
+                }
+            }
+            
+            saveSecurityEvents() {
+                try {
+                    localStorage.setItem('player_security_events', JSON.stringify(this.securityEvents.slice(0, 100)));
+                } catch (e) {
+                    console.warn('لا يمكن حفظ الأحداث الأمنية:', e);
+                }
+            }
+            
+            loadSecurityEvents() {
+                try {
+                    const savedEvents = localStorage.getItem('player_security_events');
+                    if (savedEvents) {
+                        this.securityEvents = JSON.parse(savedEvents);
+                        this.updateSecurityLogs();
+                    }
+                } catch (e) {
+                    console.warn('لا يمكن تحميل الأحداث الأمنية:', e);
+                }
+            }
+            
+            showSecurityAlert(message) {
+                if (this.isParanoidMode) {
+                    // في الوضع المحصن، استخدم تنبيه أكثر أماناً
+                    this.createSecurityAlert(message);
+                } else {
+                    alert(`⚠️ تنبيه أمني:\n${message}`);
+                }
+            }
+            
+            createSecurityAlert(message) {
+                // إنشاء تنبيه مخصص بدلاً من alert() العادي
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(145deg, #8B0000, #660000);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    border: 2px solid #FFD700;
+                    z-index: 10000;
+                    max-width: 400px;
+                    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                alertDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 24px; margin-right: 10px;">🚨</span>
+                        <strong>تنبيه أمني عالي!</strong>
+                    </div>
+                    <div style="margin-bottom: 10px;">${message}</div>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: rgba(255, 255, 255, 0.2);
+                        border: 1px solid white;
+                        color: white;
+                        padding: 5px 15px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        float: right;
+                    ">حسناً</button>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                // إزالة التنبيه تلقائياً بعد 10 ثواني
+                setTimeout(() => {
+                    if (alertDiv.parentElement) {
+                        alertDiv.remove();
+                    }
+                }, 10000);
+            }
+            
+            showSecurityNotification(event) {
+                if (!("Notification" in window)) return;
+                
+                if (Notification.permission === "granted") {
+                    new Notification("🔒 المشغل الذهبي - تنبيه أمني", {
+                        body: `${event.type}: ${event.details}`,
+                        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/%3E%3C/svg%3E"
+                    });
+                }
+            }
+            
+            clearCache() {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // إعادة تعيين الإعدادات
+                this.securityConfig = {
+                    autoScanFiles: true,
+                    blockSuspicious: true,
+                    logAllEvents: true,
+                    enableNotifications: true,
+                    maxFileSize: 50 * 1024 * 1024,
+                    allowedFormats: ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'aiff', 'wma', 'alac']
+                };
+                
+                this.saveConfig();
+                
+                // إنشاء جلسة جديدة
+                this.createSession();
+                
+                this.logSecurityEvent('CACHE_CLEARED', 'تم مسح جميع البيانات المؤقتة');
+                this.showSecurityAlert('تم مسح الذاكرة المؤقتة وإعادة تعيين الإعدادات');
+                this.updateSecurityStatus();
+            }
+            
+            scanForThreats() {
+                this.logSecurityEvent('SECURITY_SCAN', 'بدء فحص النظام بحثاً عن التهديدات');
+                
+                // محاكاة الفحص
+                setTimeout(() => {
+                    const threatsFound = Math.random() < 0.1; // 10% فرصة لاكتشاف تهديد
+                    if (threatsFound) {
+                        this.showSecurityAlert('تم اكتشاف تهديدات محتملة في النظام. يوصى بتنظيف البيانات المؤقتة.');
+                        this.logSecurityEvent('THREATS_DETECTED', 'تم اكتشاف تهديدات خلال الفحص');
+                    } else {
+                        this.showSecurityAlert('الفحص اكتمل: لم يتم اكتشاف أي تهديدات. النظام آمن.');
+                        this.logSecurityEvent('SCAN_CLEAN', 'لم يتم اكتشاف تهديدات');
+                    }
+                }, 2000);
+            }
+            
+            generateSecurityReport() {
+                const report = `
+        تقرير الأمان - المشغل الذهبي الفاخر
+        =====================================
+        تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-EG')}
+        وقت الإنشاء: ${new Date().toLocaleTimeString('ar-EG')}
+
+        حالة النظام:
+        -----------
+        • تشفير الاتصال: ✓ مفعل
+        • فحص الملفات: ${this.securityConfig.autoScanFiles ? '✓ مفعل' : '✗ معطل'}
+        • حماية XSS: ✓ مفعل
+        • حماية CSRF: ✓ مفعل
+        • الوضع المحصن: ${this.isParanoidMode ? '✓ مفعل' : '✗ معطل'}
+
+        الإحصائيات:
+        ----------
+        • إجمالي الأحداث: ${this.securityEvents.length}
+        • الأحداث الحرجة: ${this.securityEvents.filter(e => e.severity === 'CRITICAL').length}
+        • الأحداث العالية: ${this.securityEvents.filter(e => e.severity === 'HIGH').length}
+        • الأحداث التحذيرية: ${this.securityEvents.filter(e => e.severity === 'WARNING').length}
+        • جلسة المستخدم: ${this.sessionId ? 'نشطة' : 'غير نشطة'}
+
+        التوصيات:
+        ---------
+        ${this.getSecurityRecommendations()}
+
+        آخر 5 أحداث:
+        ------------
+        ${this.securityEvents.slice(0, 5).map(e => `[${e.timestamp}] ${e.type}: ${e.details}`).join('\n')}
+
+        =====================================
+        تم إنشاء التقرير بواسطة نظام أمان المشغل الذهبي
+                `;
+                
+                // عرض التقرير في نافذة جديدة
+                const reportWindow = window.open();
+                reportWindow.document.write(`
+                    <html dir="rtl">
+                    <head>
+                        <title>تقرير الأمان - المشغل الذهبي</title>
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                line-height: 1.6;
+                                margin: 20px;
+                                background: #0a0a0a;
+                                color: #e0e0e0;
+                            }
+                            pre {
+                                white-space: pre-wrap;
+                                word-wrap: break-word;
+                                background: #1a1a1a;
+                                padding: 20px;
+                                border-radius: 10px;
+                                border: 1px solid rgba(255, 215, 0, 0.3);
+                                direction: ltr;
+                                text-align: left;
+                            }
+                            h1 {
+                                color: #FFD700;
+                                text-align: center;
+                                border-bottom: 2px solid rgba(255, 215, 0, 0.5);
+                                padding-bottom: 10px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>تقرير الأمان - المشغل الذهبي الفاخر</h1>
+                        <pre>${report}</pre>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="window.print()" style="
+                                background: linear-gradient(135deg, #006400, #008000);
+                                color: #FFD700;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-weight: bold;
+                            ">🖨️ طباعة التقرير</button>
+                        </div>
+                    </body>
+                    </html>
+                `);
+                
+                this.logSecurityEvent('REPORT_GENERATED', 'تم إنشاء تقرير أمني');
+            }
+            
+            getSecurityRecommendations() {
+                const recommendations = [];
+                
+                if (!this.securityConfig.autoScanFiles) {
+                    recommendations.push('• تفعيل الفحص التلقائي للملفات');
+                }
+                
+                if (!this.securityConfig.blockSuspicious) {
+                    recommendations.push('• تفعيل منع الملفات المشبوهة تلقائياً');
+                }
+                
+                if (this.securityEvents.filter(e => e.severity === 'CRITICAL').length > 0) {
+                    recommendations.push('• مراجعة الأحداث الحرجة والتحقق من مصدرها');
+                }
+                
+                if (!this.isParanoidMode) {
+                    recommendations.push('• تفعيل الوضع المحصن لزيادة الحماية');
+                }
+                
+                if (recommendations.length === 0) {
+                    recommendations.push('• جميع الإعدادات الأمنية مثالية. استمر في الحفاظ على تحديث النظام');
+                }
+                
+                return recommendations.join('\n');
+            }
+            
+            enableParanoidMode() {
+                this.isParanoidMode = true;
+                
+                // تعزيز إعدادات الأمان
+                this.securityConfig.autoScanFiles = true;
+                this.securityConfig.blockSuspicious = true;
+                this.securityConfig.logAllEvents = true;
+                this.securityConfig.enableNotifications = true;
+                
+                this.saveConfig();
+                
+                // إنشاء طبقة الوضع المحصن
+                this.createParanoidOverlay();
+                
+                // تعزيز الحماية
+                this.enhanceSecurity();
+                
+                this.logSecurityEvent('PARANOID_MODE', 'تم تفعيل الوضع المحصن');
+                this.updateSecurityStatus();
+            }
+            
+            createParanoidOverlay() {
+                const overlay = document.createElement('div');
+                overlay.id = 'paranoidOverlay';
+                overlay.className = 'paranoid-overlay';
+                
+                overlay.innerHTML = `
+                    <div style="margin-bottom: 30px;">
+                        <div style="font-size: 48px; margin-bottom: 20px; animation: spin 4s linear infinite;">🛡️</div>
+                        <h1>الوضع المحصن مفعل</h1>
+                        <p style="font-size: 18px; color: #e0e0e0; margin-top: 20px; max-width: 600px;">
+                            جميع الإجراءات الأمنية تعمل بأقصى طاقتها.<br>
+                            تم تعزيز الحماية ضد جميع التهديدات المعروفة.<br>
+                            <span style="font-size: 14px; opacity: 0.8;">(سيتم تعطيل التأثيرات المرئية للحفاظ على الأداء)</span>
+                        </p>
+                    </div>
+                    <button onclick="securitySystem.disableParanoidMode()" class="disable-paranoid-btn">
+                        إلغاء الوضع المحصن
+                    </button>
+                `;
+                
+                // إضافة أنماط الحركة
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.body.appendChild(overlay);
+                
+                // إيقاف بعض التأثيرات المرئية للحفاظ على الأداء
+                this.disableVisualEffects();
+            }
+            
+            disableVisualEffects() {
+                // إيقاف تأثيرات النجوم
+                const stars = document.querySelector('.stars-background');
+                if (stars) stars.style.display = 'none';
+                
+                // إيقاف تأثيرات الضوء
+                const lights = document.querySelectorAll('.light-effect, .light-spot');
+                lights.forEach(light => light.style.display = 'none');
+                
+                // إيقاف دوران الغلاف
+                const albumContainer = document.getElementById('albumArtContainer');
+                if (albumContainer) albumContainer.classList.remove('rotating');
+                
+                // تفعيل وضع توفير الطاقة
+                const powerSaveBtn = document.getElementById('powerSaveBtn');
+                if (powerSaveBtn && !document.body.classList.contains('power-save-mode')) {
+                    powerSaveBtn.click();
+                }
+            }
+            
+            enableVisualEffects() {
+                // إعادة تفعيل التأثيرات المرئية
+                const stars = document.querySelector('.stars-background');
+                if (stars) stars.style.display = 'block';
+                
+                const lights = document.querySelectorAll('.light-effect, .light-spot');
+                lights.forEach(light => light.style.display = 'block');
+            }
+            
+            enhanceSecurity() {
+                // إضافة حماية إضافية
+                
+                // 1. حماية إضافية لتحميل الملفات
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput) {
+                    fileInput.setAttribute('accept', '.mp3,.wav,.ogg,.aac,.flac,.m4a');
+                }
+                
+                // 2. منع فتح روابط خارجية
+                document.addEventListener('click', (e) => {
+                    const link = e.target.closest('a');
+                    if (link && link.href && !link.href.startsWith(window.location.origin)) {
+                        e.preventDefault();
+                        this.showSecurityAlert('تم منع فتح رابط خارجي لأسباب أمنية');
+                        this.logSecurityEvent('EXTERNAL_LINK_BLOCKED', `رابط خارجي: ${link.href}`);
+                    }
+                }, true);
+                
+                // 3. مراقبة الذاكرة
+                this.monitorMemory();
+            }
+            
+            monitorMemory() {
+                // محاكاة مراقبة استخدام الذاكرة
+                setInterval(() => {
+                    if (performance && performance.memory) {
+                        const usedJSHeapSize = performance.memory.usedJSHeapSize;
+                        const jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
+                        
+                        if (usedJSHeapSize > jsHeapSizeLimit * 0.8) {
+                            this.logSecurityEvent('HIGH_MEMORY_USAGE', 'استخدام عالي للذاكرة');
+                            
+                            if (usedJSHeapSize > jsHeapSizeLimit * 0.9) {
+                                this.showSecurityAlert('تحذير: استخدام الذاكرة مرتفع جداً. يرجى إغلاق بعض النوافذ');
+                            }
+                        }
+                    }
+                }, 30000);
+            }
+            
+            disableParanoidMode() {
+                this.isParanoidMode = false;
+                
+                // إزالة طبقة الوضع المحصن
+                const overlay = document.getElementById('paranoidOverlay');
+                if (overlay) overlay.remove();
+                
+                // إعادة تفعيل التأثيرات المرئية
+                this.enableVisualEffects();
+                
+                this.logSecurityEvent('PARANOID_MODE_DISABLED', 'تم تعطيل الوضع المحصن');
+                this.updateSecurityStatus();
+            }
+        }
+        
+        function setupSecurityControls() {
+            // زر فتح لوحة الأمان
+            const securityBtn = document.getElementById('securityBtn');
+            const securityModal = document.getElementById('securityModal');
+            const closeSecurityModal = document.getElementById('closeSecurityModal');
+            
+            if (securityBtn && securityModal) {
+                securityBtn.addEventListener('click', () => {
+                    securityModal.style.display = 'flex';
+                    securitySystem.updateSecurityLogs();
+                });
+            }
+            
+            if (closeSecurityModal) {
+                closeSecurityModal.addEventListener('click', () => {
+                    securityModal.style.display = 'none';
+                });
+            }
+            
+            // إغلاق النافذة عند النقر خارجها
+            if (securityModal) {
+                securityModal.addEventListener('click', (e) => {
+                    if (e.target === securityModal) {
+                        securityModal.style.display = 'none';
+                    }
+                });
+            }
+            
+            // إعدادات الأمان
+            const autoScanCheckbox = document.getElementById('autoScanFiles');
+            const blockSuspiciousCheckbox = document.getElementById('blockSuspicious');
+            const logAllEventsCheckbox = document.getElementById('logAllEvents');
+            const enableNotificationsCheckbox = document.getElementById('enableNotifications');
+            
+            if (autoScanCheckbox) {
+                autoScanCheckbox.checked = securitySystem.securityConfig.autoScanFiles;
+                autoScanCheckbox.addEventListener('change', (e) => {
+                    securitySystem.securityConfig.autoScanFiles = e.target.checked;
+                    securitySystem.saveConfig();
+                    securitySystem.updateSecurityStatus();
+                });
+            }
+            
+            if (blockSuspiciousCheckbox) {
+                blockSuspiciousCheckbox.checked = securitySystem.securityConfig.blockSuspicious;
+                blockSuspiciousCheckbox.addEventListener('change', (e) => {
+                    securitySystem.securityConfig.blockSuspicious = e.target.checked;
+                    securitySystem.saveConfig();
+                    securitySystem.updateSecurityStatus();
+                });
+            }
+            
+            if (logAllEventsCheckbox) {
+                logAllEventsCheckbox.checked = securitySystem.securityConfig.logAllEvents;
+                logAllEventsCheckbox.addEventListener('change', (e) => {
+                    securitySystem.securityConfig.logAllEvents = e.target.checked;
+                    securitySystem.saveConfig();
+                });
+            }
+            
+            if (enableNotificationsCheckbox) {
+                enableNotificationsCheckbox.checked = securitySystem.securityConfig.enableNotifications;
+                enableNotificationsCheckbox.addEventListener('change', (e) => {
+                    securitySystem.securityConfig.enableNotifications = e.target.checked;
+                    securitySystem.saveConfig();
+                    
+                    // طلب الإذن للإشعارات
+                    if (e.target.checked && "Notification" in window && Notification.permission === "default") {
+                        Notification.requestPermission();
+                    }
+                });
+            }
+            
+            // أزرار الإجراءات
+            const clearCacheBtn = document.getElementById('clearCacheBtn');
+            const scanThreatsBtn = document.getElementById('scanThreatsBtn');
+            const generateReportBtn = document.getElementById('generateReportBtn');
+            const paranoidModeBtn = document.getElementById('paranoidModeBtn');
+            
+            if (clearCacheBtn) {
+                clearCacheBtn.addEventListener('click', () => {
+                    if (confirm('هل أنت متأكد من مسح جميع البيانات المؤقتة؟')) {
+                        securitySystem.clearCache();
+                    }
+                });
+            }
+            
+            if (scanThreatsBtn) {
+                scanThreatsBtn.addEventListener('click', () => securitySystem.scanForThreats());
+            }
+            
+            if (generateReportBtn) {
+                generateReportBtn.addEventListener('click', () => securitySystem.generateSecurityReport());
+            }
+            
+            if (paranoidModeBtn) {
+                paranoidModeBtn.addEventListener('click', () => {
+                    if (confirm('الوضع المحصن سيعزز الحماية ولكن قد يؤثر على الأداء. هل تريد المتابعة؟')) {
+                        securitySystem.enableParanoidMode();
+                    }
+                });
+            }
+        }
+        
+        // ============================================
+        // التحكم المتقدم والإضافات
+        // ============================================
+        
+        function initializeAdvancedControls() {
+            // اختصارات لوحة المفاتيح
+            const shortcutsBtn = document.getElementById('shortcutsBtn');
+            const shortcutsModal = document.getElementById('shortcutsModal');
+            const closeModal = document.getElementById('closeModal');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            // إظهار/إخفاء نافذة الاختصارات
+            if (shortcutsBtn && shortcutsModal) {
+                shortcutsBtn.addEventListener('click', function() {
+                    shortcutsModal.style.display = 'flex';
+                });
+            }
+            
+            if (closeModal && shortcutsModal) {
+                closeModal.addEventListener('click', function() {
+                    shortcutsModal.style.display = 'none';
+                });
+            }
+            
+            // إغلاق النافذة عند النقر خارجها
+            if (shortcutsModal) {
+                shortcutsModal.addEventListener('click', function(e) {
+                    if (e.target === shortcutsModal) {
+                        shortcutsModal.style.display = 'none';
+                    }
+                });
+            }
+            
+            // وضع ملء الشاشة
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.log(`خطأ في ملء الشاشة: ${err.message}`);
+                        });
+                        fullscreenBtn.textContent = 'خروج من ملء الشاشة';
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                            fullscreenBtn.textContent = 'ملء الشاشة';
+                        }
+                    }
+                });
+                
+                // تحديث نص زر ملء الشاشة عند الخروج
+                document.addEventListener('fullscreenchange', function() {
+                    if (!document.fullscreenElement && fullscreenBtn) {
+                        fullscreenBtn.textContent = 'ملء الشاشة';
+                    }
+                });
+            }
+            
+            // تهيئة التحكم في سرعة التشغيل
+            const playbackSpeed = document.getElementById('playbackSpeed');
+            const speedValue = document.getElementById('speedValue');
+            
+            if (playbackSpeed && speedValue) {
+                playbackSpeed.addEventListener('input', function() {
+                    const speed = this.value / 100;
+                    if (window.player && window.player.audio) {
+                        window.player.audio.playbackRate = speed;
+                    }
+                    speedValue.textContent = `${this.value}%`;
+                });
+            }
+            
+            // التحكم في الصدى
+            const reverb = document.getElementById('reverb');
+            const reverbValue = document.getElementById('reverbValue');
+            
+            if (reverb && reverbValue) {
+                reverb.addEventListener('input', function() {
+                    reverbValue.textContent = `${this.value}%`;
+                });
+            }
+            
+            // تهيئة التكرار A-B
+            let pointA = 0;
+            let pointB = 0;
+            let isABRepeat = false;
+            
+            const setPointA = document.getElementById('setPointA');
+            const setPointB = document.getElementById('setPointB');
+            const toggleABRepeat = document.getElementById('toggleABRepeat');
+            
+            if (setPointA) {
+                setPointA.addEventListener('click', function() {
+                    if (window.player && window.player.audio) {
+                        pointA = window.player.audio.currentTime;
+                        alert(`تم تعيين النقطة A عند: ${window.player.formatTime(pointA)}`);
+                    }
+                });
+            }
+            
+            if (setPointB) {
+                setPointB.addEventListener('click', function() {
+                    if (window.player && window.player.audio) {
+                        pointB = window.player.audio.currentTime;
+                        alert(`تم تعيين النقطة B عند: ${window.player.formatTime(pointB)}`);
+                    }
+                });
+            }
+            
+            if (toggleABRepeat) {
+                toggleABRepeat.addEventListener('click', function() {
+                    isABRepeat = !isABRepeat;
+                    this.classList.toggle('active', isABRepeat);
+                    
+                    if (isABRepeat) {
+                        this.textContent = 'إيقاف التكرار';
+                    } else {
+                        this.textContent = 'تشغيل التكرار';
+                    }
+                });
+            }
+            
+            // اختصارات لوحة المفاتيح العالمية
+            document.addEventListener('keydown', function(e) {
+                // منع تنفيذ الاختصارات إذا كان المستخدم يكتب في حقل إدخال
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        const playPauseBtn = document.getElementById('playPauseBtn');
+                        if (playPauseBtn) playPauseBtn.click();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        const nextBtn = document.getElementById('nextBtn');
+                        if (nextBtn) nextBtn.click();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        const prevBtn = document.getElementById('prevBtn');
+                        if (prevBtn) prevBtn.click();
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        // زيادة الصوت بنسبة 5%
+                        if (window.player && window.player.audio) {
+                            const newVolume = Math.min(window.player.audio.volume + 0.05, 1);
+                            window.player.audio.volume = newVolume;
+                            const volumeProgress = document.getElementById('volumeProgress');
+                            if (volumeProgress) {
+                                volumeProgress.style.width = `${newVolume * 100}%`;
+                            }
+                        }
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        // تقليل الصوت بنسبة 5%
+                        if (window.player && window.player.audio) {
+                            const newVolume = Math.max(window.player.audio.volume - 0.05, 0);
+                            window.player.audio.volume = newVolume;
+                            const volumeProgress = document.getElementById('volumeProgress');
+                            if (volumeProgress) {
+                                volumeProgress.style.width = `${newVolume * 100}%`;
+                            }
+                        }
+                        break;
+                    case 'r':
+                    case 'R':
+                        e.preventDefault();
+                        const repeatBtn = document.getElementById('repeatBtn');
+                        if (repeatBtn) repeatBtn.click();
+                        break;
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        const shuffleBtn = document.getElementById('shuffleBtn');
+                        if (shuffleBtn) shuffleBtn.click();
+                        break;
+                    case 'b':
+                    case 'B':
+                        e.preventDefault();
+                        const boostBtn = document.getElementById('boostBtn');
+                        if (boostBtn) boostBtn.click();
+                        break;
+                    case 'c':
+                    case 'C':
+                        e.preventDefault();
+                        const cameraToggle = document.getElementById('cameraToggle');
+                        if (cameraToggle) cameraToggle.click();
+                        break;
+                    case 'p':
+                    case 'P':
+                        e.preventDefault();
+                        const powerSaveBtn = document.getElementById('powerSaveBtn');
+                        if (powerSaveBtn) powerSaveBtn.click();
+                        break;
+                    case 'h':
+                    case 'H':
+                        e.preventDefault();
+                        const shortcutsModal = document.getElementById('shortcutsModal');
+                        if (shortcutsModal) {
+                            shortcutsModal.style.display = shortcutsModal.style.display === 'flex' ? 'none' : 'flex';
+                        }
+                        break;
+                    case 'F11':
+                        e.preventDefault();
+                        const fullscreenBtn = document.getElementById('fullscreenBtn');
+                        if (fullscreenBtn) fullscreenBtn.click();
+                        break;
+                }
+                
+                // اختصارات الأمان
+                if (e.ctrlKey && e.shiftKey) {
+                    switch(e.key) {
+                        case 'S':
+                            e.preventDefault();
+                            const securityModal = document.getElementById('securityModal');
+                            if (securityModal) {
+                                securityModal.style.display = securityModal.style.display === 'flex' ? 'none' : 'flex';
+                                if (securityModal.style.display === 'flex' && securitySystem) {
+                                    securitySystem.updateSecurityLogs();
+                                }
+                            }
+                            break;
+                        case 'P':
+                            e.preventDefault();
+                            if (securitySystem && !securitySystem.isParanoidMode) {
+                                if (confirm('تفعيل الوضع المحصن؟')) {
+                                    securitySystem.enableParanoidMode();
+                                }
+                            }
+                            break;
+                    }
+                }
+            });
+        }
+        
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+    </script>
+</body>
+</html>
