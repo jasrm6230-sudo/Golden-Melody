@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المشغل الذهبي الفاخر - الإصدار المحصن</title>
     <style>
-        /* =========================================== */
-        /* أنماط CSS الأساسية للمشغل الذهبي الفاخر */
-        /* =========================================== */
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +23,6 @@
             overflow-x: hidden;
         }
 
-        /* أنماط توفير الطاقة */
         body.power-save-mode {
             background: #0c0c0c;
             perspective: none;
@@ -114,7 +110,6 @@
             transform: translateX(-50%) translateY(-2px);
         }
 
-        /* النجوم في الخلفية */
         .stars-background {
             position: fixed;
             top: 0;
@@ -136,7 +131,6 @@
             50% { opacity: 1; }
         }
 
-        /* تأثيرات الضوء */
         .light-effects {
             position: fixed;
             width: 100%;
@@ -223,7 +217,6 @@
             100% { transform: translate(0, 0) scale(1); }
         }
 
-        /* الحاوية الرئيسية */
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -234,7 +227,6 @@
             transform-style: preserve-3d;
         }
 
-        /* قسم المشغل */
         .player-section {
             flex: 1;
             min-width: 500px;
@@ -243,7 +235,6 @@
             transition: transform 1s ease;
         }
 
-        /* مشغل الموسيقى */
         .music-player {
             width: 100%;
             background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
@@ -270,7 +261,6 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        /* رأس المشغل */
         .player-header {
             background: linear-gradient(135deg, #006400 0%, #008000 100%);
             padding: 25px;
@@ -306,7 +296,6 @@
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
 
-        /* غلاف الألبوم */
         .album-art-container {
             position: relative;
             width: 240px;
@@ -373,7 +362,6 @@
             pointer-events: none;
         }
 
-        /* معلومات الأغنية */
         .song-info {
             text-align: center;
             padding: 0 25px;
@@ -394,7 +382,6 @@
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
         }
 
-        /* شريط التقدم */
         .progress-area {
             padding: 0 30px;
             margin-bottom: 25px;
@@ -447,7 +434,6 @@
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         }
 
-        /* عناصر التحكم */
         .controls {
             display: flex;
             justify-content: center;
@@ -504,7 +490,6 @@
             transform: scale(1.1);
         }
 
-        /* أزرار التحميل */
         .file-input, .image-input {
             display: none;
         }
@@ -532,7 +517,6 @@
             color: #FFD700;
         }
 
-        /* أزرار التكرار والعشوائي */
         .repeat-btn.active, .shuffle-btn.active {
             color: #00cc00;
             text-shadow: 0 0 15px rgba(0, 204, 0, 0.8);
@@ -541,7 +525,6 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        /* التحكم في الصوت */
         .volume-control {
             display: flex;
             align-items: center;
@@ -576,7 +559,6 @@
             box-shadow: 0 0 10px rgba(0, 100, 0, 0.6);
         }
 
-        /* قائمة التشغيل */
         .playlist {
             max-height: 200px;
             overflow-y: auto;
@@ -635,7 +617,6 @@
             box-shadow: 0 0 8px rgba(0, 100, 0, 0.5);
         }
 
-        /* عد الأغاني */
         .songs-count {
             text-align: center;
             padding: 12px;
@@ -644,7 +625,6 @@
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         }
 
-        /* المؤشر البصري */
         .visualizer-container {
             width: 100%;
             height: 90px;
@@ -670,7 +650,6 @@
             box-shadow: 0 0 8px rgba(0, 100, 0, 0.5);
         }
 
-        /* مؤشر الباس */
         .bass-indicator {
             width: 100%;
             height: 6px;
@@ -694,7 +673,6 @@
             box-shadow: 0 0 10px rgba(0, 100, 0, 0.6);
         }
 
-        /* تأثيرات الظلال */
         .shadow-layer {
             position: absolute;
             width: 90%;
@@ -713,7 +691,6 @@
             100% { opacity: 0.8; transform: scale(1.05); }
         }
 
-        /* التألق الذهبي */
         .gold-glow {
             position: absolute;
             top: -2px;
@@ -731,7 +708,6 @@
             opacity: 1;
         }
 
-        /* أزرار الإعدادات الصوتية */
         .audio-controls {
             display: flex;
             justify-content: center;
@@ -763,7 +739,6 @@
             color: #FFD700;
         }
 
-        /* تأثير إضاءة المشغل */
         .player-glow {
             position: absolute;
             top: -10px;
@@ -777,7 +752,6 @@
             filter: blur(20px);
         }
 
-        /* أزرار التحكم العلوية */
         .camera-toggle, .boost-btn {
             position: fixed;
             top: 20px;
@@ -816,7 +790,6 @@
             color: #FFD700;
         }
 
-        /* تأثيرات الحركة */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -827,7 +800,6 @@
             animation: pulse 0.5s infinite;
         }
 
-        /* قسم التحكم المتقدم */
         .advanced-section {
             flex: 1;
             min-width: 500px;
@@ -857,7 +829,6 @@
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
         
-        /* المعادل 18-نطاقات */
         .eq-container {
             margin: 20px 0;
             overflow-x: auto;
@@ -875,34 +846,72 @@
             display: flex;
             justify-content: space-between;
             margin: 20px 0;
-            min-width: 800px;
+            min-width: 900px;
             padding: 0 10px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #006400 #1a1a1a;
+        }
+        
+        .eq-bands-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .eq-bands-container::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+        
+        .eq-bands-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #006400, #00cc00);
+            border-radius: 4px;
         }
         
         .eq-slider {
             -webkit-appearance: slider-vertical;
             width: 25px;
-            height: 100px;
-            background: linear-gradient(to top, #006400, #00cc00);
+            height: 120px;
+            background: linear-gradient(to top, #006400, #1a1a1a, #660000);
             border-radius: 12px;
             outline: none;
             margin: 10px 0;
+            cursor: pointer;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .eq-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #FFD700;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+        
+        .eq-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #FFD700;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            border: none;
         }
         
         .eq-freq {
-            font-size: 10px;
+            font-size: 9px;
             color: #FFD700;
             margin-top: 5px;
             text-align: center;
         }
         
         .eq-value {
-            font-size: 10px;
+            font-size: 9px;
             color: #fff;
             margin-top: 5px;
         }
         
-        /* إعدادات مسبقة للمعادل */
         .preset-buttons {
             display: flex;
             justify-content: center;
@@ -927,7 +936,6 @@
             color: #FFD700;
         }
         
-        /* محلل الطيف */
         .analysis-panel {
             background: rgba(10, 10, 10, 0.8);
             border-radius: 10px;
@@ -946,7 +954,6 @@
             border: 1px solid rgba(255, 215, 0, 0.2);
         }
         
-        /* الإعدادات المتقدمة */
         .advanced-settings {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -966,7 +973,6 @@
             margin: 10px 0;
         }
 
-        /* إعدادات جودة الصوت */
         .quality-settings {
             background: rgba(15, 15, 15, 0.7);
             padding: 15px;
@@ -993,7 +999,6 @@
             color: #e0e0e0;
         }
         
-        /* نظام الصوت المحسن */
         .audio-enhancement-controls {
             background: rgba(15, 15, 15, 0.7);
             padding: 15px;
@@ -1031,7 +1036,6 @@
             margin-right: 5px;
         }
         
-        /* الإعدادات المسبقة للصوت المحسن */
         .enhancement-presets {
             display: flex;
             gap: 8px;
@@ -1057,7 +1061,6 @@
             color: #FFD700;
         }
         
-        /* مؤشر جودة الصوت */
         .quality-indicator {
             display: flex;
             align-items: center;
@@ -1082,9 +1085,6 @@
             transition: width 0.3s ease;
         }
 
-        /* =========================================== */
-        /* أنماط نظام الأمان الجديد */
-        /* =========================================== */
         .security-btn {
             position: fixed;
             bottom: 80px;
@@ -1111,7 +1111,6 @@
             transform: translateY(-2px);
         }
 
-        /* نافذة الأمان */
         .security-modal {
             display: none;
             position: fixed;
@@ -1159,7 +1158,6 @@
             cursor: pointer;
         }
 
-        /* حالة الأمان */
         .security-status {
             margin-bottom: 25px;
         }
@@ -1189,7 +1187,6 @@
             font-weight: 600;
         }
 
-        /* إجراءات الأمان */
         .security-actions {
             margin-bottom: 25px;
         }
@@ -1219,7 +1216,6 @@
             transform: translateY(-2px);
         }
 
-        /* إعدادات الأمان */
         .security-settings {
             margin-bottom: 25px;
         }
@@ -1247,7 +1243,6 @@
             margin-left: 10px;
         }
 
-        /* سجلات الأمان */
         .security-logs h4 {
             color: #e0e0e0;
             margin-bottom: 10px;
@@ -1278,7 +1273,6 @@
             border-radius: 4px;
         }
 
-        /* طبقة الوضع المحصن */
         .paranoid-overlay {
             position: fixed;
             top: 0;
@@ -1335,7 +1329,6 @@
             box-shadow: 0 0 30px rgba(0, 100, 0, 0.7);
         }
 
-        /* اختصارات لوحة المفاتيح */
         .shortcuts-modal {
             display: none;
             position: fixed;
@@ -1398,7 +1391,6 @@
             font-weight: bold;
         }
         
-        /* أزرار إضافية */
         .shortcuts-btn, .fullscreen-btn {
             position: fixed;
             background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
@@ -1432,7 +1424,6 @@
             transform: translateY(-2px);
         }
         
-        /* تنسيقات إضافية */
         .format-support {
             text-align: center;
             color: #e0e0e0;
@@ -1441,7 +1432,6 @@
             opacity: 0.8;
         }
 
-        /* تأثيرات إضافية */
         .active-glow {
             box-shadow: 0 0 20px rgba(0, 204, 0, 0.7) !important;
         }
@@ -1450,7 +1440,6 @@
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
         }
 
-        /* تحسينات للأجهزة المحمولة */
         @media (max-width: 1100px) {
             .main-container {
                 flex-direction: column;
@@ -1489,7 +1478,6 @@
             }
         }
 
-        /* وضع ملء الشاشة */
         body:fullscreen {
             padding: 0;
         }
@@ -1502,46 +1490,137 @@
             padding: 0;
         }
 
-        /* تأثيرات الحركة للوضع المحصن */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* تحسينات للشاشات الصغيرة - التصحيح 7 */
+        @media (max-width: 768px) {
+            .player-section, .advanced-section {
+                min-width: 100% !important;
+            }
+            
+            .album-art-container {
+                width: 180px !important;
+                height: 180px !important;
+            }
+            
+            .controls {
+                gap: 15px !important;
+                padding: 15px !important;
+            }
+            
+            .play-pause {
+                width: 60px !important;
+                height: 60px !important;
+                font-size: 24px !important;
+            }
+            
+            .control-btn {
+                padding: 12px !important;
+                font-size: 18px !important;
+            }
+            
+            .song-title {
+                font-size: 20px !important;
+            }
+            
+            .player-header h1 {
+                font-size: 22px !important;
+            }
+            
+            .eq-bands-container {
+                overflow-x: auto !important;
+                padding-bottom: 10px !important;
+            }
+            
+            .eq-slider {
+                height: 60px !important;
+                width: 15px !important;
+            }
+            
+            .camera-toggle, .boost-btn, .power-save-btn, .shortcuts-btn, .fullscreen-btn, .security-btn {
+                font-size: 14px !important;
+                padding: 10px 15px !important;
+                white-space: nowrap;
+            }
+            
+            .camera-toggle {
+                left: 10px !important;
+                top: 10px !important;
+            }
+            
+            .boost-btn {
+                right: 10px !important;
+                top: 10px !important;
+            }
+            
+            .security-btn {
+                bottom: 100px !important;
+                right: 10px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px !important;
+            }
+            
+            .music-player {
+                border-radius: 15px !important;
+            }
+            
+            .player-header {
+                padding: 15px !important;
+            }
+            
+            .album-art-container {
+                width: 150px !important;
+                height: 150px !important;
+                margin: 20px auto !important;
+            }
+            
+            .progress-area {
+                padding: 0 15px !important;
+            }
+            
+            .file-label, .image-label {
+                margin: 0 15px 15px !important;
+                padding: 12px !important;
+                font-size: 14px !important;
+            }
+            
+            .playlist {
+                margin: 0 15px 15px !important;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- النجوم في الخلفية -->
     <div class="stars-background" id="starsBackground"></div>
     
-    <!-- تأثيرات الضوء الثابتة -->
     <div class="light-effects">
         <div class="light-spot"></div>
         <div class="light-spot"></div>
         <div class="light-spot"></div>
     </div>
     
-    <!-- تأثيرات الإضاءة -->
     <div class="light-effect"></div>
     <div class="light-effect"></div>
     <div class="light-effect"></div>
     
-    <!-- أزرار التحكم العلوية -->
     <button class="camera-toggle" id="cameraToggle">تشغيل دوران الكاميرا</button>
     <button class="boost-btn" id="boostBtn">تضخيم الصوت</button>
     
-    <!-- زر توفير الطاقة -->
     <button class="power-save-btn" id="powerSaveBtn">توفير الطاقة</button>
     
-    <!-- زر عرض اختصارات لوحة المفاتيح -->
     <button class="shortcuts-btn" id="shortcutsBtn">اختصارات لوحة المفاتيح</button>
     
-    <!-- زر وضع ملء الشاشة -->
     <button class="fullscreen-btn" id="fullscreenBtn">ملء الشاشة</button>
     
-    <!-- زر التحكم الأمني -->
     <button class="security-btn" id="securityBtn">🔒 الأمان</button>
     
-    <!-- نافذة اختصارات لوحة المفاتيح -->
     <div class="shortcuts-modal" id="shortcutsModal">
         <div class="shortcuts-content">
             <div class="shortcuts-header">
@@ -1609,7 +1688,6 @@
         </div>
     </div>
     
-    <!-- نافذة لوحة الأمان -->
     <div class="security-modal" id="securityModal">
         <div class="security-content">
             <div class="security-header">
@@ -1674,26 +1752,19 @@
             <div class="security-logs">
                 <h4>سجل الأحداث الأمنية:</h4>
                 <div class="logs-container" id="securityLogs">
-                    <!-- سيتم عرض الأحداث هنا -->
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- الحاوية الرئيسية -->
     <div class="main-container">
-        <!-- قسم المشغل (على اليمين) -->
         <div class="player-section" id="playerSection">
-            <!-- طبقة الظلال -->
             <div class="shadow-layer"></div>
             
-            <!-- التألق الذهبي -->
             <div class="gold-glow"></div>
             
-            <!-- تأثير الإضاءة -->
             <div class="player-glow"></div>
             
-            <!-- مشغل الموسيقى -->
             <div class="music-player">
                 <div class="player-header">
                     <h1 class="glow-text">المشغل الذهبي الفاخر</h1>
@@ -1705,7 +1776,6 @@
                     <div class="album-art-shadow"></div>
                 </div>
                 
-                <!-- زر تحميل صورة الغلاف -->
                 <label for="imageInput" class="image-label glow-text">
                     اختر صورة غلاف
                 </label>
@@ -1716,12 +1786,10 @@
                     <p class="song-artist glow-text" id="songArtist">فنان غير معروف</p>
                 </div>
                 
-                <!-- مؤشر الموجة الصوتية -->
                 <div class="visualizer-container">
                     <div class="visualizer" id="visualizer"></div>
                 </div>
                 
-                <!-- مؤشر الباس -->
                 <div class="bass-indicator">
                     <div class="bass-level" id="bassLevel"></div>
                 </div>
@@ -1754,7 +1822,6 @@
                     </button>
                 </div>
                 
-                <!-- أزرار الإعدادات الصوتية -->
                 <div class="audio-controls">
                     <button class="audio-preset" data-preset="bass">جهير مكثف</button>
                     <button class="audio-preset active" data-preset="normal">عادي</button>
@@ -1778,17 +1845,14 @@
                 <div class="songs-count" id="songsCount">عدد الأغاني: 0</div>
                 
                 <div class="playlist" id="playlist">
-                    <!-- سيتم إضافة الأغاني هنا -->
                 </div>
             </div>
         </div>
         
-        <!-- قسم التحكم المتقدم (على اليسار) -->
         <div class="advanced-section">
             <div class="advanced-controls">
                 <h3>التحكم الصوتي المتقدم</h3>
                 
-                <!-- نظام الصوت المحسن -->
                 <div class="audio-enhancement-controls">
                     <h4 style="color: #FFD700;">نظام تضخيم الصوت الذكي</h4>
                     
@@ -1810,7 +1874,6 @@
                     </div>
                     <input type="range" class="enhancement-slider" id="bassEnhancementSlider" min="0" max="100" value="0">
                     
-                    <!-- مؤشر جودة الصوت -->
                     <div class="quality-indicator">
                         <span>🎵 جودة الصوت:</span>
                         <div class="quality-bar">
@@ -1827,7 +1890,6 @@
                     </div>
                 </div>
                 
-                <!-- إعدادات جودة الصوت -->
                 <div class="quality-settings">
                     <h4 style="color: #FFD700;">إعدادات جودة الصوت</h4>
                     <label>جودة الصوت:</label>
@@ -1848,14 +1910,11 @@
                     </label>
                 </div>
                 
-                <!-- المعادل 18-نطاقات -->
                 <div class="eq-container">
                     <h4 style="color: #e0e0e0; text-align: center;">المعادل الاحترافي (18 نطاق)</h4>
                     <div class="eq-bands-container" id="eqBands">
-                        <!-- سيتم إضافة شرائح المعادل هنا -->
                     </div>
                     
-                    <!-- الإعدادات المسبقة -->
                     <div class="preset-buttons">
                         <button class="preset-btn active" data-preset="flat">مسطح</button>
                         <button class="preset-btn" data-preset="bass">جهير مكثف</button>
@@ -1869,15 +1928,12 @@
                     </div>
                 </div>
                 
-                <!-- محلل الطيف -->
                 <div class="analysis-panel">
                     <h4 style="color: #e0e0e0; text-align: center;">محلل الطيف الحقيقي</h4>
                     <div class="spectrum-display" id="spectrumDisplay">
-                        <!-- سيتم عرض الطيف هنا -->
                     </div>
                 </div>
                 
-                <!-- الإعدادات المتقدمة -->
                 <div class="advanced-settings">
                     <div class="setting-group">
                         <h5 style="color: #FFD700;">التحكم في التشغيل</h5>
@@ -1909,31 +1965,13 @@
     </div>
 
     <script>
-        // ============================================
-        // نظام المشغل الذهبي الفاخر مع الأمان المتكامل
-        // ============================================
-        
-        // تهيئة الصفحة
         document.addEventListener('DOMContentLoaded', function() {
-            // إنشاء النجوم في الخلفية
             createStars();
-            
-            // تهيئة نظام المشغل
             initializePlayer();
-            
-            // تهيئة نظام الأمان
             initializeSecurity();
-            
-            // تهيئة التحكم المتقدم
             initializeAdvancedControls();
-            
-            // طلب إذن الإشعارات
             requestNotificationPermission();
         });
-        
-        // ============================================
-        // وظائف المشغل الأساسية
-        // ============================================
         
         function createStars() {
             const starsBackground = document.getElementById('starsBackground');
@@ -1960,7 +1998,6 @@
         }
         
         function initializePlayer() {
-            // العناصر الأساسية
             const audio = new Audio();
             const playPauseBtn = document.getElementById('playPauseBtn');
             const prevBtn = document.getElementById('prevBtn');
@@ -1984,8 +2021,9 @@
             const cameraToggle = document.getElementById('cameraToggle');
             const boostBtn = document.getElementById('boostBtn');
             const powerSaveBtn = document.getElementById('powerSaveBtn');
+            const visualizer = document.getElementById('visualizer');
+            const bassLevel = document.getElementById('bassLevel');
             
-            // تهيئة المتغيرات
             let songs = [];
             let currentSongIndex = 0;
             let isPlaying = false;
@@ -2000,7 +2038,24 @@
             let rotationAngle = 0;
             let cameraRotationId = null;
             
-            // زر توفير الطاقة
+            // المتغيرات الجديدة للمحلل الطيفي والمعادل
+            let audioContext = null;
+            let analyser = null;
+            let source = null;
+            let eqFilters = [];
+            let spectrumAnalyser = null;
+            let spectrumDataArray = null;
+            let dataArray = null;
+            let animationFrameId = null;
+            let objectURLs = []; // إضافة متغير لتخزين الـ URLs
+            
+            // تغيير الصورة الافتراضية للألبوم
+            albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3CradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' style='stop-color:%23006400;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23004d00;stop-opacity:1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='240' height='240' fill='url(%23grad)'/%3E%3Ccircle cx='120' cy='120' r='80' fill='none' stroke='%23FFD700' stroke-width='3'/%3E%3Ccircle cx='120' cy='120' r='60' fill='none' stroke='%23FFD700' stroke-width='2' opacity='0.7'/%3E%3C/svg%3E";
+            
+            // تهيئة الصوت
+            audio.volume = 0.7;
+            volumeProgress.style.width = '70%';
+            
             powerSaveBtn.addEventListener('click', function() {
                 isPowerSaveMode = !isPowerSaveMode;
                 document.body.classList.toggle('power-save-mode', isPowerSaveMode);
@@ -2009,20 +2064,26 @@
                     powerSaveBtn.textContent = 'وضع العادي';
                     powerSaveBtn.classList.add('active');
                     
-                    // إيقاف دوران الكاميرا إذا كان شغالاً
                     if (isCameraRotating) {
                         toggleCameraRotation();
                     }
                     
-                    // إيقاف دوران الغلاف
                     stopAlbumRotation();
+                    
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
                 } else {
                     powerSaveBtn.textContent = 'توفير الطاقة';
                     powerSaveBtn.classList.remove('active');
+                    
+                    if (isPlaying) {
+                        startVisualizer();
+                    }
                 }
             });
             
-            // تشغيل/إيقاف الموسيقى
             playPauseBtn.addEventListener('click', function() {
                 if (songs.length === 0) {
                     alert('يرجى إضافة أغنية أولاً');
@@ -2034,16 +2095,29 @@
                     playPauseBtn.innerHTML = '<i>▶️</i>';
                     playPauseBtn.classList.remove('active-glow');
                     stopAlbumRotation();
+                    
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
                 } else {
-                    audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+                    audio.play().catch(e => {
+                        console.log("خطأ في التشغيل:", e);
+                        if (e.name === 'NotAllowedError') {
+                            alert('يرجى التفاعل مع الصفحة أولاً لتشغيل الصوت');
+                        }
+                    });
                     playPauseBtn.innerHTML = '<i>⏸️</i>';
                     playPauseBtn.classList.add('active-glow');
                     startAlbumRotation();
+                    
+                    if (!isPowerSaveMode) {
+                        startVisualizer();
+                    }
                 }
                 isPlaying = !isPlaying;
             });
             
-            // التكرار
             repeatBtn.addEventListener('click', function() {
                 isRepeating = !isRepeating;
                 repeatBtn.classList.toggle('active', isRepeating);
@@ -2054,7 +2128,6 @@
                 }
             });
             
-            // العشوائي
             shuffleBtn.addEventListener('click', function() {
                 isShuffling = !isShuffling;
                 shuffleBtn.classList.toggle('active', isShuffling);
@@ -2065,7 +2138,6 @@
                 }
             });
             
-            // التقديم السريع
             progressBar.addEventListener('click', function(e) {
                 if (songs.length === 0 || isNaN(audio.duration)) return;
                 
@@ -2076,21 +2148,17 @@
                 audio.currentTime = (clickedOffsetX / progressWidth) * songDuration;
             });
             
-            // تحديث شريط التقدم
             audio.addEventListener('timeupdate', function() {
                 if (songs.length === 0 || isNaN(audio.duration)) return;
                 
                 const currentTime = audio.currentTime;
                 const duration = audio.duration;
                 
-                // تحديث شريط التقدم
                 const progressPercent = (currentTime / duration) * 100;
                 progress.style.width = `${progressPercent}%`;
                 
-                // تحديث الوقت
                 currentTimeEl.textContent = formatTime(currentTime);
                 
-                // إذا انتهت الأغنية
                 if (currentTime >= duration - 0.5) {
                     if (isRepeating) {
                         audio.currentTime = 0;
@@ -2101,14 +2169,37 @@
                 }
             });
             
-            // عندما يتم تحميل بيانات الأغنية
             audio.addEventListener('loadedmetadata', function() {
                 if (!isNaN(audio.duration)) {
                     durationEl.textContent = formatTime(audio.duration);
                 }
             });
             
-            // التحكم في الصوت
+            audio.addEventListener('ended', function() {
+                if (isRepeating) {
+                    audio.currentTime = 0;
+                    audio.play();
+                } else {
+                    playNextSong();
+                }
+            });
+            
+            // إضافة مستمع لحدث error
+            audio.addEventListener('error', function(e) {
+                console.error('خطأ في تشغيل الصوت:', e);
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i>▶️</i>';
+                playPauseBtn.classList.remove('active-glow');
+                stopAlbumRotation();
+                
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
+                alert('حدث خطأ في تشغيل الملف الصوتي. يرجى التحقق من الملف وتجربة مرة أخرى.');
+            });
+            
             volumeSlider.addEventListener('click', function(e) {
                 const volumeWidth = this.clientWidth;
                 const clickedOffsetX = e.offsetX;
@@ -2119,30 +2210,40 @@
                 volumeProgress.style.width = `${volumeLevel * 100}%`;
             });
             
-            // اختيار الملفات الصوتية
+            // تعديل event handler لـ fileInput مع تحسين إدارة الذاكرة
             fileInput.addEventListener('change', function(e) {
                 const files = e.target.files;
                 if (files.length === 0) return;
                 
-                // مسح القائمة القديمة إذا كانت فارغة
+                // تحرير الـ URLs القديمة
+                objectURLs.forEach(url => {
+                    try {
+                        URL.revokeObjectURL(url);
+                    } catch (e) {
+                        console.warn('خطأ في تحرير URL:', e);
+                    }
+                });
+                objectURLs = [];
+                
                 if (songs.length === 0) {
                     playlist.innerHTML = '';
                 }
                 
                 const startIndex = songs.length;
+                const newSongs = [];
                 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const url = URL.createObjectURL(file);
+                    objectURLs.push(url); // تخزين الـ URL للإدارة
                     
-                    songs.push({
-                        title: file.name.replace(/\.[^/.]+$/, ""), // إزالة الامتداد
+                    newSongs.push({
+                        title: file.name.replace(/\.[^/.]+$/, ""),
                         artist: "فنان غير معروف",
                         src: url,
                         cover: ""
                     });
                     
-                    // إضافة الأغنية إلى قائمة التشغيل
                     const playlistItem = document.createElement('div');
                     playlistItem.className = 'playlist-item';
                     playlistItem.innerHTML = `
@@ -2160,21 +2261,23 @@
                         playPauseBtn.classList.add('active-glow');
                         startAlbumRotation();
                         
-                        // تحديث العنصر النشط في قائمة التشغيل
                         document.querySelectorAll('.playlist-item').forEach(item => {
                             item.classList.remove('active');
                         });
                         playlistItem.classList.add('active');
+                        
+                        if (!isPowerSaveMode) {
+                            startVisualizer();
+                        }
                     });
                     
                     playlist.appendChild(playlistItem);
                 }
                 
-                // تحديث عدد الأغاني
+                songs.push(...newSongs);
                 updateSongsCount();
                 
-                // إذا كانت هذه أول أغنية يتم تحميلها، قم بتشغيلها تلقائياً
-                if (songs.length === files.length) {
+                if (songs.length === newSongs.length) {
                     currentSongIndex = 0;
                     loadSong(currentSongIndex);
                     if (playlist.children.length > 0) {
@@ -2182,11 +2285,9 @@
                     }
                 }
                 
-                // إعادة تعيين حقل الإدخال للسماح باختيار نفس الملفات مرة أخرى
                 fileInput.value = '';
             });
             
-            // اختيار صورة الغلاف
             imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2196,7 +2297,6 @@
                     const customAlbumImage = e.target.result;
                     albumImage.src = customAlbumImage;
                     
-                    // حفظ الصورة للأغنية الحالية إذا كانت هناك أغنية نشطة
                     if (songs.length > 0 && currentSongIndex < songs.length) {
                         songs[currentSongIndex].cover = customAlbumImage;
                     }
@@ -2204,10 +2304,8 @@
                 reader.readAsDataURL(file);
             });
             
-            // الأغنية التالية
             nextBtn.addEventListener('click', playNextSong);
             
-            // الأغنية السابقة
             prevBtn.addEventListener('click', function() {
                 if (songs.length === 0) return;
                 
@@ -2224,42 +2322,32 @@
                 updatePlaylistActive();
             });
             
-            // تدوير الكاميرا
             cameraToggle.addEventListener('click', toggleCameraRotation);
             
-            // تضخيم الصوت
             boostBtn.addEventListener('click', function() {
                 if (isBoosted) {
-                    // إلغاء التضخيم
                     audio.volume = originalVolume;
                     boostBtn.classList.remove('active');
                     isBoosted = false;
                 } else {
-                    // تطبيق التضخيم
                     audio.volume = Math.min(1.0, originalVolume * 1.8);
                     boostBtn.classList.add('active');
                     isBoosted = true;
                 }
             });
             
-            // تطبيق الإعدادات الصوتية المسبقة
             document.querySelectorAll('.audio-preset').forEach(preset => {
                 preset.addEventListener('click', function() {
                     const presetType = this.dataset.preset;
                     
-                    // إزالة النشط من جميع الأزرار
                     document.querySelectorAll('.audio-preset').forEach(btn => btn.classList.remove('active'));
-                    // إضافة النشط للزر المحدد
                     this.classList.add('active');
                     
-                    // تطبيق الإعدادات بناءً على النوع
                     switch(presetType) {
                         case 'bass':
-                            // تطبيق تضخيم للباس
                             audio.volume = Math.min(1.0, originalVolume * 1.3);
                             break;
                         case 'treble':
-                            // تطبيق تضخيم للحدة
                             audio.volume = Math.min(1.0, originalVolume * 1.1);
                             break;
                         case 'normal':
@@ -2269,10 +2357,6 @@
                     }
                 });
             });
-            
-            // ============================================
-            // وظائف المساعدة للمشغل
-            // ============================================
             
             function playNextSong() {
                 if (songs.length === 0) return;
@@ -2302,21 +2386,40 @@
                 if (index < 0 || index >= songs.length) return;
                 
                 const song = songs[index];
-                audio.src = song.src;
-                songTitle.textContent = song.title;
-                songArtist.textContent = song.artist;
                 
-                if (song.cover) {
-                    albumImage.src = song.cover;
-                } else {
-                    // صورة افتراضية إذا لم تكن هناك صورة غلاف
-                    albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Crect width='240' height='240' fill='%23006400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='24' fill='%23FFD700'%3E%D8%BA%D9%84%D8%A7%D9%81%3C/text%3E%3C/svg%3E";
+                // إيقاف الصوت الحالي أولاً
+                audio.pause();
+                audio.currentTime = 0;
+                
+                try {
+                    audio.src = song.src;
+                    songTitle.textContent = song.title;
+                    songArtist.textContent = song.artist;
+                    
+                    if (song.cover) {
+                        albumImage.src = song.cover;
+                    } else {
+                        albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3CradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' style='stop-color:%23006400;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23004d00;stop-opacity:1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='240' height='240' fill='url(%23grad)'/%3E%3Ccircle cx='120' cy='120' r='80' fill='none' stroke='%23FFD700' stroke-width='3'/%3E%3Ccircle cx='120' cy='120' r='60' fill='none' stroke='%23FFD700' stroke-width='2' opacity='0.7'/%3E%3C/svg%3E";
+                    }
+                    
+                    progress.style.width = '0%';
+                    currentTimeEl.textContent = '0:00';
+                    durationEl.textContent = '0:00';
+                    
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                    
+                    if (isPlaying && !isPowerSaveMode) {
+                        setTimeout(() => {
+                            startVisualizer();
+                        }, 100);
+                    }
+                } catch (error) {
+                    console.error('خطأ في تحميل الأغنية:', error);
+                    alert('حدث خطأ في تحميل الملف الصوتي');
                 }
-                
-                // إعادة تعيين شريط التقدم
-                progress.style.width = '0%';
-                currentTimeEl.textContent = '0:00';
-                durationEl.textContent = '0:00';
             }
             
             function updatePlaylistActive() {
@@ -2347,9 +2450,11 @@
                 }
             }
             
+            // تعديل دالة toggleCameraRotation
             function toggleCameraRotation() {
                 if (isPowerSaveMode) {
                     alert("وضع توفير الطاقة مفعل. لا يمكن تشغيل دوران الكاميرا.");
+                    cameraToggle.classList.remove('active');
                     return;
                 }
                 
@@ -2361,41 +2466,289 @@
                     startCameraRotation();
                 } else {
                     cameraToggle.textContent = 'تشغيل دوران الكاميرا';
-                    stopCameraRotation();
+                    if (cameraRotationId) {
+                        cancelAnimationFrame(cameraRotationId);
+                        cameraRotationId = null;
+                    }
+                    document.getElementById('playerSection').style.transform = 'none';
+                    rotationAngle = 0;
                 }
             }
             
+            // تعديل دالة startCameraRotation
             function startCameraRotation() {
-                if (!isCameraRotating) return;
+                if (!isCameraRotating || isPowerSaveMode) {
+                    if (cameraRotationId) {
+                        cancelAnimationFrame(cameraRotationId);
+                        cameraRotationId = null;
+                    }
+                    return;
+                }
                 
-                rotationAngle += 0.5;
-                document.getElementById('playerSection').style.transform = `rotateY(${rotationAngle}deg) rotateX(5deg)`;
+                let lastTime = null;
                 
-                cameraRotationId = requestAnimationFrame(startCameraRotation);
+                function rotateCamera(timestamp) {
+                    if (!lastTime) lastTime = timestamp;
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    rotationAngle += (deltaTime / 16) * 0.5; // سرعة ثابتة بغض النظر عن frame rate
+                    
+                    const playerSection = document.getElementById('playerSection');
+                    if (playerSection) {
+                        playerSection.style.transform = `perspective(1200px) rotateY(${rotationAngle}deg) rotateX(5deg)`;
+                        playerSection.style.transition = 'transform 0.1s linear';
+                    }
+                    
+                    if (isCameraRotating) {
+                        cameraRotationId = requestAnimationFrame(rotateCamera);
+                    }
+                }
+                
+                cameraRotationId = requestAnimationFrame(rotateCamera);
             }
             
-            function stopCameraRotation() {
-                if (cameraRotationId) {
-                    cancelAnimationFrame(cameraRotationId);
-                    cameraRotationId = null;
+            // تعديل دالة initAudioContext
+            async function initAudioContext() {
+                if (!audioContext) {
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        
+                        // إنشاء محلل الطيف الرئيسي
+                        analyser = audioContext.createAnalyser();
+                        analyser.fftSize = 2048; // زيادة الدقة
+                        analyser.smoothingTimeConstant = 0.8;
+                        
+                        // إنشاء محلل الطيف للعرض
+                        spectrumAnalyser = audioContext.createAnalyser();
+                        spectrumAnalyser.fftSize = 512;
+                        spectrumAnalyser.smoothingTimeConstant = 0.6;
+                        
+                        source = audioContext.createMediaElementSource(audio);
+                        
+                        // إنشاء 18 مرشح للمعادل (20Hz إلى 20kHz)
+                        eqFilters = createEQFilters(audioContext);
+                        
+                        // توصيل السلسلة: المصدر → المعادل → المحلل → المخرج
+                        let lastNode = source;
+                        
+                        // توصيل جميع مرشحات المعادل
+                        for (let filter of eqFilters) {
+                            lastNode.connect(filter);
+                            lastNode = filter;
+                        }
+                        
+                        // توصيل المحللين
+                        lastNode.connect(analyser);
+                        lastNode.connect(spectrumAnalyser);
+                        spectrumAnalyser.connect(audioContext.destination);
+                        analyser.connect(audioContext.destination);
+                        
+                        // إنشاء مصفوفات البيانات
+                        dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        spectrumDataArray = new Uint8Array(spectrumAnalyser.frequencyBinCount);
+                        
+                        createVisualizerBars();
+                        
+                    } catch (error) {
+                        console.error("خطأ في تهيئة AudioContext:", error);
+                    }
                 }
-                // إعادة تعيين التحويل إلى الحالة الأصلية
-                document.getElementById('playerSection').style.transform = 'none';
-                rotationAngle = 0;
+                return audioContext;
+            }
+            
+            // دالة لإنشاء 18 مرشح للمعادل
+            function createEQFilters(audioContext) {
+                const filters = [];
+                
+                // 18 تردد من 20Hz إلى 20kHz (لوغاريتمي)
+                const frequencies = [
+                    20, 30, 45, 67, 100, 150, 225, 337, 506,
+                    759, 1138, 1707, 2560, 3840, 5760, 8640,
+                    12960, 19440, 20000
+                ];
+                
+                for (let i = 0; i < 18; i++) {
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = 'peaking';
+                    filter.frequency.value = frequencies[i];
+                    filter.Q.value = 1;
+                    filter.gain.value = 0;
+                    filters.push(filter);
+                }
+                
+                return filters;
+            }
+            
+            function createVisualizerBars() {
+                visualizer.innerHTML = '';
+                bars = [];
+                
+                const barCount = 64;
+                for (let i = 0; i < barCount; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = '1px';
+                    visualizer.appendChild(bar);
+                    bars.push(bar);
+                }
+            }
+            
+            // تعديل دالة startVisualizer
+            async function startVisualizer() {
+                if (isPowerSaveMode) return;
+                
+                await initAudioContext();
+                
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                
+                function updateVisualizer() {
+                    if (!analyser || !dataArray || audioContext.state !== 'running') {
+                        animationFrameId = requestAnimationFrame(updateVisualizer);
+                        return;
+                    }
+                    
+                    analyser.getByteFrequencyData(dataArray);
+                    
+                    // تحديث أشرطة المحلل الطيفي
+                    for (let i = 0; i < bars.length; i++) {
+                        const value = dataArray[Math.floor(i * 2.5)]; // توزيع أفضل
+                        const height = Math.max(2, (value / 256) * 70);
+                        bars[i].style.height = `${height}px`;
+                        
+                        // تلوين متدرج
+                        const hue = 120 + (value / 256) * 60;
+                        bars[i].style.background = `linear-gradient(to top, hsl(${hue}, 100%, 50%), #00cc00)`;
+                    }
+                    
+                    // تحديث مؤشر الجهير
+                    let bassSum = 0;
+                    for (let i = 0; i < 20; i++) {
+                        bassSum += dataArray[i];
+                    }
+                    const bassPercent = Math.min(100, (bassSum / (20 * 256)) * 100);
+                    bassLevel.style.width = `${bassPercent}%`;
+                    
+                    // تحديث محلل الطيف المتقدم
+                    updateSpectrumDisplay();
+                    
+                    animationFrameId = requestAnimationFrame(updateVisualizer);
+                }
+                
+                animationFrameId = requestAnimationFrame(updateVisualizer);
+            }
+            
+            // دالة جديدة لعرض الطيف الحقيقي
+            function updateSpectrumDisplay() {
+                if (!spectrumAnalyser || !spectrumDataArray) return;
+                
+                spectrumAnalyser.getByteFrequencyData(spectrumDataArray);
+                const canvas = document.getElementById('spectrumCanvas');
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // مسح الشاشة
+                ctx.clearRect(0, 0, width, height);
+                
+                // رسم خلفية متدرجة
+                const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                gradient.addColorStop(0, '#006400');
+                gradient.addColorStop(0.5, '#00cc00');
+                gradient.addColorStop(1, '#006400');
+                
+                const barCount = 200;
+                const barWidth = (width - 20) / barCount;
+                let x = 10;
+                
+                for (let i = 0; i < barCount; i++) {
+                    const dataIndex = Math.floor(i * (spectrumDataArray.length / barCount));
+                    const value = spectrumDataArray[dataIndex];
+                    
+                    // حساب ارتفاع الشريط (لوغاريتمي)
+                    const barHeight = Math.max(1, (Math.log10(value + 1) / Math.log10(256)) * height * 0.8);
+                    
+                    // تلوين الشريط
+                    const intensity = value / 256;
+                    const hue = 120 + intensity * 60;
+                    ctx.fillStyle = `hsl(${hue}, 100%, ${50 + intensity * 30}%)`;
+                    
+                    // رسم الشريط مع تأثير ثلاثي الأبعاد
+                    ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
+                    
+                    // إضافة تسليط ضوئي
+                    ctx.fillStyle = `rgba(255, 255, 255, ${intensity * 0.3})`;
+                    ctx.fillRect(x, height - barHeight, barWidth - 1, 2);
+                    
+                    x += barWidth;
+                }
+            }
+            
+            // إضافة cleanup function محسنة
+            function cleanupAudioContext() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
+                if (audioContext) {
+                    // فصل جميع الوصلات
+                    if (source) {
+                        source.disconnect();
+                    }
+                    
+                    // إغلاق السياق الصوتي
+                    audioContext.close().then(() => {
+                        audioContext = null;
+                        analyser = null;
+                        source = null;
+                        eqFilters = [];
+                        spectrumAnalyser = null;
+                        spectrumDataArray = null;
+                    }).catch(e => {
+                        console.warn('خطأ في إغلاق AudioContext:', e);
+                    });
+                }
             }
             
             function formatTime(seconds) {
-                if (isNaN(seconds)) return "0:00";
+                if (isNaN(seconds) || seconds === Infinity) return "0:00";
                 
-                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
                 const secs = Math.floor(seconds % 60);
-                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+                
+                if (hours > 0) {
+                    return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+                } else {
+                    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+                }
             }
             
-            // تهيئة عدد الأغاني
+            // تنظيف عند إغلاق الصفحة
+            window.addEventListener('beforeunload', function() {
+                cleanupAudioContext();
+                
+                objectURLs.forEach(url => {
+                    try {
+                        URL.revokeObjectURL(url);
+                    } catch (e) {
+                        console.warn('خطأ في تحرير URL:', e);
+                    }
+                });
+                objectURLs = [];
+                
+                if (cameraRotationId) {
+                    cancelAnimationFrame(cameraRotationId);
+                }
+            });
+            
             updateSongsCount();
             
-            // جعل المتغيرات والوظائف متاحة عالمياً
             window.player = {
                 audio,
                 songs,
@@ -2407,19 +2760,12 @@
             };
         }
         
-        // ============================================
-        // نظام الأمان المتكامل
-        // ============================================
-        
         let securitySystem;
         
         function initializeSecurity() {
-            // إنشاء نظام الأمان
             securitySystem = new PlayerSecurity();
             securitySystem.initialize();
             securitySystem.loadSecurityEvents();
-            
-            // إعداد التحكم في الواجهة
             setupSecurityControls();
         }
         
@@ -2434,7 +2780,7 @@
                     blockSuspicious: true,
                     logAllEvents: true,
                     enableNotifications: true,
-                    maxFileSize: 50 * 1024 * 1024, // 50MB
+                    maxFileSize: 50 * 1024 * 1024,
                     allowedFormats: ['mp3', 'wav', 'ogg', 'aac', 'flac', 'm4a', 'aiff', 'wma', 'alac']
                 };
                 
@@ -2442,20 +2788,14 @@
             }
             
             initialize() {
-                // التحقق من الجلسة الحالية
                 if (this.sessionId && this.sessionToken) {
                     this.validateSession();
                 } else {
                     this.createSession();
                 }
                 
-                // إعداد مستمعات الأمان
                 this.setupSecurityListeners();
-                
-                // تحديث حالة الأمان
                 this.updateSecurityStatus();
-                
-                // تسجيل حدث البدء
                 this.logSecurityEvent('SYSTEM_START', 'تم تهيئة نظام الأمان');
             }
             
@@ -2481,9 +2821,8 @@
             }
             
             async validateSession() {
-                // محاكاة التحقق من الخادم
                 try {
-                    const isValid = true; // محاكاة النجاح
+                    const isValid = true;
                     
                     if (!isValid) {
                         this.clearSession();
@@ -2507,25 +2846,19 @@
             }
             
             setupSecurityListeners() {
-                // حماية ضد هجمات XSS
                 this.sanitizeInputs();
                 
-                // مراقبة تحميل الملفات الصوتية
                 const fileInput = document.getElementById('fileInput');
                 if (fileInput) {
                     fileInput.addEventListener('change', (e) => this.validateUploadedFiles(e));
                 }
                 
-                // مراقبة تحميل الصور
                 const imageInput = document.getElementById('imageInput');
                 if (imageInput) {
                     imageInput.addEventListener('change', (e) => this.validateImageFile(e));
                 }
                 
-                // منع حقن الكود
                 this.preventCodeInjection();
-                
-                // مراقبة طلبات الشبكة
                 this.monitorNetworkRequests();
             }
             
@@ -2561,7 +2894,6 @@
                 const maxSize = this.securityConfig.maxFileSize;
                 
                 for (let file of files) {
-                    // التحقق من الحجم
                     if (file.size > maxSize) {
                         this.showSecurityAlert(`الملف ${file.name} كبير جداً. الحد الأقصى 50MB`);
                         event.target.value = '';
@@ -2569,7 +2901,6 @@
                         return false;
                     }
                     
-                    // التحقق من الامتداد
                     const fileExt = file.name.split('.').pop().toLowerCase();
                     
                     if (!this.securityConfig.allowedFormats.includes(fileExt)) {
@@ -2579,7 +2910,6 @@
                         return false;
                     }
                     
-                    // فحص الملف
                     const isValid = await this.scanFile(file);
                     if (!isValid) {
                         this.showSecurityAlert(`الملف ${file.name} يحتوي على محتوى مشبوه`);
@@ -2598,7 +2928,6 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                // التحقق من أن الملف صورة
                 const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
                 
                 if (!validImageTypes.includes(file.type)) {
@@ -2608,7 +2937,6 @@
                     return false;
                 }
                 
-                // التحقق من الحجم (10MB كحد أقصى للصور)
                 if (file.size > 10 * 1024 * 1024) {
                     this.showSecurityAlert('حجم الصورة كبير جداً. الحد الأقصى 10MB');
                     event.target.value = '';
@@ -2620,56 +2948,55 @@
                 return true;
             }
             
+            // تعديل دالة scanFile مع تحسينات الأمان
             async scanFile(file) {
                 return new Promise((resolve) => {
-                    // محاكاة فحص الملف
+                    if (file.size > this.securityConfig.maxFileSize) {
+                        this.logSecurityEvent('FILE_REJECTED', `ملف كبير جداً: ${file.name}`);
+                        resolve(false);
+                        return;
+                    }
+                    
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                    
+                    if (!this.securityConfig.allowedFormats.includes(fileExt)) {
+                        this.logSecurityEvent('FILE_REJECTED', `تنسيق غير مدعوم: ${file.name}`);
+                        resolve(false);
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     
-                    reader.onload = (e) => {
-                        const content = e.target.result;
-                        let isValid = true;
-                        
-                        // التحقق من التوقيعات المعروفة
-                        const signatures = {
-                            'mp3': ['ID3', 'ÿó'],
-                            'wav': 'RIFF',
-                            'ogg': 'OggS',
-                            'flac': 'fLaC',
-                            'm4a': 'ftypM4A',
-                            'aac': 'ADIF',
-                            'aiff': 'FORM'
-                        };
-                        
-                        const fileExt = file.name.split('.').pop().toLowerCase();
-                        
-                        if (signatures[fileExt]) {
-                            if (Array.isArray(signatures[fileExt])) {
-                                isValid = signatures[fileExt].some(sig => 
-                                    content.includes(sig)
-                                );
-                            } else {
-                                isValid = content.includes(signatures[fileExt]);
-                            }
+                    reader.onload = async (e) => {
+                        try {
+                            const arrayBuffer = e.target.result;
+                            
+                            // قراءة التوقيع (أول 4 بايت)
+                            const header = new Uint8Array(arrayBuffer.slice(0, 8));
+                            let isValid = this.checkFileSignature(header, fileExt);
                             
                             if (!isValid) {
                                 this.logSecurityEvent('FILE_SIGNATURE_MISMATCH', `توقيع ملف غير صالح: ${file.name}`);
+                                resolve(false);
+                                return;
                             }
+                            
+                            // فحص محتوى الملف للكود الخبيث
+                            isValid = await this.checkForMaliciousContent(arrayBuffer);
+                            
+                            if (!isValid) {
+                                this.logSecurityEvent('MALICIOUS_CONTENT', `تم اكتشاف محتوى مشبوه في: ${file.name}`);
+                                resolve(false);
+                                return;
+                            }
+                            
+                            this.logSecurityEvent('FILE_ACCEPTED', `تم فحص الملف بنجاح: ${file.name}`);
+                            resolve(true);
+                            
+                        } catch (error) {
+                            this.logSecurityEvent('FILE_SCAN_ERROR', `خطأ في فحص الملف: ${file.name} - ${error.message}`);
+                            resolve(false);
                         }
-                        
-                        // فحص سريع للمحتوى الضار (أول 10KB فقط)
-                        const suspiciousPatterns = [
-                            '<script>', 'eval(', 'exec(', 'system(',
-                            '../', '..\\', '/etc/passwd', 'cmd.exe',
-                            'powershell', 'wscript.shell',
-                            'onerror=', 'onload=', 'javascript:'
-                        ];
-                        
-                        if (suspiciousPatterns.some(pattern => content.includes(pattern))) {
-                            isValid = false;
-                            this.logSecurityEvent('MALICIOUS_CONTENT', `تم اكتشاف محتوى مشبوه في: ${file.name}`);
-                        }
-                        
-                        resolve(isValid);
                     };
                     
                     reader.onerror = () => {
@@ -2677,64 +3004,88 @@
                         resolve(false);
                     };
                     
-                    // قراءة أول 10KB فقط للفحص السريع
-                    reader.readAsBinaryString(file.slice(0, 10240));
+                    // قراءة أول 64KB فقط للفحص
+                    reader.readAsArrayBuffer(file.slice(0, 65536));
                 });
             }
             
+            // دالة جديدة للتحقق من توقيع الملف
+            checkFileSignature(header, fileExt) {
+                const signatures = {
+                    'mp3': [[0x49, 0x44, 0x33], [0xFF, 0xFB]], // ID3 أو MPEG
+                    'wav': [0x52, 0x49, 0x46, 0x46], // RIFF
+                    'ogg': [0x4F, 0x67, 0x67, 0x53], // OggS
+                    'flac': [0x66, 0x4C, 0x61, 0x43], // fLaC
+                    'm4a': [0x66, 0x74, 0x79, 0x70], // ftyp
+                    'aiff': [0x46, 0x4F, 0x52, 0x4D] // FORM
+                };
+                
+                if (!signatures[fileExt]) return true;
+                
+                const sig = signatures[fileExt];
+                if (Array.isArray(sig[0])) {
+                    // عدة توقيعات محتملة
+                    return sig.some(s => s.every((byte, i) => header[i] === byte));
+                } else {
+                    return sig.every((byte, i) => header[i] === byte);
+                }
+            }
+            
+            // دالة جديدة للتحقق من المحتوى الخبيث
+            async checkForMaliciousContent(arrayBuffer) {
+                try {
+                    const textDecoder = new TextDecoder('utf-8');
+                    const text = textDecoder.decode(arrayBuffer);
+                    
+                    const suspiciousPatterns = [
+                        /<script[^>]*>/i,
+                        /eval\s*\(/i,
+                        /exec\s*\(/i,
+                        /system\s*\(/i,
+                        /\.\.\//,
+                        /\.\.\\/,
+                        /\/etc\/passwd/,
+                        /cmd\.exe/i,
+                        /powershell/i,
+                        /wscript\.shell/i,
+                        /onerror\s*=/i,
+                        /onload\s*=/i,
+                        /javascript:/i
+                    ];
+                    
+                    for (let pattern of suspiciousPatterns) {
+                        if (pattern.test(text)) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                } catch (e) {
+                    console.warn('خطأ في فحص المحتوى:', e);
+                    return true; // في حالة الخطأ، نفترض أن الملف سليم
+                }
+            }
+            
             preventCodeInjection() {
-                // حماية الـ Console
                 const originalLog = console.log;
                 const originalError = console.error;
                 
                 console.log = function(...args) {
-                    // يمكن إضافة فحص إضافي هنا
                     originalLog.apply(console, args);
                 };
                 
                 console.error = function(...args) {
-                    // مراقبة الأخطاء
                     originalError.apply(console, args);
                 };
-                
-                // حماية ضد هجمات CSRF
-                document.addEventListener('submit', (e) => {
-                    if (e.target.tagName === 'FORM') {
-                        this.addCSRFToken(e.target);
-                    }
-                });
-                
-                // منع فتح نوافذ منبثقة غير مرغوب فيها
-                window.addEventListener('beforeunload', (e) => {
-                    // يمكن إضافة فحص هنا
-                });
-            }
-            
-            addCSRFToken(form) {
-                let tokenInput = form.querySelector('input[name="csrf_token"]');
-                
-                if (!tokenInput) {
-                    tokenInput = document.createElement('input');
-                    tokenInput.type = 'hidden';
-                    tokenInput.name = 'csrf_token';
-                    tokenInput.value = this.generateCSRFToken();
-                    form.appendChild(tokenInput);
-                }
-            }
-            
-            generateCSRFToken() {
-                return 'csrf_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
             }
             
             monitorNetworkRequests() {
                 const originalFetch = window.fetch;
                 
                 window.fetch = async function(...args) {
-                    // يمكن مراقبة الطلبات هنا
                     try {
                         const response = await originalFetch.apply(this, args);
                         
-                        // تسجيل الطلبات إلى نطاقات غير معروفة
                         const url = typeof args[0] === 'string' ? args[0] : args[0].url;
                         if (url && !url.startsWith(window.location.origin) && !url.startsWith('/')) {
                             securitySystem.logSecurityEvent('EXTERNAL_REQUEST', `طلب إلى: ${url}`);
@@ -2749,7 +3100,6 @@
             }
             
             updateSecurityStatus() {
-                // تحديث مؤشرات الحالة
                 const indicators = {
                     encryptionStatus: '✓ مفعل',
                     fileScanStatus: this.securityConfig.autoScanFiles ? '✓ مفعل' : '✗ معطل',
@@ -2779,20 +3129,16 @@
                 
                 this.securityEvents.unshift(event);
                 
-                // الاحتفاظ فقط بـ 50 حدث
                 if (this.securityEvents.length > 50) {
                     this.securityEvents = this.securityEvents.slice(0, 50);
                 }
                 
-                // تحديث واجهة المستخدم
                 this.updateSecurityLogs();
                 
-                // إشعار المستخدم إذا كان مفعلاً
                 if (this.securityConfig.enableNotifications && event.severity === 'HIGH') {
                     this.showSecurityNotification(event);
                 }
                 
-                // حفظ الأحداث في localStorage
                 this.saveSecurityEvents();
             }
             
@@ -2881,7 +3227,6 @@
             
             showSecurityAlert(message) {
                 if (this.isParanoidMode) {
-                    // في الوضع المحصن، استخدم تنبيه أكثر أماناً
                     this.createSecurityAlert(message);
                 } else {
                     alert(`⚠️ تنبيه أمني:\n${message}`);
@@ -2889,7 +3234,6 @@
             }
             
             createSecurityAlert(message) {
-                // إنشاء تنبيه مخصص بدلاً من alert() العادي
                 const alertDiv = document.createElement('div');
                 alertDiv.style.cssText = `
                     position: fixed;
@@ -2925,7 +3269,6 @@
                 
                 document.body.appendChild(alertDiv);
                 
-                // إزالة التنبيه تلقائياً بعد 10 ثواني
                 setTimeout(() => {
                     if (alertDiv.parentElement) {
                         alertDiv.remove();
@@ -2948,7 +3291,6 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // إعادة تعيين الإعدادات
                 this.securityConfig = {
                     autoScanFiles: true,
                     blockSuspicious: true,
@@ -2959,8 +3301,6 @@
                 };
                 
                 this.saveConfig();
-                
-                // إنشاء جلسة جديدة
                 this.createSession();
                 
                 this.logSecurityEvent('CACHE_CLEARED', 'تم مسح جميع البيانات المؤقتة');
@@ -2971,9 +3311,8 @@
             scanForThreats() {
                 this.logSecurityEvent('SECURITY_SCAN', 'بدء فحص النظام بحثاً عن التهديدات');
                 
-                // محاكاة الفحص
                 setTimeout(() => {
-                    const threatsFound = Math.random() < 0.1; // 10% فرصة لاكتشاف تهديد
+                    const threatsFound = Math.random() < 0.1;
                     if (threatsFound) {
                         this.showSecurityAlert('تم اكتشاف تهديدات محتملة في النظام. يوصى بتنظيف البيانات المؤقتة.');
                         this.logSecurityEvent('THREATS_DETECTED', 'تم اكتشاف تهديدات خلال الفحص');
@@ -3019,7 +3358,6 @@
         تم إنشاء التقرير بواسطة نظام أمان المشغل الذهبي
                 `;
                 
-                // عرض التقرير في نافذة جديدة
                 const reportWindow = window.open();
                 reportWindow.document.write(`
                     <html dir="rtl">
@@ -3101,18 +3439,13 @@
             enableParanoidMode() {
                 this.isParanoidMode = true;
                 
-                // تعزيز إعدادات الأمان
                 this.securityConfig.autoScanFiles = true;
                 this.securityConfig.blockSuspicious = true;
                 this.securityConfig.logAllEvents = true;
                 this.securityConfig.enableNotifications = true;
                 
                 this.saveConfig();
-                
-                // إنشاء طبقة الوضع المحصن
                 this.createParanoidOverlay();
-                
-                // تعزيز الحماية
                 this.enhanceSecurity();
                 
                 this.logSecurityEvent('PARANOID_MODE', 'تم تفعيل الوضع المحصن');
@@ -3139,36 +3472,20 @@
                     </button>
                 `;
                 
-                // إضافة أنماط الحركة
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                `;
-                document.head.appendChild(style);
-                
                 document.body.appendChild(overlay);
-                
-                // إيقاف بعض التأثيرات المرئية للحفاظ على الأداء
                 this.disableVisualEffects();
             }
             
             disableVisualEffects() {
-                // إيقاف تأثيرات النجوم
                 const stars = document.querySelector('.stars-background');
                 if (stars) stars.style.display = 'none';
                 
-                // إيقاف تأثيرات الضوء
                 const lights = document.querySelectorAll('.light-effect, .light-spot');
                 lights.forEach(light => light.style.display = 'none');
                 
-                // إيقاف دوران الغلاف
                 const albumContainer = document.getElementById('albumArtContainer');
                 if (albumContainer) albumContainer.classList.remove('rotating');
                 
-                // تفعيل وضع توفير الطاقة
                 const powerSaveBtn = document.getElementById('powerSaveBtn');
                 if (powerSaveBtn && !document.body.classList.contains('power-save-mode')) {
                     powerSaveBtn.click();
@@ -3176,7 +3493,6 @@
             }
             
             enableVisualEffects() {
-                // إعادة تفعيل التأثيرات المرئية
                 const stars = document.querySelector('.stars-background');
                 if (stars) stars.style.display = 'block';
                 
@@ -3185,15 +3501,11 @@
             }
             
             enhanceSecurity() {
-                // إضافة حماية إضافية
-                
-                // 1. حماية إضافية لتحميل الملفات
                 const fileInput = document.getElementById('fileInput');
                 if (fileInput) {
                     fileInput.setAttribute('accept', '.mp3,.wav,.ogg,.aac,.flac,.m4a');
                 }
                 
-                // 2. منع فتح روابط خارجية
                 document.addEventListener('click', (e) => {
                     const link = e.target.closest('a');
                     if (link && link.href && !link.href.startsWith(window.location.origin)) {
@@ -3202,46 +3514,21 @@
                         this.logSecurityEvent('EXTERNAL_LINK_BLOCKED', `رابط خارجي: ${link.href}`);
                     }
                 }, true);
-                
-                // 3. مراقبة الذاكرة
-                this.monitorMemory();
-            }
-            
-            monitorMemory() {
-                // محاكاة مراقبة استخدام الذاكرة
-                setInterval(() => {
-                    if (performance && performance.memory) {
-                        const usedJSHeapSize = performance.memory.usedJSHeapSize;
-                        const jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
-                        
-                        if (usedJSHeapSize > jsHeapSizeLimit * 0.8) {
-                            this.logSecurityEvent('HIGH_MEMORY_USAGE', 'استخدام عالي للذاكرة');
-                            
-                            if (usedJSHeapSize > jsHeapSizeLimit * 0.9) {
-                                this.showSecurityAlert('تحذير: استخدام الذاكرة مرتفع جداً. يرجى إغلاق بعض النوافذ');
-                            }
-                        }
-                    }
-                }, 30000);
             }
             
             disableParanoidMode() {
                 this.isParanoidMode = false;
                 
-                // إزالة طبقة الوضع المحصن
                 const overlay = document.getElementById('paranoidOverlay');
                 if (overlay) overlay.remove();
                 
-                // إعادة تفعيل التأثيرات المرئية
                 this.enableVisualEffects();
-                
                 this.logSecurityEvent('PARANOID_MODE_DISABLED', 'تم تعطيل الوضع المحصن');
                 this.updateSecurityStatus();
             }
         }
         
         function setupSecurityControls() {
-            // زر فتح لوحة الأمان
             const securityBtn = document.getElementById('securityBtn');
             const securityModal = document.getElementById('securityModal');
             const closeSecurityModal = document.getElementById('closeSecurityModal');
@@ -3259,7 +3546,6 @@
                 });
             }
             
-            // إغلاق النافذة عند النقر خارجها
             if (securityModal) {
                 securityModal.addEventListener('click', (e) => {
                     if (e.target === securityModal) {
@@ -3268,7 +3554,6 @@
                 });
             }
             
-            // إعدادات الأمان
             const autoScanCheckbox = document.getElementById('autoScanFiles');
             const blockSuspiciousCheckbox = document.getElementById('blockSuspicious');
             const logAllEventsCheckbox = document.getElementById('logAllEvents');
@@ -3306,14 +3591,12 @@
                     securitySystem.securityConfig.enableNotifications = e.target.checked;
                     securitySystem.saveConfig();
                     
-                    // طلب الإذن للإشعارات
                     if (e.target.checked && "Notification" in window && Notification.permission === "default") {
                         Notification.requestPermission();
                     }
                 });
             }
             
-            // أزرار الإجراءات
             const clearCacheBtn = document.getElementById('clearCacheBtn');
             const scanThreatsBtn = document.getElementById('scanThreatsBtn');
             const generateReportBtn = document.getElementById('generateReportBtn');
@@ -3344,18 +3627,281 @@
             }
         }
         
-        // ============================================
-        // التحكم المتقدم والإضافات
-        // ============================================
-        
         function initializeAdvancedControls() {
+            // إنشاء المعادل EQ مع 18 نطاقاً
+            const eqBandsContainer = document.getElementById('eqBands');
+            
+            // 18 تردد من 20Hz إلى 20kHz (لوغاريتمي)
+            const frequencies = [
+                20, 30, 45, 67, 100, 150, 225, 337, 506,
+                759, 1138, 1707, 2560, 3840, 5760, 8640,
+                12960, 19440, 20000
+            ];
+            
+            const frequencyLabels = [
+                "20Hz", "30Hz", "45Hz", "67Hz", "100Hz", "150Hz", 
+                "225Hz", "337Hz", "506Hz", "759Hz", "1.1kHz", 
+                "1.7kHz", "2.6kHz", "3.8kHz", "5.8kHz", "8.6kHz",
+                "13kHz", "19kHz", "20kHz"
+            ];
+            
+            if (eqBandsContainer) {
+                eqBandsContainer.innerHTML = '';
+                eqBandsContainer.style.minWidth = frequencies.length * 45 + 'px';
+                
+                for (let i = 0; i < frequencies.length; i++) {
+                    const eqBand = document.createElement('div');
+                    eqBand.className = 'eq-band';
+                    eqBand.style.minWidth = '40px';
+                    
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.className = 'eq-slider';
+                    slider.min = '-12';
+                    slider.max = '12';
+                    slider.value = '0';
+                    slider.setAttribute('orient', 'vertical');
+                    slider.style.webkitAppearance = 'slider-vertical';
+                    slider.style.height = '120px';
+                    slider.style.width = '20px';
+                    slider.dataset.freq = frequencies[i];
+                    slider.dataset.index = i;
+                    
+                    const freq = document.createElement('div');
+                    freq.className = 'eq-freq';
+                    freq.textContent = frequencyLabels[i];
+                    freq.style.fontSize = '9px';
+                    freq.style.marginTop = '5px';
+                    
+                    const value = document.createElement('div');
+                    value.className = 'eq-value';
+                    value.textContent = '0dB';
+                    value.id = `eqValue${i}`;
+                    value.style.fontSize = '9px';
+                    value.style.marginTop = '5px';
+                    
+                    slider.addEventListener('input', function() {
+                        const index = parseInt(this.dataset.index);
+                        const gainValue = parseFloat(this.value);
+                        value.textContent = `${gainValue}dB`;
+                        
+                        // تحديث مرشح المعادل الحقيقي
+                        if (window.player && window.player.eqFilters && window.player.eqFilters[index]) {
+                            window.player.eqFilters[index].gain.value = gainValue;
+                        }
+                        
+                        // تحديث اللون حسب القيمة
+                        if (gainValue > 0) {
+                            this.style.background = `linear-gradient(to top, #00cc00 ${(gainValue/12)*100}%, #1a1a1a ${(gainValue/12)*100}%)`;
+                        } else {
+                            this.style.background = `linear-gradient(to top, #1a1a1a ${100 - (Math.abs(gainValue)/12)*100}%, #cc0000 ${100 - (Math.abs(gainValue)/12)*100}%)`;
+                        }
+                    });
+                    
+                    // تلوين ابتدائي
+                    slider.style.background = 'linear-gradient(to top, #1a1a1a 50%, #1a1a1a 50%)';
+                    
+                    eqBand.appendChild(slider);
+                    eqBand.appendChild(freq);
+                    eqBand.appendChild(value);
+                    
+                    eqBandsContainer.appendChild(eqBand);
+                }
+            }
+            
+            // إنشاء عرض الطيف الحقيقي
+            const spectrumDisplay = document.getElementById('spectrumDisplay');
+            if (spectrumDisplay) {
+                spectrumDisplay.innerHTML = '<canvas id="spectrumCanvas" width="800" height="100"></canvas>';
+            }
+            
+            // التحكم في السلايدرات المتقدمة
+            const volumeEnhancementSlider = document.getElementById('volumeEnhancementSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            const boostEnhancementSlider = document.getElementById('boostEnhancementSlider');
+            const boostValue = document.getElementById('boostValue');
+            const boostIndicator = document.getElementById('boostIndicator');
+            const bassEnhancementSlider = document.getElementById('bassEnhancementSlider');
+            const bassValue = document.getElementById('bassValue');
+            const qualityValue = document.getElementById('qualityValue');
+            const qualityLevel = document.getElementById('qualityLevel');
+            
+            if (volumeEnhancementSlider && volumeValue) {
+                volumeEnhancementSlider.addEventListener('input', function() {
+                    volumeValue.textContent = `${this.value}%`;
+                    if (window.player && window.player.audio) {
+                        window.player.audio.volume = this.value / 100;
+                    }
+                });
+            }
+            
+            if (boostEnhancementSlider && boostValue && boostIndicator) {
+                boostEnhancementSlider.addEventListener('input', function() {
+                    boostValue.textContent = `${this.value}%`;
+                    const boostFactor = 1 + (this.value / 100);
+                    boostIndicator.textContent = `x${boostFactor.toFixed(1)}`;
+                });
+            }
+            
+            if (bassEnhancementSlider && bassValue) {
+                bassEnhancementSlider.addEventListener('input', function() {
+                    bassValue.textContent = `${this.value}%`;
+                });
+            }
+            
+            // إعدادات الجودة
+            const audioQuality = document.getElementById('audioQuality');
+            if (audioQuality) {
+                audioQuality.addEventListener('change', function() {
+                    switch(this.value) {
+                        case 'standard':
+                            qualityValue.textContent = 'قياسي';
+                            qualityLevel.style.width = '60%';
+                            break;
+                        case 'high':
+                            qualityValue.textContent = 'عالية';
+                            qualityLevel.style.width = '80%';
+                            break;
+                        case 'hd':
+                            qualityValue.textContent = 'عالية الدقة';
+                            qualityLevel.style.width = '90%';
+                            break;
+                    }
+                });
+            }
+            
+            // إعدادات الإضافات
+            document.querySelectorAll('.enhancement-preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.enhancement-preset-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const preset = this.dataset.preset;
+                    
+                    switch(preset) {
+                        case 'normal':
+                            volumeEnhancementSlider.value = 70;
+                            boostEnhancementSlider.value = 0;
+                            bassEnhancementSlider.value = 0;
+                            volumeValue.textContent = '70%';
+                            boostValue.textContent = '0%';
+                            bassValue.textContent = '0%';
+                            boostIndicator.textContent = 'x1.0';
+                            break;
+                        case 'boost':
+                            volumeEnhancementSlider.value = 80;
+                            boostEnhancementSlider.value = 50;
+                            bassEnhancementSlider.value = 30;
+                            volumeValue.textContent = '80%';
+                            boostValue.textContent = '50%';
+                            bassValue.textContent = '30%';
+                            boostIndicator.textContent = 'x1.5';
+                            break;
+                        case 'bass':
+                            volumeEnhancementSlider.value = 75;
+                            boostEnhancementSlider.value = 20;
+                            bassEnhancementSlider.value = 70;
+                            volumeValue.textContent = '75%';
+                            boostValue.textContent = '20%';
+                            bassValue.textContent = '70%';
+                            boostIndicator.textContent = 'x1.2';
+                            break;
+                        case 'clear':
+                            volumeEnhancementSlider.value = 65;
+                            boostEnhancementSlider.value = 10;
+                            bassEnhancementSlider.value = 10;
+                            volumeValue.textContent = '65%';
+                            boostValue.textContent = '10%';
+                            bassValue.textContent = '10%';
+                            boostIndicator.textContent = 'x1.1';
+                            break;
+                    }
+                });
+            });
+            
+            // إعدادات المعادل المسبقة
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const preset = this.dataset.preset;
+                    const sliders = document.querySelectorAll('.eq-slider');
+                    
+                    const presets = {
+                        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        bass: [6, 4, 2, 1, 0, -1, -2, -3, -4, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4],
+                        vocal: [-2, -1, 0, 1, 2, 3, 2, 1, 0, -1, -2, -1, 0, 1, 2, 3, 2, 1, 0],
+                        acoustic: [2, 1, 0, -1, 0, 1, 2, 3, 2, 1, 0, -1, 0, 1, 2, 3, 2, 1, 0],
+                        rock: [4, 3, 2, 1, 0, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, 0, 1, 2],
+                        jazz: [1, 0, -1, -2, -1, 0, 1, 2, 3, 2, 1, 0, -1, -2, -1, 0, 1, 2, 3],
+                        classical: [0, -1, -2, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, -2, -1, 0, 1, 2],
+                        electronic: [3, 2, 1, 0, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, 0, 1, 2, 3],
+                        hardstyle: [5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+                    };
+                    
+                    if (presets[preset]) {
+                        for (let i = 0; i < sliders.length; i++) {
+                            sliders[i].value = presets[preset][i];
+                            document.getElementById(`eqValue${i}`).textContent = `${presets[preset][i]}dB`;
+                            
+                            // تحديث اللون
+                            const gainValue = presets[preset][i];
+                            if (gainValue > 0) {
+                                sliders[i].style.background = `linear-gradient(to top, #00cc00 ${(gainValue/12)*100}%, #1a1a1a ${(gainValue/12)*100}%)`;
+                            } else {
+                                sliders[i].style.background = `linear-gradient(to top, #1a1a1a ${100 - (Math.abs(gainValue)/12)*100}%, #cc0000 ${100 - (Math.abs(gainValue)/12)*100}%)`;
+                            }
+                            
+                            // تحديث مرشح المعادل الحقيقي
+                            if (window.player && window.player.eqFilters && window.player.eqFilters[i]) {
+                                window.player.eqFilters[i].gain.value = gainValue;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // التحكم في سرعة التشغيل
+            const playbackSpeed = document.getElementById('playbackSpeed');
+            const speedValue = document.getElementById('speedValue');
+            
+            if (playbackSpeed && speedValue) {
+                playbackSpeed.addEventListener('input', function() {
+                    const speed = this.value / 100;
+                    if (window.player && window.player.audio) {
+                        window.player.audio.playbackRate = speed;
+                    }
+                    speedValue.textContent = `${this.value}%`;
+                });
+            }
+            
+            // الصدى
+            const reverb = document.getElementById('reverb');
+            const reverbValue = document.getElementById('reverbValue');
+            
+            if (reverb && reverbValue) {
+                reverb.addEventListener('input', function() {
+                    reverbValue.textContent = `${this.value}%`;
+                });
+            }
+            
+            // التداخل
+            const crossfade = document.getElementById('crossfade');
+            const crossfadeValue = document.getElementById('crossfadeValue');
+            
+            if (crossfade && crossfadeValue) {
+                crossfade.addEventListener('input', function() {
+                    crossfadeValue.textContent = `${this.value} ثانية`;
+                });
+            }
+            
             // اختصارات لوحة المفاتيح
             const shortcutsBtn = document.getElementById('shortcutsBtn');
             const shortcutsModal = document.getElementById('shortcutsModal');
             const closeModal = document.getElementById('closeModal');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             
-            // إظهار/إخفاء نافذة الاختصارات
             if (shortcutsBtn && shortcutsModal) {
                 shortcutsBtn.addEventListener('click', function() {
                     shortcutsModal.style.display = 'flex';
@@ -3368,7 +3914,6 @@
                 });
             }
             
-            // إغلاق النافذة عند النقر خارجها
             if (shortcutsModal) {
                 shortcutsModal.addEventListener('click', function(e) {
                     if (e.target === shortcutsModal) {
@@ -3377,7 +3922,6 @@
                 });
             }
             
-            // وضع ملء الشاشة
             if (fullscreenBtn) {
                 fullscreenBtn.addEventListener('click', function() {
                     if (!document.fullscreenElement) {
@@ -3393,7 +3937,6 @@
                     }
                 });
                 
-                // تحديث نص زر ملء الشاشة عند الخروج
                 document.addEventListener('fullscreenchange', function() {
                     if (!document.fullscreenElement && fullscreenBtn) {
                         fullscreenBtn.textContent = 'ملء الشاشة';
@@ -3401,31 +3944,7 @@
                 });
             }
             
-            // تهيئة التحكم في سرعة التشغيل
-            const playbackSpeed = document.getElementById('playbackSpeed');
-            const speedValue = document.getElementById('speedValue');
-            
-            if (playbackSpeed && speedValue) {
-                playbackSpeed.addEventListener('input', function() {
-                    const speed = this.value / 100;
-                    if (window.player && window.player.audio) {
-                        window.player.audio.playbackRate = speed;
-                    }
-                    speedValue.textContent = `${this.value}%`;
-                });
-            }
-            
-            // التحكم في الصدى
-            const reverb = document.getElementById('reverb');
-            const reverbValue = document.getElementById('reverbValue');
-            
-            if (reverb && reverbValue) {
-                reverb.addEventListener('input', function() {
-                    reverbValue.textContent = `${this.value}%`;
-                });
-            }
-            
-            // تهيئة التكرار A-B
+            // التكرار A-B
             let pointA = 0;
             let pointB = 0;
             let isABRepeat = false;
@@ -3465,9 +3984,8 @@
                 });
             }
             
-            // اختصارات لوحة المفاتيح العالمية
+            // اختصارات لوحة المفاتيح
             document.addEventListener('keydown', function(e) {
-                // منع تنفيذ الاختصارات إذا كان المستخدم يكتب في حقل إدخال
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                     return;
                 }
@@ -3490,7 +4008,6 @@
                         break;
                     case 'ArrowUp':
                         e.preventDefault();
-                        // زيادة الصوت بنسبة 5%
                         if (window.player && window.player.audio) {
                             const newVolume = Math.min(window.player.audio.volume + 0.05, 1);
                             window.player.audio.volume = newVolume;
@@ -3502,7 +4019,6 @@
                         break;
                     case 'ArrowDown':
                         e.preventDefault();
-                        // تقليل الصوت بنسبة 5%
                         if (window.player && window.player.audio) {
                             const newVolume = Math.max(window.player.audio.volume - 0.05, 0);
                             window.player.audio.volume = newVolume;
@@ -3557,7 +4073,6 @@
                         break;
                 }
                 
-                // اختصارات الأمان
                 if (e.ctrlKey && e.shiftKey) {
                     switch(e.key) {
                         case 'S':
