@@ -2247,82 +2247,73 @@
                 originalVolume = volumeLevel;
                 volumeProgress.style.width = `${volumeLevel * 100}%`;
             });
+
+fileInput.addEventListener('change', function(e) {
+    const files = e.target.files;
+    if (files.length === 0) return;
+    
+    // بدلاً من إلغاء جميع الـ URLs القديمة، نحتفظ بها
+    // ونضيف الجديدة فقط
+    
+    const startIndex = songs.length;
+    const newSongs = [];
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const url = URL.createObjectURL(file);
+        objectURLs.push(url); // نضيف URL جديد فقط
+        
+        newSongs.push({
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            artist: "فنان غير معروف",
+            src: url,
+            cover: ""
+        });
+        
+        const playlistItem = document.createElement('div');
+        playlistItem.className = 'playlist-item';
+        playlistItem.innerHTML = `
+            <i>🎵</i>
+            <span>${file.name.replace(/\.[^/.]+$/, "")}</span>
+        `;
+        
+        const songIndex = startIndex + i;
+        playlistItem.addEventListener('click', function() {
+            currentSongIndex = songIndex;
+            loadSong(currentSongIndex);
+            audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+            isPlaying = true;
+            playPauseBtn.innerHTML = '<i>⏸️</i>';
+            playPauseBtn.classList.add('active-glow');
+            startAlbumRotation();
             
-            fileInput.addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files.length === 0) return;
-                
-                objectURLs.forEach(url => {
-                    try {
-                        URL.revokeObjectURL(url);
-                    } catch (e) {
-                        console.warn('خطأ في تحرير URL:', e);
-                    }
-                });
-                objectURLs = [];
-                
-                if (songs.length === 0) {
-                    playlist.innerHTML = '';
-                }
-                
-                const startIndex = songs.length;
-                const newSongs = [];
-                
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const url = URL.createObjectURL(file);
-                    objectURLs.push(url);
-                    
-                    newSongs.push({
-                        title: file.name.replace(/\.[^/.]+$/, ""),
-                        artist: "فنان غير معروف",
-                        src: url,
-                        cover: ""
-                    });
-                    
-                    const playlistItem = document.createElement('div');
-                    playlistItem.className = 'playlist-item';
-                    playlistItem.innerHTML = `
-                        <i>🎵</i>
-                        <span>${file.name.replace(/\.[^/.]+$/, "")}</span>
-                    `;
-                    
-                    const songIndex = startIndex + i;
-                    playlistItem.addEventListener('click', function() {
-                        currentSongIndex = songIndex;
-                        loadSong(currentSongIndex);
-                        audio.play().catch(e => console.log("خطأ في التشغيل:", e));
-                        isPlaying = true;
-                        playPauseBtn.innerHTML = '<i>⏸️</i>';
-                        playPauseBtn.classList.add('active-glow');
-                        startAlbumRotation();
-                        
-                        document.querySelectorAll('.playlist-item').forEach(item => {
-                            item.classList.remove('active');
-                        });
-                        playlistItem.classList.add('active');
-                        
-                        if (!isPowerSaveMode) {
-                            startVisualizer();
-                        }
-                    });
-                    
-                    playlist.appendChild(playlistItem);
-                }
-                
-                songs.push(...newSongs);
-                updateSongsCount();
-                
-                if (songs.length === newSongs.length) {
-                    currentSongIndex = 0;
-                    loadSong(currentSongIndex);
-                    if (playlist.children.length > 0) {
-                        playlist.children[0].classList.add('active');
-                    }
-                }
-                
-                fileInput.value = '';
+            document.querySelectorAll('.playlist-item').forEach(item => {
+                item.classList.remove('active');
             });
+            playlistItem.classList.add('active');
+            
+            if (!isPowerSaveMode) {
+                startVisualizer();
+            }
+        });
+        
+        playlist.appendChild(playlistItem);
+    }
+    
+    songs.push(...newSongs);
+    updateSongsCount();
+    
+    if (songs.length === newSongs.length) {
+        currentSongIndex = 0;
+        loadSong(currentSongIndex);
+        if (playlist.children.length > 0) {
+            playlist.children[0].classList.add('active');
+        }
+    }
+    
+    fileInput.value = '';
+});
+
             
             imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
