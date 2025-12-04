@@ -1965,6 +1965,15 @@
     </div>
 
     <script>
+        // المتغيرات العامة لنظام الصوت
+        let audioContext, analyser, source, eqFilters, reverbNode, bassBoostNode, volumeNode, gainNode, compressorNode;
+        let spectrumAnalyser, spectrumDataArray, dataArray, animationFrameId;
+        let audioNodes = {};
+        let eqGains = new Array(18).fill(0);
+        let reverbLevel = 0;
+        let bassBoostLevel = 0;
+        let volumeBoostLevel = 0;
+
         document.addEventListener('DOMContentLoaded', function() {
             createStars();
             initializePlayer();
@@ -1997,57 +2006,79 @@
             }
         }
         
+        // دوال معالجة الصوت العامة
+        function updateBassBoost(level) {
+            bassBoostLevel = level;
+            if (bassBoostNode) {
+                const gainDB = (level / 100) * 24 - 12;
+                bassBoostNode.gain.value = gainDB;
+                console.log(`🔊 معزز الجهير: ${gainDB.toFixed(1)}dB`);
+            }
+        }
+        
+        function updateReverb(level) {
+            reverbLevel = level;
+            if (audioNodes.dryGain && audioNodes.wetGain) {
+                const dryLevel = Math.max(0, 1 - (level / 100));
+                const wetLevel = level / 100;
+                
+                audioNodes.dryGain.gain.value = dryLevel;
+                audioNodes.wetGain.gain.value = wetLevel * 0.5;
+                
+                console.log(`🎚️ الصدى: ${level}% (جاف: ${dryLevel.toFixed(2)}, رطب: ${wetLevel.toFixed(2)})`);
+            }
+        }
+        
+        function updateVolumeBoost(level) {
+            volumeBoostLevel = level;
+            if (gainNode) {
+                const boostFactor = 1 + (level / 100);
+                gainNode.gain.value = boostFactor;
+                console.log(`🔊 مضخم الصوت: x${boostFactor.toFixed(2)}`);
+            }
+        }
+        
+        function updateEQ(bandIndex, gainValue) {
+            if (eqFilters && eqFilters[bandIndex]) {
+                eqFilters[bandIndex].gain.value = gainValue;
+                eqGains[bandIndex] = gainValue;
+            }
+        }
+        
+        let audio, playPauseBtn, prevBtn, nextBtn, repeatBtn, shuffleBtn, progressBar, progress, currentTimeEl, durationEl;
+        let volumeSlider, volumeProgress, fileInput, imageInput, playlist, songTitle, songArtist, albumImage;
+        let albumArtContainer, songsCount, cameraToggle, boostBtn, powerSaveBtn, visualizer, bassLevel;
+        let songs = [], currentSongIndex = 0, isPlaying = false, isRepeating = false, isShuffling = false;
+        let isCameraRotating = false, isBoosted = false, isAlbumRotating = false, isPowerSaveMode = false;
+        let originalVolume = 0.7, bars = [], rotationAngle = 0, cameraRotationId = null;
+        let objectURLs = [], isAudioContextInitialized = false;
+        
         function initializePlayer() {
-            const audio = new Audio();
-            const playPauseBtn = document.getElementById('playPauseBtn');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const repeatBtn = document.getElementById('repeatBtn');
-            const shuffleBtn = document.getElementById('shuffleBtn');
-            const progressBar = document.getElementById('progressBar');
-            const progress = document.getElementById('progress');
-            const currentTimeEl = document.getElementById('currentTime');
-            const durationEl = document.getElementById('duration');
-            const volumeSlider = document.getElementById('volumeSlider');
-            const volumeProgress = document.getElementById('volumeProgress');
-            const fileInput = document.getElementById('fileInput');
-            const imageInput = document.getElementById('imageInput');
-            const playlist = document.getElementById('playlist');
-            const songTitle = document.getElementById('songTitle');
-            const songArtist = document.getElementById('songArtist');
-            const albumImage = document.getElementById('albumImage');
-            const albumArtContainer = document.getElementById('albumArtContainer');
-            const songsCount = document.getElementById('songsCount');
-            const cameraToggle = document.getElementById('cameraToggle');
-            const boostBtn = document.getElementById('boostBtn');
-            const powerSaveBtn = document.getElementById('powerSaveBtn');
-            const visualizer = document.getElementById('visualizer');
-            const bassLevel = document.getElementById('bassLevel');
-            
-            let songs = [];
-            let currentSongIndex = 0;
-            let isPlaying = false;
-            let isRepeating = false;
-            let isShuffling = false;
-            let isCameraRotating = false;
-            let isBoosted = false;
-            let isAlbumRotating = false;
-            let isPowerSaveMode = false;
-            let originalVolume = 0.7;
-            let bars = [];
-            let rotationAngle = 0;
-            let cameraRotationId = null;
-            
-            // المتغيرات الجديدة للمحلل الطيفي والمعادل
-            let audioContext = null;
-            let analyser = null;
-            let source = null;
-            let eqFilters = [];
-            let spectrumAnalyser = null;
-            let spectrumDataArray = null;
-            let dataArray = null;
-            let animationFrameId = null;
-            let objectURLs = []; // إضافة متغير لتخزين الـ URLs
+            audio = new Audio();
+            playPauseBtn = document.getElementById('playPauseBtn');
+            prevBtn = document.getElementById('prevBtn');
+            nextBtn = document.getElementById('nextBtn');
+            repeatBtn = document.getElementById('repeatBtn');
+            shuffleBtn = document.getElementById('shuffleBtn');
+            progressBar = document.getElementById('progressBar');
+            progress = document.getElementById('progress');
+            currentTimeEl = document.getElementById('currentTime');
+            durationEl = document.getElementById('duration');
+            volumeSlider = document.getElementById('volumeSlider');
+            volumeProgress = document.getElementById('volumeProgress');
+            fileInput = document.getElementById('fileInput');
+            imageInput = document.getElementById('imageInput');
+            playlist = document.getElementById('playlist');
+            songTitle = document.getElementById('songTitle');
+            songArtist = document.getElementById('songArtist');
+            albumImage = document.getElementById('albumImage');
+            albumArtContainer = document.getElementById('albumArtContainer');
+            songsCount = document.getElementById('songsCount');
+            cameraToggle = document.getElementById('cameraToggle');
+            boostBtn = document.getElementById('boostBtn');
+            powerSaveBtn = document.getElementById('powerSaveBtn');
+            visualizer = document.getElementById('visualizer');
+            bassLevel = document.getElementById('bassLevel');
             
             // تغيير الصورة الافتراضية للألبوم
             albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3CradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' style='stop-color:%23006400;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23004d00;stop-opacity:1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='240' height='240' fill='url(%23grad)'/%3E%3Ccircle cx='120' cy='120' r='80' fill='none' stroke='%23FFD700' stroke-width='3'/%3E%3Ccircle cx='120' cy='120' r='60' fill='none' stroke='%23FFD700' stroke-width='2' opacity='0.7'/%3E%3C/svg%3E";
@@ -2084,10 +2115,14 @@
                 }
             });
             
-            playPauseBtn.addEventListener('click', function() {
+            playPauseBtn.addEventListener('click', async function() {
                 if (songs.length === 0) {
                     alert('يرجى إضافة أغنية أولاً');
                     return;
+                }
+                
+                if (!isAudioContextInitialized) {
+                    await initializeAudioProcessing();
                 }
                 
                 if (isPlaying) {
@@ -2184,7 +2219,6 @@
                 }
             });
             
-            // إضافة مستمع لحدث error
             audio.addEventListener('error', function(e) {
                 console.error('خطأ في تشغيل الصوت:', e);
                 isPlaying = false;
@@ -2210,12 +2244,10 @@
                 volumeProgress.style.width = `${volumeLevel * 100}%`;
             });
             
-            // تعديل event handler لـ fileInput مع تحسين إدارة الذاكرة
             fileInput.addEventListener('change', function(e) {
                 const files = e.target.files;
                 if (files.length === 0) return;
                 
-                // تحرير الـ URLs القديمة
                 objectURLs.forEach(url => {
                     try {
                         URL.revokeObjectURL(url);
@@ -2235,7 +2267,7 @@
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const url = URL.createObjectURL(file);
-                    objectURLs.push(url); // تخزين الـ URL للإدارة
+                    objectURLs.push(url);
                     
                     newSongs.push({
                         title: file.name.replace(/\.[^/.]+$/, ""),
@@ -2358,393 +2390,73 @@
                 });
             });
             
-            function playNextSong() {
-                if (songs.length === 0) return;
-                
-                if (isShuffling) {
-                    let newIndex;
-                    do {
-                        newIndex = Math.floor(Math.random() * songs.length);
-                    } while (newIndex === currentSongIndex && songs.length > 1);
-                    currentSongIndex = newIndex;
-                } else {
-                    currentSongIndex++;
-                    if (currentSongIndex >= songs.length) {
-                        currentSongIndex = 0;
-                    }
-                }
-                
-                loadSong(currentSongIndex);
-                if (isPlaying) {
-                    audio.play().catch(e => console.log("خطأ في التشغيل:", e));
-                }
-                
-                updatePlaylistActive();
-            }
-            
-            function loadSong(index) {
-                if (index < 0 || index >= songs.length) return;
-                
-                const song = songs[index];
-                
-                // إيقاف الصوت الحالي أولاً
-                audio.pause();
-                audio.currentTime = 0;
-                
-                try {
-                    audio.src = song.src;
-                    songTitle.textContent = song.title;
-                    songArtist.textContent = song.artist;
-                    
-                    if (song.cover) {
-                        albumImage.src = song.cover;
-                    } else {
-                        albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3CradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' style='stop-color:%23006400;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23004d00;stop-opacity:1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='240' height='240' fill='url(%23grad)'/%3E%3Ccircle cx='120' cy='120' r='80' fill='none' stroke='%23FFD700' stroke-width='3'/%3E%3Ccircle cx='120' cy='120' r='60' fill='none' stroke='%23FFD700' stroke-width='2' opacity='0.7'/%3E%3C/svg%3E";
-                    }
-                    
-                    progress.style.width = '0%';
-                    currentTimeEl.textContent = '0:00';
-                    durationEl.textContent = '0:00';
-                    
-                    if (animationFrameId) {
-                        cancelAnimationFrame(animationFrameId);
-                        animationFrameId = null;
-                    }
-                    
-                    if (isPlaying && !isPowerSaveMode) {
-                        setTimeout(() => {
-                            startVisualizer();
-                        }, 100);
-                    }
-                } catch (error) {
-                    console.error('خطأ في تحميل الأغنية:', error);
-                    alert('حدث خطأ في تحميل الملف الصوتي');
-                }
-            }
-            
-            function updatePlaylistActive() {
-                document.querySelectorAll('.playlist-item').forEach((item, index) => {
-                    if (index === currentSongIndex) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
+            // تحديث سلايدر معزز الجهير
+            const bassEnhancementSlider = document.getElementById('bassEnhancementSlider');
+            if (bassEnhancementSlider) {
+                bassEnhancementSlider.addEventListener('input', function() {
+                    updateBassBoost(parseInt(this.value));
                 });
             }
             
-            function updateSongsCount() {
-                songsCount.textContent = `عدد الأغاني: ${songs.length}`;
+            // تحديث سلايدر الصدى
+            const reverbSlider = document.getElementById('reverb');
+            if (reverbSlider) {
+                reverbSlider.addEventListener('input', function() {
+                    updateReverb(parseInt(this.value));
+                });
             }
             
-            function startAlbumRotation() {
-                if (!isAlbumRotating && !isPowerSaveMode) {
-                    albumArtContainer.classList.add('rotating');
-                    isAlbumRotating = true;
-                }
+            // تحديث سلايدر مضخم الصوت
+            const boostEnhancementSlider = document.getElementById('boostEnhancementSlider');
+            if (boostEnhancementSlider) {
+                boostEnhancementSlider.addEventListener('input', function() {
+                    updateVolumeBoost(parseInt(this.value));
+                });
             }
             
-            function stopAlbumRotation() {
-                if (isAlbumRotating) {
-                    albumArtContainer.classList.remove('rotating');
-                    isAlbumRotating = false;
-                }
-            }
-            
-            // تعديل دالة toggleCameraRotation
-            function toggleCameraRotation() {
-                if (isPowerSaveMode) {
-                    alert("وضع توفير الطاقة مفعل. لا يمكن تشغيل دوران الكاميرا.");
-                    cameraToggle.classList.remove('active');
-                    return;
-                }
-                
-                isCameraRotating = !isCameraRotating;
-                cameraToggle.classList.toggle('active', isCameraRotating);
-                
-                if (isCameraRotating) {
-                    cameraToggle.textContent = 'إيقاف دوران الكاميرا';
-                    startCameraRotation();
-                } else {
-                    cameraToggle.textContent = 'تشغيل دوران الكاميرا';
-                    if (cameraRotationId) {
-                        cancelAnimationFrame(cameraRotationId);
-                        cameraRotationId = null;
+            // تحديث معزز الجهير من الأزرار
+            document.querySelectorAll('.enhancement-preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const preset = this.dataset.preset;
+                    switch(preset) {
+                        case 'bass':
+                            updateBassBoost(70);
+                            break;
+                        case 'boost':
+                            updateBassBoost(30);
+                            break;
+                        case 'clear':
+                            updateBassBoost(10);
+                            break;
+                        default:
+                            updateBassBoost(0);
+                            break;
                     }
-                    document.getElementById('playerSection').style.transform = 'none';
-                    rotationAngle = 0;
-                }
-            }
+                });
+            });
             
-            // تعديل دالة startCameraRotation
-            function startCameraRotation() {
-                if (!isCameraRotating || isPowerSaveMode) {
-                    if (cameraRotationId) {
-                        cancelAnimationFrame(cameraRotationId);
-                        cameraRotationId = null;
-                    }
-                    return;
-                }
-                
-                let lastTime = null;
-                
-                function rotateCamera(timestamp) {
-                    if (!lastTime) lastTime = timestamp;
-                    const deltaTime = timestamp - lastTime;
-                    lastTime = timestamp;
+            // تحديث الأزرار المسبقة للمعادل
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const preset = this.dataset.preset;
+                    const presets = {
+                        flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        bass: [6, 4, 2, 1, 0, -1, -2, -3, -4, -5, -4, -3, -2, -1, 0, 1, 2, 3],
+                        vocal: [-2, -1, 0, 1, 2, 3, 2, 1, 0, -1, -2, -1, 0, 1, 2, 3, 2, 1],
+                        acoustic: [2, 1, 0, -1, 0, 1, 2, 3, 2, 1, 0, -1, 0, 1, 2, 3, 2, 1],
+                        rock: [4, 3, 2, 1, 0, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, 0, 1],
+                        jazz: [1, 0, -1, -2, -1, 0, 1, 2, 3, 2, 1, 0, -1, -2, -1, 0, 1, 2],
+                        classical: [0, -1, -2, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, -2, -1, 0, 1],
+                        electronic: [3, 2, 1, 0, -1, 0, 1, 2, 3, 4, 3, 2, 1, 0, -1, 0, 1, 2],
+                        hardstyle: [5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -3, -2, -1, 0, 1, 2, 3, 4]
+                    };
                     
-                    rotationAngle += (deltaTime / 16) * 0.5; // سرعة ثابتة بغض النظر عن frame rate
-                    
-                    const playerSection = document.getElementById('playerSection');
-                    if (playerSection) {
-                        playerSection.style.transform = `perspective(1200px) rotateY(${rotationAngle}deg) rotateX(5deg)`;
-                        playerSection.style.transition = 'transform 0.1s linear';
-                    }
-                    
-                    if (isCameraRotating) {
-                        cameraRotationId = requestAnimationFrame(rotateCamera);
-                    }
-                }
-                
-                cameraRotationId = requestAnimationFrame(rotateCamera);
-            }
-            
-            // تعديل دالة initAudioContext
-            async function initAudioContext() {
-                if (!audioContext) {
-                    try {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        
-                        // إنشاء محلل الطيف الرئيسي
-                        analyser = audioContext.createAnalyser();
-                        analyser.fftSize = 2048; // زيادة الدقة
-                        analyser.smoothingTimeConstant = 0.8;
-                        
-                        // إنشاء محلل الطيف للعرض
-                        spectrumAnalyser = audioContext.createAnalyser();
-                        spectrumAnalyser.fftSize = 512;
-                        spectrumAnalyser.smoothingTimeConstant = 0.6;
-                        
-                        source = audioContext.createMediaElementSource(audio);
-                        
-                        // إنشاء 18 مرشح للمعادل (20Hz إلى 20kHz)
-                        eqFilters = createEQFilters(audioContext);
-                        
-                        // توصيل السلسلة: المصدر → المعادل → المحلل → المخرج
-                        let lastNode = source;
-                        
-                        // توصيل جميع مرشحات المعادل
-                        for (let filter of eqFilters) {
-                            lastNode.connect(filter);
-                            lastNode = filter;
+                    if (presets[preset]) {
+                        for (let i = 0; i < presets[preset].length; i++) {
+                            updateEQ(i, presets[preset][i]);
                         }
-                        
-                        // توصيل المحللين
-                        lastNode.connect(analyser);
-                        lastNode.connect(spectrumAnalyser);
-                        spectrumAnalyser.connect(audioContext.destination);
-                        analyser.connect(audioContext.destination);
-                        
-                        // إنشاء مصفوفات البيانات
-                        dataArray = new Uint8Array(analyser.frequencyBinCount);
-                        spectrumDataArray = new Uint8Array(spectrumAnalyser.frequencyBinCount);
-                        
-                        createVisualizerBars();
-                        
-                    } catch (error) {
-                        console.error("خطأ في تهيئة AudioContext:", error);
-                    }
-                }
-                return audioContext;
-            }
-            
-            // دالة لإنشاء 18 مرشح للمعادل
-            function createEQFilters(audioContext) {
-                const filters = [];
-                
-                // 18 تردد من 20Hz إلى 20kHz (لوغاريتمي)
-                const frequencies = [
-                    20, 30, 45, 67, 100, 150, 225, 337, 506,
-                    759, 1138, 1707, 2560, 3840, 5760, 8640,
-                    12960, 19440, 20000
-                ];
-                
-                for (let i = 0; i < 18; i++) {
-                    const filter = audioContext.createBiquadFilter();
-                    filter.type = 'peaking';
-                    filter.frequency.value = frequencies[i];
-                    filter.Q.value = 1;
-                    filter.gain.value = 0;
-                    filters.push(filter);
-                }
-                
-                return filters;
-            }
-            
-            function createVisualizerBars() {
-                visualizer.innerHTML = '';
-                bars = [];
-                
-                const barCount = 64;
-                for (let i = 0; i < barCount; i++) {
-                    const bar = document.createElement('div');
-                    bar.className = 'bar';
-                    bar.style.height = '1px';
-                    visualizer.appendChild(bar);
-                    bars.push(bar);
-                }
-            }
-            
-            // تعديل دالة startVisualizer
-            async function startVisualizer() {
-                if (isPowerSaveMode) return;
-                
-                await initAudioContext();
-                
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-                
-                function updateVisualizer() {
-                    if (!analyser || !dataArray || audioContext.state !== 'running') {
-                        animationFrameId = requestAnimationFrame(updateVisualizer);
-                        return;
-                    }
-                    
-                    analyser.getByteFrequencyData(dataArray);
-                    
-                    // تحديث أشرطة المحلل الطيفي
-                    for (let i = 0; i < bars.length; i++) {
-                        const value = dataArray[Math.floor(i * 2.5)]; // توزيع أفضل
-                        const height = Math.max(2, (value / 256) * 70);
-                        bars[i].style.height = `${height}px`;
-                        
-                        // تلوين متدرج
-                        const hue = 120 + (value / 256) * 60;
-                        bars[i].style.background = `linear-gradient(to top, hsl(${hue}, 100%, 50%), #00cc00)`;
-                    }
-                    
-                    // تحديث مؤشر الجهير
-                    let bassSum = 0;
-                    for (let i = 0; i < 20; i++) {
-                        bassSum += dataArray[i];
-                    }
-                    const bassPercent = Math.min(100, (bassSum / (20 * 256)) * 100);
-                    bassLevel.style.width = `${bassPercent}%`;
-                    
-                    // تحديث محلل الطيف المتقدم
-                    updateSpectrumDisplay();
-                    
-                    animationFrameId = requestAnimationFrame(updateVisualizer);
-                }
-                
-                animationFrameId = requestAnimationFrame(updateVisualizer);
-            }
-            
-            // دالة جديدة لعرض الطيف الحقيقي
-            function updateSpectrumDisplay() {
-                if (!spectrumAnalyser || !spectrumDataArray) return;
-                
-                spectrumAnalyser.getByteFrequencyData(spectrumDataArray);
-                const canvas = document.getElementById('spectrumCanvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                const width = canvas.width;
-                const height = canvas.height;
-                
-                // مسح الشاشة
-                ctx.clearRect(0, 0, width, height);
-                
-                // رسم خلفية متدرجة
-                const gradient = ctx.createLinearGradient(0, 0, width, 0);
-                gradient.addColorStop(0, '#006400');
-                gradient.addColorStop(0.5, '#00cc00');
-                gradient.addColorStop(1, '#006400');
-                
-                const barCount = 200;
-                const barWidth = (width - 20) / barCount;
-                let x = 10;
-                
-                for (let i = 0; i < barCount; i++) {
-                    const dataIndex = Math.floor(i * (spectrumDataArray.length / barCount));
-                    const value = spectrumDataArray[dataIndex];
-                    
-                    // حساب ارتفاع الشريط (لوغاريتمي)
-                    const barHeight = Math.max(1, (Math.log10(value + 1) / Math.log10(256)) * height * 0.8);
-                    
-                    // تلوين الشريط
-                    const intensity = value / 256;
-                    const hue = 120 + intensity * 60;
-                    ctx.fillStyle = `hsl(${hue}, 100%, ${50 + intensity * 30}%)`;
-                    
-                    // رسم الشريط مع تأثير ثلاثي الأبعاد
-                    ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
-                    
-                    // إضافة تسليط ضوئي
-                    ctx.fillStyle = `rgba(255, 255, 255, ${intensity * 0.3})`;
-                    ctx.fillRect(x, height - barHeight, barWidth - 1, 2);
-                    
-                    x += barWidth;
-                }
-            }
-            
-            // إضافة cleanup function محسنة
-            function cleanupAudioContext() {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-                
-                if (audioContext) {
-                    // فصل جميع الوصلات
-                    if (source) {
-                        source.disconnect();
-                    }
-                    
-                    // إغلاق السياق الصوتي
-                    audioContext.close().then(() => {
-                        audioContext = null;
-                        analyser = null;
-                        source = null;
-                        eqFilters = [];
-                        spectrumAnalyser = null;
-                        spectrumDataArray = null;
-                    }).catch(e => {
-                        console.warn('خطأ في إغلاق AudioContext:', e);
-                    });
-                }
-            }
-            
-            function formatTime(seconds) {
-                if (isNaN(seconds) || seconds === Infinity) return "0:00";
-                
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const secs = Math.floor(seconds % 60);
-                
-                if (hours > 0) {
-                    return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-                } else {
-                    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-                }
-            }
-            
-            // تنظيف عند إغلاق الصفحة
-            window.addEventListener('beforeunload', function() {
-                cleanupAudioContext();
-                
-                objectURLs.forEach(url => {
-                    try {
-                        URL.revokeObjectURL(url);
-                    } catch (e) {
-                        console.warn('خطأ في تحرير URL:', e);
                     }
                 });
-                objectURLs = [];
-                
-                if (cameraRotationId) {
-                    cancelAnimationFrame(cameraRotationId);
-                }
             });
             
             updateSongsCount();
@@ -2756,9 +2468,451 @@
                 isPlaying,
                 loadSong,
                 playNextSong,
-                formatTime
+                formatTime,
+                eqFilters
             };
         }
+        
+        async function initializeAudioProcessing() {
+            if (isAudioContextInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // إنشاء العقد الأساسية
+                source = audioContext.createMediaElementSource(audio);
+                volumeNode = audioContext.createGain();
+                gainNode = audioContext.createGain();
+                compressorNode = audioContext.createDynamicsCompressor();
+                
+                // إعداد الضاغط
+                compressorNode.threshold.value = -24;
+                compressorNode.knee.value = 30;
+                compressorNode.ratio.value = 12;
+                compressorNode.attack.value = 0.003;
+                compressorNode.release.value = 0.25;
+                
+                // إنشاء محلل الطيف
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = 0.8;
+                
+                spectrumAnalyser = audioContext.createAnalyser();
+                spectrumAnalyser.fftSize = 512;
+                spectrumAnalyser.smoothingTimeConstant = 0.6;
+                
+                // إنشاء نظام الصدى (Reverb)
+                reverbNode = audioContext.createConvolver();
+                createReverbImpulse();
+                
+                // إنشاء معزز الجهير
+                bassBoostNode = audioContext.createBiquadFilter();
+                bassBoostNode.type = 'lowshelf';
+                bassBoostNode.frequency.value = 150;
+                bassBoostNode.gain.value = 0;
+                
+                // إنشاء مضخم الصوت العام
+                const boostNode = audioContext.createGain();
+                boostNode.gain.value = 1.0;
+                
+                // إنشاء معادل 18 نطاق
+                eqFilters = createEQFilters(audioContext);
+                
+                // إنشاء سلسلة معالجة الصوت:
+                // مصدر الصوت → ضاغط → معادل → معزز الجهير → مضخم → صدى → محلل → مخرج
+                
+                let lastNode = source;
+                
+                // توصيل الضاغط
+                lastNode.connect(compressorNode);
+                lastNode = compressorNode;
+                
+                // توصيل المعادل
+                eqFilters.forEach(filter => {
+                    lastNode.connect(filter);
+                    lastNode = filter;
+                });
+                
+                // توصيل معزز الجهير
+                lastNode.connect(bassBoostNode);
+                lastNode = bassBoostNode;
+                
+                // توصيل مضخم الصوت
+                lastNode.connect(gainNode);
+                lastNode = gainNode;
+                
+                // توصيل وحدة التحكم في الصوت
+                lastNode.connect(volumeNode);
+                lastNode = volumeNode;
+                
+                // توصيل الصدى (متوازي)
+                const dryGain = audioContext.createGain();
+                const wetGain = audioContext.createGain();
+                
+                lastNode.connect(dryGain);
+                lastNode.connect(reverbNode);
+                reverbNode.connect(wetGain);
+                
+                const merger = audioContext.createChannelMerger(2);
+                dryGain.connect(merger, 0, 0);
+                wetGain.connect(merger, 0, 1);
+                lastNode = merger;
+                
+                // توصيل المحلل الطيفي
+                lastNode.connect(analyser);
+                lastNode.connect(spectrumAnalyser);
+                
+                // التوصيل النهائي للمخرج
+                analyser.connect(audioContext.destination);
+                spectrumAnalyser.connect(audioContext.destination);
+                lastNode.connect(audioContext.destination);
+                
+                // تخزين العقد للإشارة السريعة
+                audioNodes = {
+                    source,
+                    volumeNode,
+                    gainNode,
+                    compressorNode,
+                    bassBoostNode,
+                    reverbNode,
+                    dryGain,
+                    wetGain,
+                    eqFilters
+                };
+                
+                // إنشاء مصفوفات البيانات للتصور
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                spectrumDataArray = new Uint8Array(spectrumAnalyser.frequencyBinCount);
+                
+                createVisualizerBars();
+                isAudioContextInitialized = true;
+                
+                console.log('✅ نظام معالجة الصوت المتقدم تم تهيئته بنجاح');
+                
+            } catch (error) {
+                console.error('❌ خطأ في تهيئة معالجة الصوت:', error);
+            }
+        }
+        
+        function createReverbImpulse() {
+            const length = audioContext.sampleRate * 2;
+            const impulse = audioContext.createBuffer(2, length, audioContext.sampleRate);
+            const leftChannel = impulse.getChannelData(0);
+            const rightChannel = impulse.getChannelData(1);
+            
+            for (let i = 0; i < length; i++) {
+                const n = i / length;
+                leftChannel[i] = (Math.random() * 2 - 1) * Math.pow(1 - n, 3);
+                rightChannel[i] = (Math.random() * 2 - 1) * Math.pow(1 - n, 3);
+            }
+            
+            reverbNode.buffer = impulse;
+        }
+        
+        function createEQFilters(context) {
+            const filters = [];
+            const frequencies = [
+                20, 30, 45, 67, 100, 150, 225, 337, 506,
+                759, 1138, 1707, 2560, 3840, 5760, 8640,
+                12960, 19440, 20000
+            ];
+            
+            for (let i = 0; i < frequencies.length; i++) {
+                const filter = context.createBiquadFilter();
+                filter.type = 'peaking';
+                filter.frequency.value = frequencies[i];
+                filter.Q.value = 1;
+                filter.gain.value = 0;
+                filters.push(filter);
+            }
+            
+            return filters;
+        }
+        
+        function playNextSong() {
+            if (songs.length === 0) return;
+            
+            if (isShuffling) {
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * songs.length);
+                } while (newIndex === currentSongIndex && songs.length > 1);
+                currentSongIndex = newIndex;
+            } else {
+                currentSongIndex++;
+                if (currentSongIndex >= songs.length) {
+                    currentSongIndex = 0;
+                }
+            }
+            
+            loadSong(currentSongIndex);
+            if (isPlaying) {
+                audio.play().catch(e => console.log("خطأ في التشغيل:", e));
+            }
+            
+            updatePlaylistActive();
+        }
+        
+        function loadSong(index) {
+            if (index < 0 || index >= songs.length) return;
+            
+            const song = songs[index];
+            
+            // إيقاف الصوت الحالي أولاً
+            audio.pause();
+            audio.currentTime = 0;
+            
+            try {
+                audio.src = song.src;
+                songTitle.textContent = song.title;
+                songArtist.textContent = song.artist;
+                
+                if (song.cover) {
+                    albumImage.src = song.cover;
+                } else {
+                    albumImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3CradialGradient id='grad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' style='stop-color:%23006400;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%23004d00;stop-opacity:1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='240' height='240' fill='url(%23grad)'/%3E%3Ccircle cx='120' cy='120' r='80' fill='none' stroke='%23FFD700' stroke-width='3'/%3E%3Ccircle cx='120' cy='120' r='60' fill='none' stroke='%23FFD700' stroke-width='2' opacity='0.7'/%3E%3C/svg%3E";
+                }
+                
+                progress.style.width = '0%';
+                currentTimeEl.textContent = '0:00';
+                durationEl.textContent = '0:00';
+                
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                
+                if (isPlaying && !isPowerSaveMode) {
+                    setTimeout(() => {
+                        startVisualizer();
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل الأغنية:', error);
+                alert('حدث خطأ في تحميل الملف الصوتي');
+            }
+        }
+        
+        function updatePlaylistActive() {
+            document.querySelectorAll('.playlist-item').forEach((item, index) => {
+                if (index === currentSongIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        function updateSongsCount() {
+            songsCount.textContent = `عدد الأغاني: ${songs.length}`;
+        }
+        
+        function startAlbumRotation() {
+            if (!isAlbumRotating && !isPowerSaveMode) {
+                albumArtContainer.classList.add('rotating');
+                isAlbumRotating = true;
+            }
+        }
+        
+        function stopAlbumRotation() {
+            if (isAlbumRotating) {
+                albumArtContainer.classList.remove('rotating');
+                isAlbumRotating = false;
+            }
+        }
+        
+        function toggleCameraRotation() {
+            if (isPowerSaveMode) {
+                alert("وضع توفير الطاقة مفعل. لا يمكن تشغيل دوران الكاميرا.");
+                cameraToggle.classList.remove('active');
+                return;
+            }
+            
+            isCameraRotating = !isCameraRotating;
+            cameraToggle.classList.toggle('active', isCameraRotating);
+            
+            if (isCameraRotating) {
+                cameraToggle.textContent = 'إيقاف دوران الكاميرا';
+                startCameraRotation();
+            } else {
+                cameraToggle.textContent = 'تشغيل دوران الكاميرا';
+                if (cameraRotationId) {
+                    cancelAnimationFrame(cameraRotationId);
+                    cameraRotationId = null;
+                }
+                document.getElementById('playerSection').style.transform = 'none';
+                rotationAngle = 0;
+            }
+        }
+        
+        function startCameraRotation() {
+            if (!isCameraRotating || isPowerSaveMode) {
+                if (cameraRotationId) {
+                    cancelAnimationFrame(cameraRotationId);
+                    cameraRotationId = null;
+                }
+                return;
+            }
+            
+            let lastTime = null;
+            
+            function rotateCamera(timestamp) {
+                if (!lastTime) lastTime = timestamp;
+                const deltaTime = timestamp - lastTime;
+                lastTime = timestamp;
+                
+                rotationAngle += (deltaTime / 16) * 0.5;
+                
+                const playerSection = document.getElementById('playerSection');
+                if (playerSection) {
+                    playerSection.style.transform = `perspective(1200px) rotateY(${rotationAngle}deg) rotateX(5deg)`;
+                    playerSection.style.transition = 'transform 0.1s linear';
+                }
+                
+                if (isCameraRotating) {
+                    cameraRotationId = requestAnimationFrame(rotateCamera);
+                }
+            }
+            
+            cameraRotationId = requestAnimationFrame(rotateCamera);
+        }
+        
+        function createVisualizerBars() {
+            visualizer.innerHTML = '';
+            bars = [];
+            
+            const barCount = 64;
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = '1px';
+                visualizer.appendChild(bar);
+                bars.push(bar);
+            }
+        }
+        
+        async function startVisualizer() {
+            if (isPowerSaveMode) return;
+            
+            if (!isAudioContextInitialized) {
+                await initializeAudioProcessing();
+            }
+            
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            function updateVisualizer() {
+                if (!analyser || !dataArray) {
+                    animationFrameId = requestAnimationFrame(updateVisualizer);
+                    return;
+                }
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                // تحديث أشرطة المحلل الطيفي
+                for (let i = 0; i < bars.length; i++) {
+                    const value = dataArray[Math.floor(i * 2.5)];
+                    const height = Math.max(2, (value / 256) * 70);
+                    bars[i].style.height = `${height}px`;
+                    
+                    const hue = 120 + (value / 256) * 60;
+                    bars[i].style.background = `linear-gradient(to top, hsl(${hue}, 100%, 50%), #00cc00)`;
+                }
+                
+                let bassSum = 0;
+                for (let i = 0; i < 20; i++) {
+                    bassSum += dataArray[i];
+                }
+                const bassPercent = Math.min(100, (bassSum / (20 * 256)) * 100);
+                bassLevel.style.width = `${bassPercent}%`;
+                
+                updateSpectrumDisplay();
+                
+                animationFrameId = requestAnimationFrame(updateVisualizer);
+            }
+            
+            animationFrameId = requestAnimationFrame(updateVisualizer);
+        }
+        
+        function updateSpectrumDisplay() {
+            if (!spectrumAnalyser || !spectrumDataArray) return;
+            
+            spectrumAnalyser.getByteFrequencyData(spectrumDataArray);
+            const canvas = document.getElementById('spectrumCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const gradient = ctx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, '#006400');
+            gradient.addColorStop(0.5, '#00cc00');
+            gradient.addColorStop(1, '#006400');
+            
+            const barCount = 200;
+            const barWidth = (width - 20) / barCount;
+            let x = 10;
+            
+            for (let i = 0; i < barCount; i++) {
+                const dataIndex = Math.floor(i * (spectrumDataArray.length / barCount));
+                const value = spectrumDataArray[dataIndex];
+                
+                const barHeight = Math.max(1, (Math.log10(value + 1) / Math.log10(256)) * height * 0.8);
+                
+                const intensity = value / 256;
+                const hue = 120 + intensity * 60;
+                ctx.fillStyle = `hsl(${hue}, 100%, ${50 + intensity * 30}%)`;
+                
+                ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${intensity * 0.3})`;
+                ctx.fillRect(x, height - barHeight, barWidth - 1, 2);
+                
+                x += barWidth;
+            }
+        }
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds === Infinity) return "0:00";
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            } else {
+                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+        }
+        
+        window.addEventListener('beforeunload', function() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            if (audioContext) {
+                audioContext.close();
+            }
+            
+            objectURLs.forEach(url => {
+                try {
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    console.warn('خطأ في تحرير URL:', e);
+                }
+            });
+            objectURLs = [];
+            
+            if (cameraRotationId) {
+                cancelAnimationFrame(cameraRotationId);
+            }
+        });
         
         let securitySystem;
         
@@ -2948,7 +3102,6 @@
                 return true;
             }
             
-            // تعديل دالة scanFile مع تحسينات الأمان
             async scanFile(file) {
                 return new Promise((resolve) => {
                     if (file.size > this.securityConfig.maxFileSize) {
@@ -2971,7 +3124,6 @@
                         try {
                             const arrayBuffer = e.target.result;
                             
-                            // قراءة التوقيع (أول 4 بايت)
                             const header = new Uint8Array(arrayBuffer.slice(0, 8));
                             let isValid = this.checkFileSignature(header, fileExt);
                             
@@ -2981,7 +3133,6 @@
                                 return;
                             }
                             
-                            // فحص محتوى الملف للكود الخبيث
                             isValid = await this.checkForMaliciousContent(arrayBuffer);
                             
                             if (!isValid) {
@@ -3004,34 +3155,30 @@
                         resolve(false);
                     };
                     
-                    // قراءة أول 64KB فقط للفحص
                     reader.readAsArrayBuffer(file.slice(0, 65536));
                 });
             }
             
-            // دالة جديدة للتحقق من توقيع الملف
             checkFileSignature(header, fileExt) {
                 const signatures = {
-                    'mp3': [[0x49, 0x44, 0x33], [0xFF, 0xFB]], // ID3 أو MPEG
-                    'wav': [0x52, 0x49, 0x46, 0x46], // RIFF
-                    'ogg': [0x4F, 0x67, 0x67, 0x53], // OggS
-                    'flac': [0x66, 0x4C, 0x61, 0x43], // fLaC
-                    'm4a': [0x66, 0x74, 0x79, 0x70], // ftyp
-                    'aiff': [0x46, 0x4F, 0x52, 0x4D] // FORM
+                    'mp3': [[0x49, 0x44, 0x33], [0xFF, 0xFB]],
+                    'wav': [0x52, 0x49, 0x46, 0x46],
+                    'ogg': [0x4F, 0x67, 0x67, 0x53],
+                    'flac': [0x66, 0x4C, 0x61, 0x43],
+                    'm4a': [0x66, 0x74, 0x79, 0x70],
+                    'aiff': [0x46, 0x4F, 0x52, 0x4D]
                 };
                 
                 if (!signatures[fileExt]) return true;
                 
                 const sig = signatures[fileExt];
                 if (Array.isArray(sig[0])) {
-                    // عدة توقيعات محتملة
                     return sig.some(s => s.every((byte, i) => header[i] === byte));
                 } else {
                     return sig.every((byte, i) => header[i] === byte);
                 }
             }
             
-            // دالة جديدة للتحقق من المحتوى الخبيث
             async checkForMaliciousContent(arrayBuffer) {
                 try {
                     const textDecoder = new TextDecoder('utf-8');
@@ -3062,7 +3209,7 @@
                     return true;
                 } catch (e) {
                     console.warn('خطأ في فحص المحتوى:', e);
-                    return true; // في حالة الخطأ، نفترض أن الملف سليم
+                    return true;
                 }
             }
             
@@ -3686,9 +3833,7 @@
                         value.textContent = `${gainValue}dB`;
                         
                         // تحديث مرشح المعادل الحقيقي
-                        if (window.player && window.player.eqFilters && window.player.eqFilters[index]) {
-                            window.player.eqFilters[index].gain.value = gainValue;
-                        }
+                        updateEQ(index, gainValue);
                         
                         // تحديث اللون حسب القيمة
                         if (gainValue > 0) {
@@ -3712,7 +3857,11 @@
             // إنشاء عرض الطيف الحقيقي
             const spectrumDisplay = document.getElementById('spectrumDisplay');
             if (spectrumDisplay) {
-                spectrumDisplay.innerHTML = '<canvas id="spectrumCanvas" width="800" height="100"></canvas>';
+                const canvas = document.createElement('canvas');
+                canvas.id = 'spectrumCanvas';
+                canvas.width = 800;
+                canvas.height = 100;
+                spectrumDisplay.appendChild(canvas);
             }
             
             // التحكم في السلايدرات المتقدمة
@@ -3826,7 +3975,6 @@
                     this.classList.add('active');
                     
                     const preset = this.dataset.preset;
-                    const sliders = document.querySelectorAll('.eq-slider');
                     
                     const presets = {
                         flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -3841,6 +3989,7 @@
                     };
                     
                     if (presets[preset]) {
+                        const sliders = document.querySelectorAll('.eq-slider');
                         for (let i = 0; i < sliders.length; i++) {
                             sliders[i].value = presets[preset][i];
                             document.getElementById(`eqValue${i}`).textContent = `${presets[preset][i]}dB`;
@@ -3854,9 +4003,7 @@
                             }
                             
                             // تحديث مرشح المعادل الحقيقي
-                            if (window.player && window.player.eqFilters && window.player.eqFilters[i]) {
-                                window.player.eqFilters[i].gain.value = gainValue;
-                            }
+                            updateEQ(i, gainValue);
                         }
                     }
                 });
@@ -3984,7 +4131,52 @@
                 });
             }
             
-            // اختصارات لوحة المفاتيح
+            // ربط سلايدرات المعادل مع نظام المعالجة
+            const eqSliders = document.querySelectorAll('.eq-slider');
+            eqSliders.forEach((slider, index) => {
+                slider.addEventListener('input', function() {
+                    const gainValue = parseFloat(this.value);
+                    updateEQ(index, gainValue);
+                });
+            });
+            
+            // إضافة اختصارات لوحة المفاتيح للميزات الجديدة
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                switch(e.key.toLowerCase()) {
+                    case 'q':
+                        e.preventDefault();
+                        // تشغيل/إيقاف معزز الجهير
+                        const bassEnhancementSlider = document.getElementById('bassEnhancementSlider');
+                        if (bassEnhancementSlider) {
+                            const currentBass = bassEnhancementSlider.value;
+                            bassEnhancementSlider.value = currentBass > 0 ? 0 : 50;
+                            updateBassBoost(parseInt(bassEnhancementSlider.value));
+                        }
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        // تشغيل/إيقاف الصدى
+                        const reverbSlider = document.getElementById('reverb');
+                        if (reverbSlider) {
+                            const currentReverb = reverbSlider.value;
+                            reverbSlider.value = currentReverb > 0 ? 0 : 50;
+                            updateReverb(parseInt(reverbSlider.value));
+                        }
+                        break;
+                    case 'w':
+                        e.preventDefault();
+                        // تشغيل/إيقاف عرض المعادل
+                        const eqContainer = document.querySelector('.eq-container');
+                        if (eqContainer) {
+                            eqContainer.style.display = eqContainer.style.display === 'none' ? 'block' : 'none';
+                        }
+                        break;
+                }
+            });
+            
+            // اختصارات لوحة المفاتيح الأساسية
             document.addEventListener('keydown', function(e) {
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                     return;
@@ -4101,6 +4293,42 @@
         function requestNotificationPermission() {
             if ("Notification" in window && Notification.permission === "default") {
                 Notification.requestPermission();
+            }
+        }
+        
+        // وظائف مساعدة للصوت
+        function resetAudioEffects() {
+            // إعادة جميع المؤثرات إلى الإعدادات الافتراضية
+            if (bassBoostNode) bassBoostNode.gain.value = 0;
+            if (reverbNode && audioNodes.dryGain && audioNodes.wetGain) {
+                audioNodes.dryGain.gain.value = 1;
+                audioNodes.wetGain.gain.value = 0;
+            }
+            if (gainNode) gainNode.gain.value = 1;
+            
+            // إعادة المعادل إلى الصفر
+            eqGains.forEach((gain, index) => {
+                if (eqFilters && eqFilters[index]) {
+                    eqFilters[index].gain.value = 0;
+                }
+            });
+            
+            console.log('🔄 تم إعادة تعيين جميع مؤثرات الصوت');
+        }
+        
+        // دالة لاختبار النظام
+        function testAudioSystem() {
+            console.log('🎵 اختبار نظام الصوت:');
+            console.log('- AudioContext:', audioContext ? '✅ جاهز' : '❌ غير جاهز');
+            console.log('- المعادل:', eqFilters ? `✅ ${eqFilters.length} نطاق` : '❌ غير جاهز');
+            console.log('- الصدى:', reverbNode ? '✅ جاهز' : '❌ غير جاهز');
+            console.log('- معزز الجهير:', bassBoostNode ? '✅ جاهز' : '❌ غير جاهز');
+            console.log('- مضخم الصوت:', gainNode ? '✅ جاهز' : '❌ غير جاهز');
+            
+            // اختبار كل مكون
+            if (bassBoostNode) {
+                bassBoostNode.gain.value = 10;
+                setTimeout(() => bassBoostNode.gain.value = 0, 500);
             }
         }
     </script>
