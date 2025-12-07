@@ -2427,44 +2427,6 @@
         }
         
         // نظام الصوت المحسن مع التضخيم الذكي المتقدم
-        class EnhancedAudioSystem {
-            constructor() {
-                this.audioContext = null;
-                this.analyser = null;
-                this.source = null;
-                this.eqFilters = [];
-                this.reverbNode = null;
-                this.bassBoostNode = null;
-                this.volumeNode = null;
-                this.gainNode = null;
-                this.compressorNode = null;
-                this.noiseReductionNode = null;
-                this.spectrumAnalyser = null;
-                
-                this.dataArray = null;
-                this.spectrumDataArray = null;
-                this.animationFrameId = null;
-                
-                this.eqGains = new Array(18).fill(0);
-                this.reverbLevel = 0;
-                this.bassBoostLevel = 0;
-                this.volumeBoostLevel = 0;
-                this.noiseReductionLevel = 0;
-                
-                this.isAudioContextInitialized = false;
-                this.currentSampleRate = 96000;
-                this.currentBitDepth = 24;
-                this.supportedSampleRates = [44100, 48000, 96000, 192000];
-                this.supportedBitDepths = [16, 24];
-                
-                this.audioEnhancements = {
-                    clarity: 0,
-                    warmth: 0,
-                    presence: 0,
-                    dynamicRange: 100
-                };
-                
-                // نظام الصوت المحسن (بدون النبرة القديمة)
 class EnhancedAudioSystem {
     constructor() {
         this.audioContext = null;
@@ -2502,8 +2464,21 @@ class EnhancedAudioSystem {
             dynamicRange: 100
         };
         
-        // تم إزالة نظام النبرة القديمة (معزز التوافقيات + التشبع الدافئ)
-        // الحفاظ على النظام الأساسي فقط للحصول على صوت أنقى
+        // نظام التضخيم الذكي الجديد
+        this.smartBoosterNode = null;
+        this.lowBandLimiter = null;
+        this.midBandLimiter = null;
+        this.highBandLimiter = null;
+        this.exciterNode = null;
+        this.saturationNode = null;
+        this.loudnessAnalyser = null;
+        this.loudnessData = null;
+        this.truePeakLevel = 0;
+        this.isClipping = false;
+        this.peakBoostLevel = 0;
+        this.finalBoostLevel = 0;
+        this.exciterLevel = 0;
+        this.saturationLevel = 0;
     }
     
     async initializeAudioProcessing(audioElement, sampleRate = 96000, bitDepth = 24) {
@@ -2556,8 +2531,11 @@ class EnhancedAudioSystem {
             
             this.noiseReductionNode = this.createNoiseReductionFilter();
             
-            // استخدام النظام الأساسي فقط (بدون معزز التوافقيات)
-            this.buildBasicAudioProcessingChain();
+            // تهيئة نظام التضخيم الذكي
+            this.initializeSmartBooster();
+            
+            // بناء سلسلة معالجة الصوت مع التضخيم الذكي
+            this.buildAudioProcessingChainWithSmartBoost();
             
             this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
             this.spectrumDataArray = new Uint8Array(this.spectrumAnalyser.frequencyBinCount);
@@ -2574,550 +2552,613 @@ class EnhancedAudioSystem {
             return false;
         }
     }
+    
+    getSupportedSampleRate(desiredRate) {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const availableRates = this.supportedSampleRates;
+        const supportedRate = availableRates.find(rate => rate <= desiredRate) || availableRates[0];
+        context.close();
+        return supportedRate;
+    }
+    
+    getSupportedBitDepth(desiredDepth) {
+        return this.supportedBitDepths.find(depth => depth <= desiredDepth) || this.supportedBitDepths[0];
+    }
+    
+    createNoiseReductionFilter() {
+        if (!this.audioContext) return null;
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 20;
+        filter.Q.value = 0.7;
+        return filter;
+    }
+    
+    createReverbImpulse() {
+        if (!this.audioContext || !this.reverbNode) return;
+        
+        const length = this.audioContext.sampleRate * 2.5;
+        const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
+        const leftChannel = impulse.getChannelData(0);
+        const rightChannel = impulse.getChannelData(1);
+        
+        for (let i = 0; i < length; i++) {
+            const n = i / length;
+            const decay = Math.pow(1 - n, 4);
+            leftChannel[i] = (Math.random() * 2 - 1) * decay;
+            rightChannel[i] = (Math.random() * 2 - 1) * decay * 0.8;
+        }
+        
+        this.reverbNode.buffer = impulse;
+    }
+    
+    createEQ18Filters() {
+        if (!this.audioContext) return [];
+        
+        const frequencies = [
+            20, 30, 45, 67, 100, 150, 225, 337, 506,
+            759, 1138, 1707, 2560, 3840, 5760, 8640,
+            12960, 19440
+        ];
+        
+        const filters = [];
+        for (let i = 0; i < 18; i++) {
+            const filter = this.audioContext.createBiquadFilter();
+            filter.type = 'peaking';
+            filter.frequency.value = frequencies[i];
+            filter.Q.value = 1.0;
+            filter.gain.value = 0;
+            filters.push(filter);
+        }
+        return filters;
+    }
+    
+    // نظام التضخيم الذكي المتقدم
+    initializeSmartBooster() {
+        if (!this.audioContext) return;
+        
+        try {
+            // 1. مضخم الذروة الذكي
+            this.smartBoosterNode = this.audioContext.createGain();
+            this.smartBoosterNode.gain.value = 1.0;
             
-            createNoiseReductionFilter() {
-                const filter = this.audioContext.createBiquadFilter();
-                filter.type = 'highpass';
-                filter.frequency.value = 20;
-                filter.Q.value = 0.7;
-                return filter;
-            }
+            // 2. محدب ذكي متعدد النطاقات
+            this.createMultibandLimiter();
             
-            createReverbImpulse() {
-                const length = this.audioContext.sampleRate * 2.5;
-                const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
-                const leftChannel = impulse.getChannelData(0);
-                const rightChannel = impulse.getChannelData(1);
-                
-                for (let i = 0; i < length; i++) {
-                    const n = i / length;
-                    const decay = Math.pow(1 - n, 4);
-                    leftChannel[i] = (Math.random() * 2 - 1) * decay;
-                    rightChannel[i] = (Math.random() * 2 - 1) * decay * 0.8;
-                }
-                
-                this.reverbNode.buffer = impulse;
-            }
+            // 3. معزز التوافقيات (Exciter)
+            this.exciterNode = this.createExciter();
             
-            // نظام التضخيم الذكي المتقدم
-            initializeSmartBooster() {
-                if (!this.audioContext) return;
-                
-                try {
-                    // 1. مضخم الذروة الذكي
-                    this.smartBoosterNode = this.audioContext.createGain();
-                    this.smartBoosterNode.gain.value = 1.0;
-                    
-                    // 2. محدب ذكي متعدد النطاقات
-                    this.createMultibandLimiter();
-                    
-                    // 3. معزز التوافقيات (Exciter)
-                    this.exciterNode = this.createExciter();
-                    
-                    // 4. معالج التشبع الدافئ (Warm Saturation)
-                    this.saturationNode = this.createWarmSaturation();
-                    
-                    // 5. محلل الذروة الحقيقية
-                    this.loudnessAnalyser = this.audioContext.createAnalyser();
-                    this.loudnessAnalyser.fftSize = 32768;
-                    this.loudnessData = new Float32Array(this.loudnessAnalyser.fftSize);
-                    
-                    console.log('🚀 نظام التضخيم الذكي المتقدم تم تهيئته');
-                    return true;
-                } catch (error) {
-                    console.error('❌ خطأ في تهيئة نظام التضخيم:', error);
-                    return false;
-                }
-            }
+            // 4. معالج التشبع الدافئ (Warm Saturation)
+            this.saturationNode = this.createWarmSaturation();
+            
+            // 5. محلل الذروة الحقيقية
+            this.loudnessAnalyser = this.audioContext.createAnalyser();
+            this.loudnessAnalyser.fftSize = 32768;
+            this.loudnessData = new Float32Array(this.loudnessAnalyser.fftSize);
+            
+            console.log('🚀 نظام التضخيم الذكي المتقدم تم تهيئته');
+            return true;
+        } catch (error) {
+            console.error('❌ خطأ في تهيئة نظام التضخيم:', error);
+            return false;
+        }
+    }
 
-            // محدب متعدد النطاقات ذكي
-            createMultibandLimiter() {
-                // نطاق الجهير (20-250Hz)
-                this.lowBandLimiter = this.audioContext.createDynamicsCompressor();
-                this.lowBandLimiter.threshold.value = -10;
-                this.lowBandLimiter.knee.value = 0;
-                this.lowBandLimiter.ratio.value = 20;
-                this.lowBandLimiter.attack.value = 0.001;
-                this.lowBandLimiter.release.value = 0.050;
-                
-                // نطاق المتوسط (250-4000Hz)
-                this.midBandLimiter = this.audioContext.createDynamicsCompressor();
-                this.midBandLimiter.threshold.value = -6;
-                this.midBandLimiter.knee.value = 3;
-                this.midBandLimiter.ratio.value = 12;
-                this.midBandLimiter.attack.value = 0.002;
-                this.midBandLimiter.release.value = 0.100;
-                
-                // نطاق العالي (4000-20000Hz)
-                this.highBandLimiter = this.audioContext.createDynamicsCompressor();
-                this.highBandLimiter.threshold.value = -3;
-                this.highBandLimiter.knee.value = 6;
-                this.highBandLimiter.ratio.value = 8;
-                this.highBandLimiter.attack.value = 0.005;
-                this.highBandLimiter.release.value = 0.200;
-            }
+    // محدب متعدد النطاقات ذكي
+    createMultibandLimiter() {
+        if (!this.audioContext) return;
+        
+        // نطاق الجهير (20-250Hz)
+        this.lowBandLimiter = this.audioContext.createDynamicsCompressor();
+        this.lowBandLimiter.threshold.value = -10;
+        this.lowBandLimiter.knee.value = 0;
+        this.lowBandLimiter.ratio.value = 20;
+        this.lowBandLimiter.attack.value = 0.001;
+        this.lowBandLimiter.release.value = 0.050;
+        
+        // نطاق المتوسط (250-4000Hz)
+        this.midBandLimiter = this.audioContext.createDynamicsCompressor();
+        this.midBandLimiter.threshold.value = -6;
+        this.midBandLimiter.knee.value = 3;
+        this.midBandLimiter.ratio.value = 12;
+        this.midBandLimiter.attack.value = 0.002;
+        this.midBandLimiter.release.value = 0.100;
+        
+        // نطاق العالي (4000-20000Hz)
+        this.highBandLimiter = this.audioContext.createDynamicsCompressor();
+        this.highBandLimiter.threshold.value = -3;
+        this.highBandLimiter.knee.value = 6;
+        this.highBandLimiter.ratio.value = 8;
+        this.highBandLimiter.attack.value = 0.005;
+        this.highBandLimiter.release.value = 0.200;
+    }
 
-            // معزز التوافقيات (Exciter)
-            createExciter() {
-                const processor = this.audioContext.createScriptProcessor(2048, 1, 1);
-                const self = this;
+    // معزز التوافقيات (Exciter)
+    createExciter() {
+        if (!this.audioContext) return null;
+        
+        const processor = this.audioContext.createScriptProcessor(2048, 1, 1);
+        const self = this;
+        
+        processor.onaudioprocess = function(audioProcessingEvent) {
+            const inputBuffer = audioProcessingEvent.inputBuffer;
+            const outputBuffer = audioProcessingEvent.outputBuffer;
+            
+            for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
+                const inputData = inputBuffer.getChannelData(channel);
+                const outputData = outputBuffer.getChannelData(channel);
                 
-                processor.onaudioprocess = function(audioProcessingEvent) {
-                    const inputBuffer = audioProcessingEvent.inputBuffer;
-                    const outputBuffer = audioProcessingEvent.outputBuffer;
+                for (let i = 0; i < inputData.length; i++) {
+                    let sample = inputData[i];
                     
-                    for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
-                        const inputData = inputBuffer.getChannelData(channel);
-                        const outputData = outputBuffer.getChannelData(channel);
-                        
-                        for (let i = 0; i < inputData.length; i++) {
-                            let sample = inputData[i];
-                            
-                            // إضافة توافقيات زوجية دافئة
-                            if (Math.abs(sample) > 0.1) {
-                                const harmonic = sample * sample * 0.3; // توافقيات من الدرجة الثانية
-                                sample = sample + harmonic * 0.15;
-                            }
-                            
-                            // تلميع عالي التردد
-                            if (i > 0) {
-                                const diff = sample - inputData[i-1];
-                                sample += Math.sign(diff) * Math.min(Math.abs(diff) * 0.05, 0.01);
-                            }
-                            
-                            outputData[i] = self.applySoftClipping(sample, 0.95);
-                        }
+                    // إضافة توافقيات زوجية دافئة
+                    if (Math.abs(sample) > 0.1) {
+                        const harmonic = sample * sample * 0.3; // توافقيات من الدرجة الثانية
+                        sample = sample + harmonic * 0.15;
                     }
-                };
-                
-                return processor;
-            }
-
-            // تشبع دافئ (Warm Saturation)
-            createWarmSaturation() {
-                const processor = this.audioContext.createScriptProcessor(2048, 1, 1);
-                const self = this;
-                
-                processor.onaudioprocess = function(audioProcessingEvent) {
-                    const inputBuffer = audioProcessingEvent.inputBuffer;
-                    const outputBuffer = audioProcessingEvent.outputBuffer;
                     
-                    for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
-                        const inputData = inputBuffer.getChannelData(channel);
-                        const outputData = outputBuffer.getChannelData(channel);
-                        
-                        for (let i = 0; i < inputData.length; i++) {
-                            let x = inputData[i];
-                            
-                            // تشبيع أنبوبي دافئ (Tube-like saturation)
-                            if (self.saturationLevel > 0) {
-                                const k = 2 * self.saturationLevel / 100;
-                                x = Math.tanh(k * x) / Math.tanh(k);
-                            }
-                            
-                            outputData[i] = x;
-                        }
+                    // تلميع عالي التردد
+                    if (i > 0) {
+                        const diff = sample - inputData[i-1];
+                        sample += Math.sign(diff) * Math.min(Math.abs(diff) * 0.05, 0.01);
                     }
-                };
-                
-                return processor;
-            }
-
-            // قصة تشبيع ذكية (Soft Clipping)
-            applySoftClipping(sample, threshold) {
-                const absSample = Math.abs(sample);
-                
-                if (absSample <= threshold) {
-                    return sample;
-                }
-                
-                if (absSample >= 1.0) {
-                    return Math.sign(sample) * 0.999;
-                }
-                
-                // قصة ناعمة متعددة الحدود
-                const x = sample;
-                const t = threshold;
-                
-                if (x > t) {
-                    return t + (x - t) / (1 + Math.pow((x - t) / (1 - t), 2));
-                } else if (x < -t) {
-                    return -t + (x + t) / (1 + Math.pow((x + t) / (1 - t), 2));
-                }
-                
-                return sample;
-            }
-
-            // التضخيم الذكي للذروة
-            updatePeakBoost(level) {
-                this.peakBoostLevel = level;
-                
-                if (!this.smartBoosterNode) return;
-                
-                // حساب التضخيم الذكي مع مراعاة المدى الديناميكي
-                const safeLevel = Math.min(level, 300); // حتى 300%
-                const boostLinear = 1 + (safeLevel / 100) * 3; // حتى 10x تضخيم
-                
-                // تطبيق مع تقليل تدريجي عند الوصول للحدود
-                const currentGain = this.smartBoosterNode.gain.value;
-                const targetGain = boostLinear;
-                
-                // تغيير سلس للقيمة
-                this.smartBoosterNode.gain.cancelScheduledValues(this.audioContext.currentTime);
-                this.smartBoosterNode.gain.setValueAtTime(currentGain, this.audioContext.currentTime);
-                this.smartBoosterNode.gain.linearRampToValueAtTime(
-                    targetGain, 
-                    this.audioContext.currentTime + 0.05
-                );
-                
-                // ضبط المحدب ديناميكياً
-                this.updateDynamicLimiter(level);
-                
-                console.log(`🚀 تضخيم الذروة: ${safeLevel}% (x${boostLinear.toFixed(2)})`);
-            }
-
-            // التعزيز النهائي الذكي
-            updateFinalBoost(level) {
-                this.finalBoostLevel = level;
-                
-                if (!this.exciterNode || !this.saturationNode) return;
-                
-                // إعادة ضبط المعالجات بناءً على مستوى التعزيز
-                this.updateExciter(level);
-                this.updateSaturation(level);
-                
-                // مراقبة التشويه
-                this.monitorDistortion();
-                
-                console.log(`🔊 التعزيز النهائي: ${level}%`);
-            }
-
-            // تحديث المحدب الديناميكي
-            updateDynamicLimiter(boostLevel) {
-                const safeThreshold = -3 - (boostLevel / 10);
-                
-                if (this.lowBandLimiter) {
-                    this.lowBandLimiter.threshold.value = safeThreshold - 2;
-                    this.lowBandLimiter.ratio.value = 15 + (boostLevel / 20);
-                }
-                
-                if (this.midBandLimiter) {
-                    this.midBandLimiter.threshold.value = safeThreshold;
-                    this.midBandLimiter.ratio.value = 10 + (boostLevel / 30);
-                }
-                
-                if (this.highBandLimiter) {
-                    this.highBandLimiter.threshold.value = safeThreshold + 1;
-                    this.highBandLimiter.ratio.value = 8 + (boostLevel / 40);
-                }
-            }
-
-            // تحديث معزز التوافقيات
-            updateExciter(level) {
-                this.exciterLevel = level;
-            }
-
-            // تحديث التشبع الدافئ
-            updateSaturation(level) {
-                this.saturationLevel = level;
-            }
-
-            // مراقبة التشويه
-            monitorDistortion() {
-                if (!this.loudnessAnalyser || !this.loudnessData) return;
-                
-                this.loudnessAnalyser.getFloatTimeDomainData(this.loudnessData);
-                
-                let peak = 0;
-                let clippingSamples = 0;
-                
-                for (let i = 0; i < this.loudnessData.length; i++) {
-                    const value = Math.abs(this.loudnessData[i]);
-                    peak = Math.max(peak, value);
                     
-                    if (value > 0.99) {
-                        clippingSamples++;
+                    outputData[i] = self.applySoftClipping(sample, 0.95);
+                }
+            }
+        };
+        
+        return processor;
+    }
+
+    // تشبع دافئ (Warm Saturation)
+    createWarmSaturation() {
+        if (!this.audioContext) return null;
+        
+        const processor = this.audioContext.createScriptProcessor(2048, 1, 1);
+        const self = this;
+        
+        processor.onaudioprocess = function(audioProcessingEvent) {
+            const inputBuffer = audioProcessingEvent.inputBuffer;
+            const outputBuffer = audioProcessingEvent.outputBuffer;
+            
+            for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
+                const inputData = inputBuffer.getChannelData(channel);
+                const outputData = outputBuffer.getChannelData(channel);
+                
+                for (let i = 0; i < inputData.length; i++) {
+                    let x = inputData[i];
+                    
+                    // تشبيع أنبوبي دافئ (Tube-like saturation)
+                    if (self.saturationLevel > 0) {
+                        const k = 2 * self.saturationLevel / 100;
+                        x = Math.tanh(k * x) / Math.tanh(k);
                     }
+                    
+                    outputData[i] = x;
                 }
-                
-                this.truePeakLevel = peak;
-                this.isClipping = clippingSamples > 10;
-                
-                // حساب نسبة التشويه
-                const distortionPercent = Math.min(100, clippingSamples / this.loudnessData.length * 10000);
-                const distortionLevel = Math.min(100, peak * 100 + distortionPercent);
-                
-                // تحديث واجهة المستخدم
-                this.updateDistortionUI(distortionLevel, distortionPercent);
-                
-                return {
-                    peak: this.truePeakLevel,
-                    isClipping: this.isClipping,
-                    distortionPercent: distortionPercent
-                };
             }
+        };
+        
+        return processor;
+    }
 
-            // تحديث واجهة مؤشر التشويه
-            updateDistortionUI(level, percent) {
-                const distortionLevel = document.getElementById('distortionLevel');
-                const distortionValue = document.getElementById('distortionValue');
-                
-                if (distortionLevel && distortionValue) {
-                    distortionLevel.style.width = `${level}%`;
-                    
-                    if (level < 20) {
-                        distortionValue.textContent = "منخفض جداً";
-                        distortionValue.style.color = "#00ff00";
-                    } else if (level < 50) {
-                        distortionValue.textContent = "منخفض";
-                        distortionValue.style.color = "#99ff00";
-                    } else if (level < 70) {
-                        distortionValue.textContent = "متوسط";
-                        distortionValue.style.color = "#ff9900";
-                    } else {
-                        distortionValue.textContent = "مرتفع ⚠️";
-                        distortionValue.style.color = "#ff0000";
-                    }
-                }
-            }
+    // قصة تشبيع ذكية (Soft Clipping)
+    applySoftClipping(sample, threshold) {
+        const absSample = Math.abs(sample);
+        
+        if (absSample <= threshold) {
+            return sample;
+        }
+        
+        if (absSample >= 1.0) {
+            return Math.sign(sample) * 0.999;
+        }
+        
+        // قصة ناعمة متعددة الحدود
+        const x = sample;
+        const t = threshold;
+        
+        if (x > t) {
+            return t + (x - t) / (1 + Math.pow((x - t) / (1 - t), 2));
+        } else if (x < -t) {
+            return -t + (x + t) / (1 + Math.pow((x + t) / (1 - t), 2));
+        }
+        
+        return sample;
+    }
 
-            // تعديل سلسلة المعالجة لتشمل النظام الجديد
-            buildAudioProcessingChainWithSmartBoost() {
-                let currentNode = this.source;
-                
-                // 1. تقليل الضوضاء أولاً
-                if (this.noiseReductionNode) {
-                    currentNode.connect(this.noiseReductionNode);
-                    currentNode = this.noiseReductionNode;
-                }
-                
-                // 2. الضاغط الأساسي
-                currentNode.connect(this.compressorNode);
-                currentNode = this.compressorNode;
-                
-                // 3. المعادل متعدد النطاقات
-                for (const filter of this.eqFilters) {
-                    currentNode.connect(filter);
-                    currentNode = filter;
-                }
-                
-                // 4. معزز الجهير
-                currentNode.connect(this.bassBoostNode);
-                currentNode = this.bassBoostNode;
-                
-                // 5. التعزيز الأساسي
-                currentNode.connect(this.gainNode);
-                currentNode = this.gainNode;
-                
-                // 6. التضخيم الذكي للذروة
-                if (this.smartBoosterNode) {
-                    currentNode.connect(this.smartBoosterNode);
-                    currentNode = this.smartBoosterNode;
-                }
-                
-                // 7. المحدب متعدد النطاقات
-                if (this.lowBandLimiter && this.midBandLimiter && this.highBandLimiter) {
-                    currentNode.connect(this.lowBandLimiter);
-                    currentNode = this.lowBandLimiter;
-                    
-                    currentNode.connect(this.midBandLimiter);
-                    currentNode = this.midBandLimiter;
-                    
-                    currentNode.connect(this.highBandLimiter);
-                    currentNode = this.highBandLimiter;
-                }
-                
-                // 8. معزز التوافقيات
-                if (this.exciterNode) {
-                    currentNode.connect(this.exciterNode);
-                    currentNode = this.exciterNode;
-                }
-                
-                // 9. التشبع الدافئ
-                if (this.saturationNode) {
-                    currentNode.connect(this.saturationNode);
-                    currentNode = this.saturationNode;
-                }
-                
-                // 10. محلل الصوت
-                currentNode.connect(this.loudnessAnalyser);
-                currentNode.connect(this.analyser);
-                currentNode.connect(this.spectrumAnalyser);
-                
-                // 11. الصدى
-                const dryGain = this.audioContext.createGain();
-                const wetGain = this.audioContext.createGain();
-                const merger = this.audioContext.createChannelMerger(2);
-                
-                currentNode.connect(dryGain);
-                dryGain.connect(merger, 0, 0);
-                
-                currentNode.connect(this.reverbNode);
-                this.reverbNode.connect(wetGain);
-                wetGain.connect(merger, 0, 1);
-                
-                merger.connect(this.audioContext.destination);
-                
-                this.audioNodes = {
-                    source: this.source,
-                    volumeNode: this.volumeNode,
-                    gainNode: this.gainNode,
-                    compressorNode: this.compressorNode,
-                    bassBoostNode: this.bassBoostNode,
-                    reverbNode: this.reverbNode,
-                    dryGain,
-                    wetGain,
-                    eqFilters: this.eqFilters,
-                    noiseReductionNode: this.noiseReductionNode,
-                    smartBoosterNode: this.smartBoosterNode,
-                    lowBandLimiter: this.lowBandLimiter,
-                    midBandLimiter: this.midBandLimiter,
-                    highBandLimiter: this.highBandLimiter,
-                    exciterNode: this.exciterNode,
-                    saturationNode: this.saturationNode
-                };
-            }
+    // التضخيم الذكي للذروة
+    updatePeakBoost(level) {
+        this.peakBoostLevel = level;
+        
+        if (!this.smartBoosterNode || !this.audioContext) return;
+        
+        // حساب التضخيم الذكي مع مراعاة المدى الديناميكي
+        const safeLevel = Math.min(level, 300); // حتى 300%
+        const boostLinear = 1 + (safeLevel / 100) * 3; // حتى 10x تضخيم
+        
+        // تطبيق مع تقليل تدريجي عند الوصول للحدود
+        const currentGain = this.smartBoosterNode.gain.value;
+        const targetGain = boostLinear;
+        
+        // تغيير سلس للقيمة
+        this.smartBoosterNode.gain.cancelScheduledValues(this.audioContext.currentTime);
+        this.smartBoosterNode.gain.setValueAtTime(currentGain, this.audioContext.currentTime);
+        this.smartBoosterNode.gain.linearRampToValueAtTime(
+            targetGain, 
+            this.audioContext.currentTime + 0.05
+        );
+        
+        // ضبط المحدب ديناميكياً
+        this.updateDynamicLimiter(level);
+        
+        console.log(`🚀 تضخيم الذروة: ${safeLevel}% (x${boostLinear.toFixed(2)})`);
+    }
+
+    // التعزيز النهائي الذكي
+    updateFinalBoost(level) {
+        this.finalBoostLevel = level;
+        
+        if (!this.exciterNode || !this.saturationNode) return;
+        
+        // إعادة ضبط المعالجات بناءً على مستوى التعزيز
+        this.updateExciter(level);
+        this.updateSaturation(level);
+        
+        // مراقبة التشويه
+        this.monitorDistortion();
+        
+        console.log(`🔊 التعزيز النهائي: ${level}%`);
+    }
+
+    // تحديث المحدب الديناميكي
+    updateDynamicLimiter(boostLevel) {
+        const safeThreshold = -3 - (boostLevel / 10);
+        
+        if (this.lowBandLimiter) {
+            this.lowBandLimiter.threshold.value = safeThreshold - 2;
+            this.lowBandLimiter.ratio.value = 15 + (boostLevel / 20);
+        }
+        
+        if (this.midBandLimiter) {
+            this.midBandLimiter.threshold.value = safeThreshold;
+            this.midBandLimiter.ratio.value = 10 + (boostLevel / 30);
+        }
+        
+        if (this.highBandLimiter) {
+            this.highBandLimiter.threshold.value = safeThreshold + 1;
+            this.highBandLimiter.ratio.value = 8 + (boostLevel / 40);
+        }
+    }
+
+    // تحديث معزز التوافقيات
+    updateExciter(level) {
+        this.exciterLevel = level;
+    }
+
+    // تحديث التشبع الدافئ
+    updateSaturation(level) {
+        this.saturationLevel = level;
+    }
+
+    // مراقبة التشويه
+    monitorDistortion() {
+        if (!this.loudnessAnalyser || !this.loudnessData) return;
+        
+        this.loudnessAnalyser.getFloatTimeDomainData(this.loudnessData);
+        
+        let peak = 0;
+        let clippingSamples = 0;
+        
+        for (let i = 0; i < this.loudnessData.length; i++) {
+            const value = Math.abs(this.loudnessData[i]);
+            peak = Math.max(peak, value);
             
-            // الدوال الأصلية مع التحسين
-            updateBassBoost(level) {
-                this.bassBoostLevel = level;
-                if (this.bassBoostNode) {
-                    const gainDB = (level / 100) * 24 - 12;
-                    this.bassBoostNode.gain.value = gainDB;
-                    console.log(`🔊 معزز الجهير: ${gainDB.toFixed(1)}dB`);
-                }
-            }
-            
-            updateReverb(level) {
-                this.reverbLevel = level;
-                if (this.audioNodes.dryGain && this.audioNodes.wetGain) {
-                    const dryLevel = Math.max(0, 1 - (level / 100));
-                    const wetLevel = level / 100;
-                    
-                    this.audioNodes.dryGain.gain.value = dryLevel;
-                    this.audioNodes.wetGain.gain.value = wetLevel * 0.5;
-                    
-                    console.log(`🎚️ الصدى: ${level}% (جاف: ${dryLevel.toFixed(2)}, رطب: ${wetLevel.toFixed(2)})`);
-                }
-            }
-            
-            updateVolumeBoost(level) {
-                this.volumeBoostLevel = level;
-                if (this.gainNode) {
-                    const boostFactor = 1 + (level / 100);
-                    this.gainNode.gain.value = boostFactor;
-                    console.log(`🔊 مضخم الصوت: x${boostFactor.toFixed(2)}`);
-                }
-            }
-            
-            updateNoiseReduction(level) {
-                this.noiseReductionLevel = level;
-                if (this.noiseReductionNode) {
-                    const frequency = 20 + (level / 100) * 500;
-                    this.noiseReductionNode.frequency.value = frequency;
-                    console.log(`🔇 تقليل الضوضاء: ${level}% (${frequency.toFixed(0)}Hz)`);
-                }
-            }
-            
-            updateEQ(bandIndex, gainValue) {
-                if (this.eqFilters && this.eqFilters[bandIndex]) {
-                    this.eqFilters[bandIndex].gain.value = gainValue;
-                    this.eqGains[bandIndex] = gainValue;
-                    this.applyAudioEnhancements();
-                }
-            }
-            
-            applyAudioEnhancements() {
-                if (!this.audioContext || !this.eqFilters) return;
-                
-                if (this.audioEnhancements.clarity > 0) {
-                    const clarityBoost = this.audioEnhancements.clarity / 100 * 6;
-                    if (this.eqFilters[12]) this.eqFilters[12].gain.value += clarityBoost * 0.5;
-                    if (this.eqFilters[13]) this.eqFilters[13].gain.value += clarityBoost * 0.7;
-                    if (this.eqFilters[14]) this.eqFilters[14].gain.value += clarityBoost;
-                }
-                
-                if (this.audioEnhancements.warmth > 0) {
-                    const warmthBoost = this.audioEnhancements.warmth / 100 * 8;
-                    if (this.eqFilters[2]) this.eqFilters[2].gain.value += warmthBoost * 0.3;
-                    if (this.eqFilters[3]) this.eqFilters[3].gain.value += warmthBoost * 0.5;
-                    if (this.eqFilters[4]) this.eqFilters[4].gain.value += warmthBoost * 0.7;
-                }
-            }
-            
-            getFrequencyData() {
-                if (!this.analyser || !this.dataArray) return null;
-                
-                this.analyser.getByteFrequencyData(this.dataArray);
-                return this.dataArray;
-            }
-            
-            getSpectrumData() {
-                if (!this.spectrumAnalyser || !this.spectrumDataArray) return null;
-                
-                this.spectrumAnalyser.getByteFrequencyData(this.spectrumDataArray);
-                return this.spectrumDataArray;
-            }
-            
-            cleanup() {
-                if (this.animationFrameId) {
-                    cancelAnimationFrame(this.animationFrameId);
-                    this.animationFrameId = null;
-                }
-                
-                // تنظيف مكونات نظام التضخيم الذكي
-                if (this.exciterNode) {
-                    this.exciterNode.disconnect();
-                    this.exciterNode = null;
-                }
-                
-                if (this.saturationNode) {
-                    this.saturationNode.disconnect();
-                    this.saturationNode = null;
-                }
-                
-                if (this.lowBandLimiter) {
-                    this.lowBandLimiter.disconnect();
-                    this.lowBandLimiter = null;
-                }
-                
-                if (this.midBandLimiter) {
-                    this.midBandLimiter.disconnect();
-                    this.midBandLimiter = null;
-                }
-                
-                if (this.highBandLimiter) {
-                    this.highBandLimiter.disconnect();
-                    this.highBandLimiter = null;
-                }
-                
-                if (this.audioContext) {
-                    try {
-                        this.audioContext.close();
-                    } catch (e) {
-                        console.warn('خطأ في إغلاق AudioContext:', e);
-                    }
-                    this.audioContext = null;
-                }
-                
-                this.isAudioContextInitialized = false;
-                console.log('🧹 تم تنظيف نظام الصوت');
-            }
-            
-            testAudioSystem() {
-                console.log('🎵 اختبار نظام الصوت:');
-                console.log('- AudioContext:', this.audioContext ? '✅ جاهز' : '❌ غير جاهز');
-                console.log('- معدل العينات:', this.audioContext ? `${this.audioContext.sampleRate}Hz` : 'غير متوفر');
-                console.log('- المعادل:', this.eqFilters ? `✅ ${this.eqFilters.length} نطاق` : '❌ غير جاهز');
-                console.log('- الصدى:', this.reverbNode ? '✅ جاهز' : '❌ غير جاهز');
-                console.log('- معزز الجهير:', this.bassBoostNode ? '✅ جاهز' : '❌ غير جاهز');
-                console.log('- تقليل الضوضاء:', this.noiseReductionNode ? '✅ جاهز' : '❌ غير جاهز');
-                console.log('- التضخيم الذكي:', this.smartBoosterNode ? '✅ جاهز' : '❌ غير جاهز');
-                console.log('- معزز التوافقيات:', this.exciterNode ? '✅ جاهز' : '❌ غير جاهز');
-                
-                return this.audioContext !== null;
+            if (value > 0.99) {
+                clippingSamples++;
             }
         }
+        
+        this.truePeakLevel = peak;
+        this.isClipping = clippingSamples > 10;
+        
+        // حساب نسبة التشويه
+        const distortionPercent = Math.min(100, clippingSamples / this.loudnessData.length * 10000);
+        const distortionLevel = Math.min(100, peak * 100 + distortionPercent);
+        
+        // تحديث واجهة المستخدم
+        this.updateDistortionUI(distortionLevel, distortionPercent);
+        
+        return {
+            peak: this.truePeakLevel,
+            isClipping: this.isClipping,
+            distortionPercent: distortionPercent
+        };
+    }
+
+    // تحديث واجهة مؤشر التشويه
+    updateDistortionUI(level, percent) {
+        const distortionLevel = document.getElementById('distortionLevel');
+        const distortionValue = document.getElementById('distortionValue');
+        
+        if (distortionLevel && distortionValue) {
+            distortionLevel.style.width = `${level}%`;
+            
+            if (level < 20) {
+                distortionValue.textContent = "منخفض جداً";
+                distortionValue.style.color = "#00ff00";
+            } else if (level < 50) {
+                distortionValue.textContent = "منخفض";
+                distortionValue.style.color = "#99ff00";
+            } else if (level < 70) {
+                distortionValue.textContent = "متوسط";
+                distortionValue.style.color = "#ff9900";
+            } else {
+                distortionValue.textContent = "مرتفع ⚠️";
+                distortionValue.style.color = "#ff0000";
+            }
+        }
+    }
+
+    // بناء سلسلة معالجة الصوت مع التضخيم الذكي
+    buildAudioProcessingChainWithSmartBoost() {
+        if (!this.audioContext || !this.source) return;
+        
+        let currentNode = this.source;
+        
+        // 1. تقليل الضوضاء أولاً
+        if (this.noiseReductionNode) {
+            currentNode.connect(this.noiseReductionNode);
+            currentNode = this.noiseReductionNode;
+        }
+        
+        // 2. الضاغط الأساسي
+        currentNode.connect(this.compressorNode);
+        currentNode = this.compressorNode;
+        
+        // 3. المعادل متعدد النطاقات
+        for (const filter of this.eqFilters) {
+            currentNode.connect(filter);
+            currentNode = filter;
+        }
+        
+        // 4. معزز الجهير
+        currentNode.connect(this.bassBoostNode);
+        currentNode = this.bassBoostNode;
+        
+        // 5. التعزيز الأساسي
+        currentNode.connect(this.gainNode);
+        currentNode = this.gainNode;
+        
+        // 6. التضخيم الذكي للذروة
+        if (this.smartBoosterNode) {
+            currentNode.connect(this.smartBoosterNode);
+            currentNode = this.smartBoosterNode;
+        }
+        
+        // 7. المحدب متعدد النطاقات
+        if (this.lowBandLimiter && this.midBandLimiter && this.highBandLimiter) {
+            currentNode.connect(this.lowBandLimiter);
+            currentNode = this.lowBandLimiter;
+            
+            currentNode.connect(this.midBandLimiter);
+            currentNode = this.midBandLimiter;
+            
+            currentNode.connect(this.highBandLimiter);
+            currentNode = this.highBandLimiter;
+        }
+        
+        // 8. معزز التوافقيات
+        if (this.exciterNode) {
+            currentNode.connect(this.exciterNode);
+            currentNode = this.exciterNode;
+        }
+        
+        // 9. التشبع الدافئ
+        if (this.saturationNode) {
+            currentNode.connect(this.saturationNode);
+            currentNode = this.saturationNode;
+        }
+        
+        // 10. محلل الصوت
+        currentNode.connect(this.loudnessAnalyser);
+        currentNode.connect(this.analyser);
+        currentNode.connect(this.spectrumAnalyser);
+        
+        // 11. الصدى
+        const dryGain = this.audioContext.createGain();
+        const wetGain = this.audioContext.createGain();
+        const merger = this.audioContext.createChannelMerger(2);
+        
+        currentNode.connect(dryGain);
+        dryGain.connect(merger, 0, 0);
+        
+        currentNode.connect(this.reverbNode);
+        this.reverbNode.connect(wetGain);
+        wetGain.connect(merger, 0, 1);
+        
+        merger.connect(this.audioContext.destination);
+        
+        this.audioNodes = {
+            source: this.source,
+            volumeNode: this.volumeNode,
+            gainNode: this.gainNode,
+            compressorNode: this.compressorNode,
+            bassBoostNode: this.bassBoostNode,
+            reverbNode: this.reverbNode,
+            dryGain,
+            wetGain,
+            eqFilters: this.eqFilters,
+            noiseReductionNode: this.noiseReductionNode,
+            smartBoosterNode: this.smartBoosterNode,
+            lowBandLimiter: this.lowBandLimiter,
+            midBandLimiter: this.midBandLimiter,
+            highBandLimiter: this.highBandLimiter,
+            exciterNode: this.exciterNode,
+            saturationNode: this.saturationNode
+        };
+    }
+    
+    updateBassBoost(level) {
+        this.bassBoostLevel = level;
+        if (this.bassBoostNode) {
+            const gainDB = (level / 100) * 24 - 12;
+            this.bassBoostNode.gain.value = gainDB;
+            console.log(`🔊 معزز الجهير: ${gainDB.toFixed(1)}dB`);
+        }
+    }
+    
+    updateReverb(level) {
+        this.reverbLevel = level;
+        if (this.audioNodes && this.audioNodes.dryGain && this.audioNodes.wetGain) {
+            const dryLevel = Math.max(0, 1 - (level / 100));
+            const wetLevel = level / 100;
+            
+            this.audioNodes.dryGain.gain.value = dryLevel;
+            this.audioNodes.wetGain.gain.value = wetLevel * 0.5;
+            
+            console.log(`🎚️ الصدى: ${level}% (جاف: ${dryLevel.toFixed(2)}, رطب: ${wetLevel.toFixed(2)})`);
+        }
+    }
+    
+    updateVolumeBoost(level) {
+        this.volumeBoostLevel = level;
+        if (this.gainNode) {
+            const boostFactor = 1 + (level / 100);
+            this.gainNode.gain.value = boostFactor;
+            console.log(`🔊 مضخم الصوت: x${boostFactor.toFixed(2)}`);
+        }
+    }
+    
+    updateNoiseReduction(level) {
+        this.noiseReductionLevel = level;
+        if (this.noiseReductionNode) {
+            const frequency = 20 + (level / 100) * 500;
+            this.noiseReductionNode.frequency.value = frequency;
+            console.log(`🔇 تقليل الضوضاء: ${level}% (${frequency.toFixed(0)}Hz)`);
+        }
+    }
+    
+    updateEQ(bandIndex, gainValue) {
+        if (this.eqFilters && this.eqFilters[bandIndex]) {
+            this.eqFilters[bandIndex].gain.value = gainValue;
+            this.eqGains[bandIndex] = gainValue;
+            this.applyAudioEnhancements();
+        }
+    }
+    
+    applyAudioEnhancements() {
+        if (!this.audioContext || !this.eqFilters) return;
+        
+        if (this.audioEnhancements.clarity > 0) {
+            const clarityBoost = this.audioEnhancements.clarity / 100 * 6;
+            if (this.eqFilters[12]) this.eqFilters[12].gain.value += clarityBoost * 0.5;
+            if (this.eqFilters[13]) this.eqFilters[13].gain.value += clarityBoost * 0.7;
+            if (this.eqFilters[14]) this.eqFilters[14].gain.value += clarityBoost;
+        }
+        
+        if (this.audioEnhancements.warmth > 0) {
+            const warmthBoost = this.audioEnhancements.warmth / 100 * 8;
+            if (this.eqFilters[2]) this.eqFilters[2].gain.value += warmthBoost * 0.3;
+            if (this.eqFilters[3]) this.eqFilters[3].gain.value += warmthBoost * 0.5;
+            if (this.eqFilters[4]) this.eqFilters[4].gain.value += warmthBoost * 0.7;
+        }
+    }
+    
+    getFrequencyData() {
+        if (!this.analyser || !this.dataArray) return null;
+        
+        this.analyser.getByteFrequencyData(this.dataArray);
+        return this.dataArray;
+    }
+    
+    getSpectrumData() {
+        if (!this.spectrumAnalyser || !this.spectrumDataArray) return null;
+        
+        this.spectrumAnalyser.getByteFrequencyData(this.spectrumDataArray);
+        return this.spectrumDataArray;
+    }
+    
+    cleanup() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        
+        // تنظيف مكونات نظام التضخيم الذكي
+        if (this.exciterNode) {
+            try {
+                this.exciterNode.disconnect();
+                this.exciterNode = null;
+            } catch (e) {
+                console.warn('خطأ في فصل Exciter:', e);
+            }
+        }
+        
+        if (this.saturationNode) {
+            try {
+                this.saturationNode.disconnect();
+                this.saturationNode = null;
+            } catch (e) {
+                console.warn('خطأ في فصل Saturation:', e);
+            }
+        }
+        
+        if (this.lowBandLimiter) {
+            try {
+                this.lowBandLimiter.disconnect();
+                this.lowBandLimiter = null;
+            } catch (e) {
+                console.warn('خطأ في فصل Low Band Limiter:', e);
+            }
+        }
+        
+        if (this.midBandLimiter) {
+            try {
+                this.midBandLimiter.disconnect();
+                this.midBandLimiter = null;
+            } catch (e) {
+                console.warn('خطأ في فصل Mid Band Limiter:', e);
+            }
+        }
+        
+        if (this.highBandLimiter) {
+            try {
+                this.highBandLimiter.disconnect();
+                this.highBandLimiter = null;
+            } catch (e) {
+                console.warn('خطأ في فصل High Band Limiter:', e);
+            }
+        }
+        
+        if (this.audioContext) {
+            try {
+                this.audioContext.close();
+            } catch (e) {
+                console.warn('خطأ في إغلاق AudioContext:', e);
+            }
+            this.audioContext = null;
+        }
+        
+        this.isAudioContextInitialized = false;
+        console.log('🧹 تم تنظيف نظام الصوت');
+    }
+    
+    testAudioSystem() {
+        console.log('🎵 اختبار نظام الصوت:');
+        console.log('- AudioContext:', this.audioContext ? '✅ جاهز' : '❌ غير جاهز');
+        console.log('- معدل العينات:', this.audioContext ? `${this.audioContext.sampleRate}Hz` : 'غير متوفر');
+        console.log('- المعادل:', this.eqFilters ? `✅ ${this.eqFilters.length} نطاق` : '❌ غير جاهز');
+        console.log('- الصدى:', this.reverbNode ? '✅ جاهز' : '❌ غير جاهز');
+        console.log('- معزز الجهير:', this.bassBoostNode ? '✅ جاهز' : '❌ غير جاهز');
+        console.log('- تقليل الضوضاء:', this.noiseReductionNode ? '✅ جاهز' : '❌ غير جاهز');
+        console.log('- التضخيم الذكي:', this.smartBoosterNode ? '✅ جاهز' : '❌ غير جاهز');
+        console.log('- معزز التوافقيات:', this.exciterNode ? '✅ جاهز' : '❌ غير جاهز');
+        
+        return this.audioContext !== null;
+    }
+}
         
         // المتغيرات العامة
         let audio, playPauseBtn, prevBtn, nextBtn, repeatBtn, shuffleBtn, progressBar, progress, currentTimeEl, durationEl;
