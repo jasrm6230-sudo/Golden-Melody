@@ -2444,6 +2444,11 @@ class EnhancedAudioSystem {
         this.dataArray = null;
         this.spectrumDataArray = null;
         this.animationFrameId = null;
+        this.limiterNode = null;
+        this.enableLimiter = true;
+        this.maxOutputLevel = 0.95; // الحد الأقصى 95% لمنع التشويش
+        this.isProcessingEnabled = true; // تفعيل/تعطيل المعالجة
+        
         
         this.eqGains = new Array(18).fill(0);
         this.reverbLevel = 0;
@@ -2503,9 +2508,9 @@ class EnhancedAudioSystem {
             this.gainNode = this.audioContext.createGain();
             this.compressorNode = this.audioContext.createDynamicsCompressor();
             
-            this.compressorNode.threshold.value = -24;
-            this.compressorNode.knee.value = 30;
-            this.compressorNode.ratio.value = 12;
+            this.compressorNode.threshold.value = -12;
+            this.compressorNode.knee.value = 6;
+            this.compressorNode.ratio.value = 4;
             this.compressorNode.attack.value = 0.003;
             this.compressorNode.release.value = 0.25;
             
