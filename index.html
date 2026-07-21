@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: radial-gradient(circle at center, #0a0f1a 0%, #000000 100%);
+            background: transparent;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
@@ -15,14 +15,26 @@
             justify-content: center;
             min-height: 100vh;
             color: #ccc;
+            overflow-x: hidden;
+        }
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, #0a0f1a 0%, #000000 100%);
         }
         h1 {
             font-size: 2.5rem; margin: 0.5rem; color: #fff;
             text-shadow: 0 0 25px #00aaff, 0 0 10px #0066cc; letter-spacing: 2px;
+            z-index: 1;
         }
-        .main-container { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 25px; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0; }
+        .main-container { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 25px; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0; z-index: 1; }
         .board-section { display: flex; flex-direction: column; align-items: center; }
-        .controls { display: flex; gap: 0.8rem; margin: 0.6rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .controls { display: flex; gap: 0.8rem; margin: 0.6rem; flex-wrap: wrap; justify-content: center; align-items: center; z-index: 1; }
         button {
             background: #0a1424; color: #e0f0ff; border: 2px solid #00aaff;
             padding: 0.7rem 1.5rem; border-radius: 50px; cursor: pointer;
@@ -41,8 +53,9 @@
             background: rgba(0,0,0,0.7); border-radius: 30px; text-shadow: 0 0 12px #fff;
             border: 1px solid #00aaff; box-shadow: 0 0 20px rgba(0,170,255,0.5);
             min-height: 3rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            z-index: 1;
         }
-        #board-container { position: relative; display: inline-block; }
+        #board-container { position: relative; display: inline-block; z-index: 1; }
         .coords-row { display: flex; justify-content: center; height: 25px; }
         .coords-col { display: flex; flex-direction: column; width: 30px; }
         .coords-row div, .coords-col div {
@@ -57,7 +70,7 @@
         #board {
             display: grid; grid-template: repeat(8, 66px) / repeat(8, 66px);
             border: 3px solid #00aaff; box-shadow: 0 0 50px #00aaff;
-            border-radius: 8px; overflow: hidden; margin: 0; position: relative; z-index: 1;
+            border-radius: 8px; overflow: hidden; margin: 0; position: relative; z-index: 2;
         }
         .cell {
             width: 66px; height: 66px; display: flex; align-items: center; justify-content: center;
@@ -85,11 +98,12 @@
             display: flex; align-items: center; justify-content: center;
             width: 54px; height: 54px; border-radius: 50%; font-weight: bold;
             font-size: 20px; z-index: 2; pointer-events: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
+            transition: box-shadow 0.15s;
         }
-        .piece.w { background: #f5f5f5; color: #111; box-shadow: 0 0 18px #ffffff; }
-        .piece.b { background: #1a1a1a; color: #eee; box-shadow: 0 0 18px #00aaff; }
+        /* يتم تعيين الظل ديناميكياً عبر JS ليتوافق مع اتجاه اللاعب */
+        .piece.w { background: #f5f5f5; color: #111; }
+        .piece.b { background: #1a1a1a; color: #eee; }
         #suggestion-arrows { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
         #promo-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
@@ -103,6 +117,7 @@
             border-radius: 16px; padding: 1.2rem; width: 270px;
             box-shadow: 0 0 35px #ffaa00; color: #e0f0ff;
             display: flex; flex-direction: column; gap: 0.9rem; font-size: 1rem; backdrop-filter: blur(5px);
+            z-index: 1;
         }
         #suggestions-panel h3 { color: #ffcc00; text-align: center; margin: 0 0 0.2rem; font-size: 1.4rem; text-shadow: 0 0 15px #ffaa00; }
         .suggestion-entry {
@@ -121,6 +136,8 @@
     </style>
 </head>
 <body>
+    <canvas id="starfield"></canvas>
+
     <h1>♛ نيون شطرنج – Stockfish مع أسهم متوهجة وظل للاعب ♛</h1>
     <div class="controls">
         <button id="startWhite">⚪ ابدأ (أبيض)</button>
@@ -130,7 +147,7 @@
         <button id="redoBtn">↪️ إعادة</button>
         <button id="suggestion-btn">💡 اقتراح خارق (Stockfish)</button>
     </div>
-    <div style="display:flex; gap:0.5rem; margin:0.5rem;">
+    <div style="display:flex; gap:0.5rem; margin:0.5rem; z-index:1;">
         <span style="color:#fff; margin:auto 0;">المستوى:</span>
         <button id="diffEasy" class="difficulty-btn">⚪ سهل</button>
         <button id="diffMedium" class="difficulty-btn active">🟡 متوسط</button>
@@ -185,7 +202,84 @@
 
     <script>
         (function() {
-            // ========== Opening Trie ==========
+            // ========== تأثير حقل النجوم (Starfield) – سرعة أبطأ ==========
+            const starCanvas = document.getElementById('starfield');
+            const ctx = starCanvas.getContext('2d');
+            let width, height;
+            const stars = [];
+            const STAR_COUNT = 250;
+            const SPEED = 1.2; // تم تقليل السرعة لجعل النجوم تتحرك ببطء
+            const MAX_DEPTH = 50;
+            const MAX_RADIUS = 2.5;
+
+            function randomRange(min, max) { return Math.random() * (max - min) + min; }
+
+            function initStars() {
+                stars.length = 0;
+                for (let i = 0; i < STAR_COUNT; i++) {
+                    stars.push({
+                        x: randomRange(-MAX_DEPTH, MAX_DEPTH),
+                        y: randomRange(-MAX_DEPTH, MAX_DEPTH),
+                        z: randomRange(1, MAX_DEPTH)
+                    });
+                }
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                starCanvas.width = width;
+                starCanvas.height = height;
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, width, height);
+                const centerX = width / 2;
+                const centerY = height / 2;
+
+                for (let i = 0; i < stars.length; i++) {
+                    const star = stars[i];
+                    star.z -= SPEED;
+
+                    if (star.z <= 0) {
+                        star.x = randomRange(-MAX_DEPTH, MAX_DEPTH);
+                        star.y = randomRange(-MAX_DEPTH, MAX_DEPTH);
+                        star.z = MAX_DEPTH;
+                    }
+
+                    const scale = 1 / star.z;
+                    const screenX = star.x * scale * 100 + centerX;
+                    const screenY = star.y * scale * 100 + centerY;
+
+                    if (screenX < 0 || screenX > width || screenY < 0 || screenY > height) {
+                        star.x = randomRange(-MAX_DEPTH, MAX_DEPTH);
+                        star.y = randomRange(-MAX_DEPTH, MAX_DEPTH);
+                        star.z = MAX_DEPTH;
+                        continue;
+                    }
+
+                    const radius = MAX_RADIUS * (1 - star.z / MAX_DEPTH) + 0.5;
+                    const alpha = 1 - star.z / MAX_DEPTH;
+
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'white';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+                requestAnimationFrame(drawStars);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            initStars();
+            drawStars();
+        })();
+
+        // ========== كود الشطرنج الكامل ==========
+        (function() {
             class OpeningTrie {
                 constructor() { this.root = {}; this.names = {}; }
                 _parseMoves(str) {
@@ -259,7 +353,6 @@
             const openingTrie = new OpeningTrie();
             openingList.forEach(([moves, name]) => openingTrie.insert(moves, name));
 
-            // ========== محرك الشطرنج الداخلي ==========
             const DIFFICULTY_TIMES = { easy: 1500, medium: 2500, hard: 4000 };
             let currentDifficulty = 'medium';
             let SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[currentDifficulty];
@@ -401,7 +494,6 @@
                 } catch(e) {}
             }
 
-            // ========== دوال المحرك الداخلي الكاملة ==========
             function isSquareAttacked(board, row, col, attackerColor) {
                 const opp = attackerColor === 'white' ? 'black' : 'white';
                 if (attackerColor === 'white') {
@@ -791,7 +883,6 @@
                 return res.move;
             }
 
-            // ========== التأثيرات البصرية ==========
             function clearAllEffects() {
                 document.getElementById('suggestion-arrows').innerHTML = '';
                 document.querySelectorAll('.cell.player-move').forEach(c => c.classList.remove('player-move'));
@@ -801,7 +892,6 @@
                 const svg = document.getElementById('suggestion-arrows');
                 svg.innerHTML = '';
                 const size = 66, offset = size / 2;
-                // قلب كامل للاعب الأسود (اللوحة معكوسة)
                 const flipBoard = playerColor === 'black';
                 for (const move of moves) {
                     let fr = move.from[0], fc = move.from[1];
@@ -837,172 +927,19 @@
                 if (cells[toIdx]) cells[toIdx].classList.add('player-move');
             }
 
-            // ========== Stockfish Engine ==========
-            class StockfishEngine {
-                constructor() {
-                    try { this.worker = new Worker('stockfish.js'); } catch(e) {
-                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js.';
-                        return;
-                    }
-                    this.worker.onmessage = (e) => this.handleMessage(e.data);
-                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
-                    this.isReady = false; this.pendingResolve = null; this.pvs = [];
-                    this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
-                }
-                send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
-                handleMessage(line) {
-                    if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز'; }
-                    else if (line.startsWith('bestmove')) {
-                        if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
-                    } else if (line.startsWith('info') && line.includes(' pv ')) {
-                        const sc = line.match(/score cp (-?\d+)/);
-                        const pv = line.match(/ pv (.+)/);
-                        if (sc && pv) {
-                            const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
-                            const moves = pv[1].trim().split(' ');
-                            const best = moves[0];
-                            const ex = this.pvs.find(p => p.bestMove === best);
-                            if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
-                            else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
-                        }
-                    }
-                }
-                analyze(fen, ms = 2500) {
-                    if (!this.worker) return Promise.resolve([]);
-                    this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
-                    return new Promise(res => {
-                        this.pendingResolve = res;
-                        setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
-                    });
-                }
-                destroy() { if (this.worker) this.worker.terminate(); }
+            // ========== تعديل ظل القطع بناءً على منظور اللاعب ==========
+            function getPieceShadowStyle(color, isPlayerWhite) {
+                // الظل يتجه دائماً للأسفل بالنسبة لنظر اللاعب
+                // اللاعب الأبيض يرى الظل إلى الأسفل يمين (2px, 4px)
+                // اللاعب الأسود يرى اللوحة مقلوبة، لذا نقلب الإزاحة الأفقية
+                const hOffset = isPlayerWhite ? '2px' : '-2px';
+                const vOffset = '4px';
+                const blur = '10px';
+                const spread = '0px';
+                const shadowColor = 'rgba(0,0,0,0.5)';
+                return `${hOffset} ${vOffset} ${blur} ${spread} ${shadowColor}`;
             }
 
-            let stockfish = null;
-            function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
-
-            // ========== اقتراحات ==========
-            async function displaySuggestions() {
-                if (gameOver || gameState.turn !== playerColor) return;
-                if (suggestionLoading) return;
-                const listDiv = document.getElementById('suggestions-list');
-                document.getElementById('computer-plan').style.display = 'none';
-                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل بـ Stockfish...</div>';
-                suggestionLoading = true;
-                document.getElementById('suggestion-btn').disabled = true;
-                clearAllEffects();
-                try {
-                    if (!stockfish?.isReady) {
-                        let w = 0;
-                        while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100)); w += 100; }
-                        if (!stockfish?.isReady) throw new Error('المحرك غير جاهز');
-                    }
-                    const fen = boardToFen(gameState);
-                    const res = await stockfish.analyze(fen, 2500);
-                    if (!res.length) throw new Error('لا توجد نتائج');
-                    res.sort((a,b) => b.score - a.score);
-                    const uniq = []; const seen = new Set();
-                    for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } if (uniq.length >= 3) break; }
-                    const movesToDraw = [];
-                    let html = '';
-                    for (const r of uniq) {
-                        const uci = r.bestMove;
-                        const fc = uci.charCodeAt(0)-97, fr = 8-parseInt(uci[1]);
-                        const tc = uci.charCodeAt(2)-97, tr = 8-parseInt(uci[3]);
-                        const promoChar = uci[4];
-                        const promo = promoChar ? {q:'queen',r:'rook',b:'bishop',n:'knight'}[promoChar] : null;
-                        const move = getLegalMoves(gameState).find(m =>
-                            m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                            ((!promo && !m.promotion) || (promo && m.promotion===promo))
-                        );
-                        if (!move) continue;
-                        movesToDraw.push(move);
-                        const notation = moveToShortAlgebraic(move, gameState);
-                        const evalPawn = (r.score/100).toFixed(2);
-                        const cls = evalPawn >= 0 ? 'positive' : 'negative';
-                        html += `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
-                            <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                        </div>`;
-                    }
-                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawArrows(movesToDraw);
-                    document.querySelectorAll('.suggestion-entry').forEach(el => {
-                        el.addEventListener('click', function() {
-                            const fr = +this.dataset.fr, fc = +this.dataset.fc, tr = +this.dataset.tr, tc = +this.dataset.tc;
-                            const promo = this.dataset.promo;
-                            const move = getLegalMoves(gameState).find(m =>
-                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                                (!promo || m.promotion===promo)
-                            );
-                            if (move) {
-                                clearAllEffects();
-                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
-                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else executePlayerMoveDirect(move);
-                            }
-                        });
-                    });
-                } catch(e) {
-                    console.warn(e);
-                    displayLocalSuggestions();
-                } finally {
-                    suggestionLoading = false;
-                    document.getElementById('suggestion-btn').disabled = false;
-                }
-            }
-
-            function displayLocalSuggestions() {
-                const listDiv = document.getElementById('suggestions-list');
-                document.getElementById('computer-plan').style.display = 'none';
-                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ تحليل بالمحرك الداخلي...</div>';
-                clearAllEffects();
-                setTimeout(() => {
-                    const moves = getLegalMoves(gameState);
-                    const results = [];
-                    for (const move of moves.slice(0,10)) {
-                        const ns = makeMove(gameState, move);
-                        const res = iterativeDeepening(ns, 800, 12);
-                        results.push({move, score: -res.score});
-                    }
-                    results.sort((a,b)=>b.score-a.score);
-                    const top = results.slice(0,3);
-                    const movesToDraw = top.map(s=>s.move);
-                    let html = '';
-                    for (const s of top) {
-                        const m = s.move;
-                        const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8-m.from[0];
-                        const toCol = 'abcdefgh'[m.to[1]], toRow = 8-m.to[0];
-                        const notation = fromCol+fromRow+toCol+toRow+(m.promotion?'='+m.promotion[0].toUpperCase():'');
-                        const evalPawn = (s.score/100).toFixed(2);
-                        const cls = evalPawn>=0?'positive':'negative';
-                        html += `<div class="suggestion-entry" data-fr="${m.from[0]}" data-fc="${m.from[1]}" data-tr="${m.to[0]}" data-tc="${m.to[1]}" data-promo="${m.promotion||''}">
-                            <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                        </div>`;
-                    }
-                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawArrows(movesToDraw);
-                    document.querySelectorAll('.suggestion-entry').forEach(el => {
-                        el.addEventListener('click', function() {
-                            const fr=+this.dataset.fr, fc=+this.dataset.fc, tr=+this.dataset.tr, tc=+this.dataset.tc;
-                            const promo=this.dataset.promo;
-                            const move = getLegalMoves(gameState).find(m=>
-                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                                (!promo || m.promotion===promo)
-                            );
-                            if (move) {
-                                clearAllEffects();
-                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
-                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else executePlayerMoveDirect(move);
-                            }
-                        });
-                    });
-                }, 50);
-            }
-
-            // ========== واجهة المستخدم ==========
             function render() {
                 const boardDiv = document.getElementById('board'); boardDiv.innerHTML = '';
                 const flipBoard = playerColor === 'black';
@@ -1017,6 +954,8 @@
                 coordsBottom.appendChild(document.createElement('div'));
                 for (let c=0;c<8;c++) { const d=document.createElement('div'); d.textContent=files[flipBoard?7-c:c]; coordsBottom.appendChild(d); }
                 coordsBottom.appendChild(document.createElement('div'));
+
+                const isPlayerWhite = playerColor === 'white';
 
                 for (let dr=0; dr<8; dr++) {
                     const r = flipBoard ? 7-dr : dr;
@@ -1034,6 +973,8 @@
                             const span = document.createElement('span');
                             span.className = 'piece ' + (piece.color==='white'?'w':'b');
                             span.textContent = pieceDisplay[piece.type];
+                            // تطبيق الظل الديناميكي بناءً على منظور اللاعب
+                            span.style.boxShadow = getPieceShadowStyle(piece.color, isPlayerWhite);
                             cell.appendChild(span);
                         }
                         (function(ir,ic){ cell.addEventListener('click', ()=>cellClicked(ir,ic)); })(r,c);
@@ -1197,6 +1138,170 @@
             document.getElementById('undoBtn').addEventListener('click', undoMove);
             document.getElementById('redoBtn').addEventListener('click', redoMove);
             document.getElementById('suggestion-btn').addEventListener('click', displaySuggestions);
+
+            // ========== اقتراحات Stockfish ==========
+            async function displaySuggestions() {
+                if (gameOver || gameState.turn !== playerColor) return;
+                if (suggestionLoading) return;
+                const listDiv = document.getElementById('suggestions-list');
+                document.getElementById('computer-plan').style.display = 'none';
+                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل بـ Stockfish...</div>';
+                suggestionLoading = true;
+                document.getElementById('suggestion-btn').disabled = true;
+                clearAllEffects();
+                try {
+                    if (!stockfish?.isReady) {
+                        let w = 0;
+                        while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100)); w += 100; }
+                        if (!stockfish?.isReady) throw new Error('المحرك غير جاهز');
+                    }
+                    const fen = boardToFen(gameState);
+                    const res = await stockfish.analyze(fen, 2500);
+                    if (!res.length) throw new Error('لا توجد نتائج');
+                    res.sort((a,b) => b.score - a.score);
+                    const uniq = []; const seen = new Set();
+                    for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } if (uniq.length >= 3) break; }
+                    const movesToDraw = [];
+                    let html = '';
+                    for (const r of uniq) {
+                        const uci = r.bestMove;
+                        const fc = uci.charCodeAt(0)-97, fr = 8-parseInt(uci[1]);
+                        const tc = uci.charCodeAt(2)-97, tr = 8-parseInt(uci[3]);
+                        const promoChar = uci[4];
+                        const promo = promoChar ? {q:'queen',r:'rook',b:'bishop',n:'knight'}[promoChar] : null;
+                        const move = getLegalMoves(gameState).find(m =>
+                            m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                            ((!promo && !m.promotion) || (promo && m.promotion===promo))
+                        );
+                        if (!move) continue;
+                        movesToDraw.push(move);
+                        const notation = moveToShortAlgebraic(move, gameState);
+                        const evalPawn = (r.score/100).toFixed(2);
+                        const cls = evalPawn >= 0 ? 'positive' : 'negative';
+                        html += `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
+                            <span class="suggestion-move">${notation}</span>
+                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
+                        </div>`;
+                    }
+                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
+                    drawArrows(movesToDraw);
+                    document.querySelectorAll('.suggestion-entry').forEach(el => {
+                        el.addEventListener('click', function() {
+                            const fr = +this.dataset.fr, fc = +this.dataset.fc, tr = +this.dataset.tr, tc = +this.dataset.tc;
+                            const promo = this.dataset.promo;
+                            const move = getLegalMoves(gameState).find(m =>
+                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                                (!promo || m.promotion===promo)
+                            );
+                            if (move) {
+                                clearAllEffects();
+                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
+                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
+                                } else executePlayerMoveDirect(move);
+                            }
+                        });
+                    });
+                } catch(e) {
+                    console.warn(e);
+                    displayLocalSuggestions();
+                } finally {
+                    suggestionLoading = false;
+                    document.getElementById('suggestion-btn').disabled = false;
+                }
+            }
+
+            function displayLocalSuggestions() {
+                const listDiv = document.getElementById('suggestions-list');
+                document.getElementById('computer-plan').style.display = 'none';
+                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ تحليل بالمحرك الداخلي...</div>';
+                clearAllEffects();
+                setTimeout(() => {
+                    const moves = getLegalMoves(gameState);
+                    const results = [];
+                    for (const move of moves.slice(0,10)) {
+                        const ns = makeMove(gameState, move);
+                        const res = iterativeDeepening(ns, 800, 12);
+                        results.push({move, score: -res.score});
+                    }
+                    results.sort((a,b)=>b.score-a.score);
+                    const top = results.slice(0,3);
+                    const movesToDraw = top.map(s=>s.move);
+                    let html = '';
+                    for (const s of top) {
+                        const m = s.move;
+                        const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8-m.from[0];
+                        const toCol = 'abcdefgh'[m.to[1]], toRow = 8-m.to[0];
+                        const notation = fromCol+fromRow+toCol+toRow+(m.promotion?'='+m.promotion[0].toUpperCase():'');
+                        const evalPawn = (s.score/100).toFixed(2);
+                        const cls = evalPawn>=0?'positive':'negative';
+                        html += `<div class="suggestion-entry" data-fr="${m.from[0]}" data-fc="${m.from[1]}" data-tr="${m.to[0]}" data-tc="${m.to[1]}" data-promo="${m.promotion||''}">
+                            <span class="suggestion-move">${notation}</span>
+                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
+                        </div>`;
+                    }
+                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
+                    drawArrows(movesToDraw);
+                    document.querySelectorAll('.suggestion-entry').forEach(el => {
+                        el.addEventListener('click', function() {
+                            const fr=+this.dataset.fr, fc=+this.dataset.fc, tr=+this.dataset.tr, tc=+this.dataset.tc;
+                            const promo=this.dataset.promo;
+                            const move = getLegalMoves(gameState).find(m=>
+                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                                (!promo || m.promotion===promo)
+                            );
+                            if (move) {
+                                clearAllEffects();
+                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
+                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
+                                } else executePlayerMoveDirect(move);
+                            }
+                        });
+                    });
+                }, 50);
+            }
+
+            class StockfishEngine {
+                constructor() {
+                    try { this.worker = new Worker('stockfish.js'); } catch(e) {
+                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js.';
+                        return;
+                    }
+                    this.worker.onmessage = (e) => this.handleMessage(e.data);
+                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
+                    this.isReady = false; this.pendingResolve = null; this.pvs = [];
+                    this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
+                }
+                send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
+                handleMessage(line) {
+                    if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز'; }
+                    else if (line.startsWith('bestmove')) {
+                        if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
+                    } else if (line.startsWith('info') && line.includes(' pv ')) {
+                        const sc = line.match(/score cp (-?\d+)/);
+                        const pv = line.match(/ pv (.+)/);
+                        if (sc && pv) {
+                            const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
+                            const moves = pv[1].trim().split(' ');
+                            const best = moves[0];
+                            const ex = this.pvs.find(p => p.bestMove === best);
+                            if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
+                            else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
+                        }
+                    }
+                }
+                analyze(fen, ms = 2500) {
+                    if (!this.worker) return Promise.resolve([]);
+                    this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
+                    return new Promise(res => {
+                        this.pendingResolve = res;
+                        setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
+                    });
+                }
+                destroy() { if (this.worker) this.worker.terminate(); }
+            }
+
+            let stockfish = null;
+            function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
 
             historyStack=[]; redoStack=[]; pushSnapshot(); render();
             initStockfish();
