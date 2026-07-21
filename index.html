@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نيون شطرنج – Stockfish مع أسهم متوهجة وظل للاعب</title>
+    <title>نيون شطرنج – محرك معزز بـ SEE وتقييم متطور</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -137,7 +137,7 @@
 <body>
     <canvas id="starfield"></canvas>
 
-    <h1>♛ نيون شطرنج – Stockfish مع أسهم متوهجة وظل للاعب ♛</h1>
+    <h1>♛ نيون شطرنج – محرك معزز بـ SEE وتقييم متطور ♛</h1>
     <div class="controls">
         <button id="startWhite">⚪ ابدأ (أبيض)</button>
         <button id="startBlack">⚫ ابدأ (أسود)</button>
@@ -207,7 +207,7 @@
             let width, height;
             const stars = [];
             const STAR_COUNT = 250;
-            const SPEED = 0.05; // حركة شبه متجمدة لكنها مستمرة ببطء شديد جداً
+            const SPEED = 0.05;
             const MAX_DEPTH = 50;
             const MAX_RADIUS = 2.5;
 
@@ -277,102 +277,38 @@
             drawStars();
         })();
 
-        // ========== كود الشطرنج الكامل ==========
+        // ========== كود الشطرنج الكامل – محرك معزز ==========
         (function() {
-            class OpeningTrie {
-                constructor() { this.root = {}; this.names = {}; }
-                _parseMoves(str) {
-                    try { const tokens = str.trim().split(/\s+/); return tokens.filter(t => !t.endsWith('.')); } 
-                    catch(e) { return []; }
-                }
-                insert(movesStr, name, eco='') {
-                    const moves = this._parseMoves(movesStr);
-                    let node = this.root;
-                    for (const m of moves) { if (!node[m]) node[m] = {}; node = node[m]; }
-                    this.names[node] = {name, eco};
-                }
-                find(movesStr) {
-                    try {
-                        const moves = this._parseMoves(movesStr);
-                        let node = this.root, lastName = null, lastEco = null;
-                        for (const m of moves) {
-                            if (m in node) {
-                                node = node[m];
-                                if (this.names[node]) { lastName = this.names[node].name; lastEco = this.names[node].eco; }
-                            } else break;
-                        }
-                        return { name: lastName, eco: lastEco };
-                    } catch(e) { return {name: null, eco: null}; }
-                }
-            }
-
-            const openingList = [
-                ['', 'Opening Position'],
-                ['1. e4', "King's Pawn"], ['1. d4', "Queen's Pawn"],
-                ['1. e4 e5 2. Nf3 Nc6 3. Bc4', "Italian Game"],
-                ['1. e4 e5 2. Nf3 Nc6 3. Bb5', "Ruy Lopez"],
-                ['1. e4 e5 2. Nf3 Nc6 3. d4', 'Scotch Game'],
-                ['1. e4 e5 2. Nf3 Nc6 3. Nc3', 'Three Knights'],
-                ['1. e4 e5 2. Nf3 Nc6 3. Nc3 Nf6', 'Four Knights'],
-                ['1. e4 e5 2. Nf3', "King's Knight"],
-                ['1. e4 e5', "Open Game"],
-                ['1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6', 'Two Knights Defense'],
-                ['1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5', 'Giuoco Piano'],
-                ['1. e4 e5 2. Nf3 d6', 'Philidor Defense'],
-                ['1. e4 e5 2. Nf3 Nf6', "Petrov's Defense"],
-                ['1. e4 d5', 'Scandinavian Defense'],
-                ['1. e4 c5', 'Sicilian Defense'],
-                ['1. e4 e6', 'French Defense'],
-                ['1. e4 c6', 'Caro-Kann Defense'],
-                ['1. d4 d5 2. c4', "Queen's Gambit"],
-                ['1. d4 Nf6', 'Indian Game'],
-                ['1. c4', 'English'], ['1. Nf3', 'Réti'],
-                ['1. e4 c5 2. Nf3 Nc6 3. d4', 'Open Sicilian'],
-                ['1. e4 c5 2. Nf3 e6', 'Sicilian: French Var.'],
-                ['1. d4 d5 2. c4 dxc4', "QG Accepted"],
-                ['1. d4 d5 2. c4 e6', "QG Declined"],
-                ['1. e4 e5 2. f4 exf4', "KG Accepted"],
-                ['1. d4 d5', "Closed Game"],
-                ['1. e4 e5 2. Nc3', 'Vienna Game'],
-                ['1. e4 c5 2. Nc3', 'Closed Sicilian'],
-                ['1. d4 d5 2. c4 c6', 'Slav Defense'],
-                ['1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5', 'Scandinavian: Main Line'],
-                ['1. e4 e5 2. Bc4', "Bishop's Opening"],
-                ['1. e4 e5 2. f4', "King's Gambit"],
-                ['1. e3', "Van't Kruijs"], ['1. g3', 'Hungarian'],
-                ['1. f4', 'Bird'], ['1. b3', 'Nimzowitsch-Larsen'],
-                ['1. d3', 'Mieses'], ['1. b4', 'Orangutan'],
-                ['1. e4 d6', 'Pirc Defense'], ['1. e4 g6', 'Modern Defense'],
-                ['1. e4 b6', 'Owen Defense'], ['1. e4 Nf6', 'Alekhine Defense'],
-                ['1. e4 Nc6', 'Nimzowitsch Defense'],
-                ['1. d4 e6', 'Horwitz Defense'], ['1. d4 g6', 'Modern Defense (d4)'],
-                ['1. d4 e5', 'Englund Gambit'], ['1. d4 c5', 'Old Benoni Defense']
-            ];
-
-            const openingTrie = new OpeningTrie();
-            openingList.forEach(([moves, name]) => openingTrie.insert(moves, name));
-
-            const DIFFICULTY_TIMES = { easy: 1500, medium: 2500, hard: 4000 };
-            let currentDifficulty = 'medium';
-            let SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[currentDifficulty];
-            let suggestionLoading = false;
-
             const pieceDisplay = {king:'♚',queen:'♛',rook:'♜',bishop:'♝',knight:'♞',pawn:'♟'};
             const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-            let gameHistory = [], positionCount = new Map(), lastComputerMoveHighlight = null;
-            let historyStack = [], redoStack = [], lastComputerDepth = 0;
-            let moveHistoryStr = [];
+            const pieceValues = {pawn:100, knight:325, bishop:335, rook:510, queen:950, king:20000};
+            const INF = 999999, MAX_DEPTH = 24;
 
-            function setDifficulty(level) {
-                currentDifficulty = level;
-                SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[level];
-                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById('diff' + level.charAt(0).toUpperCase() + level.slice(1)).classList.add('active');
+            // جداول PeSTO المحسنة للتقييم
+            const pstPawn = [0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0];
+            const pstKnight = [-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50];
+            const pstBishop = [-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,10,10,10,10,0,-10,-10,5,5,10,10,5,5,-10,-10,0,5,10,10,5,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20];
+            const pstRook = [0,0,0,0,0,0,0,0,5,10,10,10,10,10,10,5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,5,5,0,0,0,0,0,0,5,5,0,0,0];
+            const pstQueen = [-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20];
+            const pstKing = [-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20];
+
+            function getPstValue(pt, color, r, c) {
+                let idx = r * 8 + c;
+                let table;
+                switch(pt) {
+                    case 'pawn': table = pstPawn; break;
+                    case 'knight': table = pstKnight; break;
+                    case 'bishop': table = pstBishop; break;
+                    case 'rook': table = pstRook; break;
+                    case 'queen': table = pstQueen; break;
+                    case 'king': table = pstKing; break;
+                    default: return 0;
+                }
+                if (color === 'black') idx = 63 - idx;
+                return table[idx];
             }
-            document.getElementById('diffEasy').addEventListener('click', () => setDifficulty('easy'));
-            document.getElementById('diffMedium').addEventListener('click', () => setDifficulty('medium'));
-            document.getElementById('diffHard').addEventListener('click', () => setDifficulty('hard'));
 
+            // Zobrist
             function rand64() { return (BigInt(Math.floor(Math.random()*0x10000000)) << 32n) | BigInt(Math.floor(Math.random()*0x100000000)); }
             const Zobrist = {
                 pieces: Array(12).fill().map(() => Array(64).fill().map(() => rand64())),
@@ -381,13 +317,15 @@
                 epFile: Array(8).fill().map(() => rand64())
             };
             const pieceIndex = {p:0,n:1,b:2,r:3,q:4,k:5, P:6,N:7,B:8,R:9,Q:10,K:11};
-            const pstPawn = [0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0];
-            const pstKnight = [-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50];
-            const pstBishop = [-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,10,10,10,10,0,-10,-10,5,5,10,10,5,5,-10,-10,0,5,10,10,5,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20];
-            const pstRook = [0,0,0,0,0,0,0,0,5,10,10,10,10,10,10,5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,5,5,0,0,0,0,0,0,5,5,0,0,0];
-            const pstQueen = [-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20];
-            const pstKing = [-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20];
-            function getPstValue(pt, color, r, c) { let idx = r*8+c; let t; switch(pt){ case 'pawn': t=pstPawn; break; case 'knight': t=pstKnight; break; case 'bishop': t=pstBishop; break; case 'rook': t=pstRook; break; case 'queen': t=pstQueen; break; case 'king': t=pstKing; break; default: return 0; } if(color==='black') idx=63-idx; return t[idx]; }
+
+            // دوال مساعدة
+            const isWithin = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+            const cloneState = (s) => ({
+                board: s.board.map(r => r.map(c => c ? {...c} : null)),
+                turn: s.turn,
+                castling: {...s.castling},
+                enPassant: s.enPassant ? {...s.enPassant} : null
+            });
 
             function fenToBoard(fen) {
                 const parts = fen.split(' '), rows = parts[0].split('/');
@@ -429,72 +367,10 @@
                 return h;
             }
 
-            let gameState = fenToBoard(START_FEN);
-            let playerColor = 'white', selectedCell = null, legalMovesMap = [], gameOver = false, promotionResolve = null, moveCount = 0;
-            const isWithin = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
-            const cloneState = (s) => ({
-                board: s.board.map(r => r.map(c => c ? {...c} : null)),
-                turn: s.turn,
-                castling: {...s.castling},
-                enPassant: s.enPassant ? {...s.enPassant} : null
-            });
-            function clonePositionData() { return { gameHistory: [...gameHistory], positionCount: new Map(positionCount), playerColor, moveCount, moveHistoryStr: [...moveHistoryStr] }; }
-            function restorePositionData(d) { gameHistory = [...d.gameHistory]; positionCount = new Map(d.positionCount); playerColor = d.playerColor; moveCount = d.moveCount; moveHistoryStr = [...d.moveHistoryStr]; }
-            function createSnapshot() { return { state: cloneState(gameState), data: clonePositionData() }; }
-            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearAllEffects(); }
-            function pushSnapshot() { historyStack.push(createSnapshot()); redoStack = []; }
-
-            function moveToShortAlgebraic(move, state) {
-                try {
-                    if (!move || !move.piece) return '';
-                    const piece = move.piece, from = move.from, to = move.to;
-                    const files = 'abcdefgh';
-                    const fromFile = files[from[1]], fromRank = 8 - from[0];
-                    const toFile = files[to[1]], toRank = 8 - to[0];
-                    let notation = '';
-                    if (move.castlingRookFrom) return to[1] > from[1] ? 'O-O' : 'O-O-O';
-                    if (piece.type === 'pawn') {
-                        if (move.capture || move.enPassant) notation = fromFile + 'x' + toFile + toRank;
-                        else notation = toFile + toRank;
-                    } else {
-                        const pieceLetter = {king:'K', queen:'Q', rook:'R', bishop:'B', knight:'N'}[piece.type];
-                        notation = pieceLetter + toFile + toRank;
-                        if (move.capture) notation = pieceLetter + 'x' + toFile + toRank;
-                    }
-                    if (move.promotion) {
-                        const promoLetter = {queen:'Q', rook:'R', bishop:'B', knight:'N'}[move.promotion];
-                        notation += '=' + promoLetter;
-                    }
-                    return notation;
-                } catch(e) { return ''; }
-            }
-
-            function updateOpeningDisplaySafe() {
-                try {
-                    if (moveHistoryStr.length === 0) {
-                        document.querySelector('.opening-name').textContent = '';
-                        return;
-                    }
-                    let fullStr = '';
-                    for (let i = 0; i < moveHistoryStr.length; i++) {
-                        if (i % 2 === 0) fullStr += (Math.floor(i/2)+1) + '. ';
-                        fullStr += moveHistoryStr[i] + ' ';
-                    }
-                    const result = openingTrie.find(fullStr.trim());
-                    document.querySelector('.opening-name').textContent = result.name ? '📖 ' + result.name : '';
-                } catch(e) { document.querySelector('.opening-name').textContent = ''; }
-            }
-
-            function recordMoveSafe(move) {
-                try {
-                    const notation = moveToShortAlgebraic(move, gameState);
-                    if (notation) moveHistoryStr.push(notation);
-                    updateOpeningDisplaySafe();
-                } catch(e) {}
-            }
-
+            // التحقق من الهجوم على مربع
             function isSquareAttacked(board, row, col, attackerColor) {
                 const opp = attackerColor === 'white' ? 'black' : 'white';
+                // البيادق
                 if (attackerColor === 'white') {
                     if (isWithin(row+1, col-1) && board[row+1][col-1]?.color === 'white' && board[row+1][col-1].type === 'pawn') return true;
                     if (isWithin(row+1, col+1) && board[row+1][col+1]?.color === 'white' && board[row+1][col+1].type === 'pawn') return true;
@@ -502,12 +378,15 @@
                     if (isWithin(row-1, col-1) && board[row-1][col-1]?.color === 'black' && board[row-1][col-1].type === 'pawn') return true;
                     if (isWithin(row-1, col+1) && board[row-1][col+1]?.color === 'black' && board[row-1][col+1].type === 'pawn') return true;
                 }
+                // الأحصنة
                 for (const [dr, dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) {
                     if (isWithin(row+dr, col+dc) && board[row+dr][col+dc]?.color === attackerColor && board[row+dr][col+dc].type === 'knight') return true;
                 }
+                // الملك
                 for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (dr || dc) {
                     if (isWithin(row+dr, col+dc) && board[row+dr][col+dc]?.color === attackerColor && board[row+dr][col+dc].type === 'king') return true;
                 }
+                // القلعة والملكة (خطوط مستقيمة)
                 for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
                     let r = row + dr, c = col + dc;
                     while (isWithin(r, c)) {
@@ -518,6 +397,7 @@
                         r += dr; c += dc;
                     }
                 }
+                // الفيل والملكة (أقطار)
                 for (const [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
                     let r = row + dr, c = col + dc;
                     while (isWithin(r, c)) {
@@ -633,34 +513,301 @@
 
             function getLegalMoves(state) { return generatePseudoMoves(state).filter(m => !isKingInCheck(makeMove(state, m), state.turn)); }
 
-            const pieceValues = {pawn:100, knight:325, bishop:335, rook:510, queen:950, king:20000};
-            const INF = 999999, MAX_DEPTH = 24;
-            let searchStartTime, searchStopped, transTable, killerMoves, historyTable, lastBestScore;
-            const EXACT=0, LOWER=1, UPPER=2;
+            // ========== دالة التقييم المتطورة ==========
+            function evaluate(state) {
+                if (isInsufficientMaterial(state.board)) return 0;
+                let score = 0;
+                const board = state.board;
+                const pawns = { white: new Array(8).fill(0), black: new Array(8).fill(0) };
+                const pieceCount = { white: {q:0,r:0,b:0,n:0}, black: {q:0,r:0,b:0,n:0} };
+                const endgame = isEndgame(board);
 
-            function ttStore(h, e) { if (transTable.size >= 2000000) { const firstKey = transTable.keys().next().value; if (firstKey !== undefined) transTable.delete(firstKey); } transTable.set(h, e); }
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const piece = board[r][c];
+                        if (!piece) continue;
+                        const { color, type } = piece;
+                        const val = pieceValues[type] + getPstValue(type, color, r, c);
+                        score += color === 'white' ? val : -val;
+                        if (type === 'pawn') pawns[color][c]++;
+                        else if (type !== 'king') pieceCount[color][type]++;
+                    }
+                }
 
-            function scoreMove(move, ply, hashMove) {
-                if (hashMove && move.from[0]===hashMove.from[0] && move.from[1]===hashMove.from[1] && move.to[0]===hashMove.to[0] && move.to[1]===hashMove.to[1]) return 1000000;
-                if (move.capture) return 10000 + (pieceValues[move.capture.type]||0)*10 - (pieceValues[move.piece.type]||0);
-                if (move.promotion) return 9000 + pieceValues[move.promotion];
-                if (killerMoves[ply][0] && move.from[0]===killerMoves[ply][0].from[0] && move.from[1]===killerMoves[ply][0].from[1] && move.to[0]===killerMoves[ply][0].to[0] && move.to[1]===killerMoves[ply][0].to[1]) return 8500;
-                if (killerMoves[ply][1] && move.from[0]===killerMoves[ply][1].from[0] && move.from[1]===killerMoves[ply][1].from[1] && move.to[0]===killerMoves[ply][1].to[0] && move.to[1]===killerMoves[ply][1].to[1]) return 7500;
-                return historyTable.get(move.from[0]+','+move.from[1]+'-'+move.to[0]+','+move.to[1]) || 0;
+                // زوج الفيلة
+                if (pieceCount.white.b >= 2) score += 50 + (pieceCount.white.b - 2) * 20;
+                if (pieceCount.black.b >= 2) score -= 50 + (pieceCount.black.b - 2) * 20;
+
+                // تقييم البيادق
+                score += evaluatePawns(pawns, board, 'white') - evaluatePawns(pawns, board, 'black');
+
+                // أمان الملك (وسط اللعب) أو نهاية اللعب
+                if (!endgame) {
+                    score += kingSafety(board, 'white') - kingSafety(board, 'black');
+                } else {
+                    score += endgameKing(board, 'white') - endgameKing(board, 'black');
+                }
+
+                // تقييم القطع الأخرى
+                score += evaluateRooks(board, 'white') - evaluateRooks(board, 'black');
+                score += evaluateBishops(board, 'white') - evaluateBishops(board, 'black');
+                score += evaluateKnights(board, 'white') - evaluateKnights(board, 'black');
+
+                if (positionCount.has(hashState(state)) && positionCount.get(hashState(state)) >= 2) return 0;
+                return state.turn === 'white' ? score : -score;
             }
 
-            function evaluate(state){ let b=state.board,score=0,pc={white:{queen:0,rook:0,bishop:0,knight:0,pawn:0},black:{queen:0,rook:0,bishop:0,knight:0,pawn:0}}; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(b[r][c]){ let p=b[r][c],val=pieceValues[p.type]+getPstValue(p.type,p.color,r,c); score+=p.color==='white'?val:-val; pc[p.color][p.type]++; } if(pc.white.bishop>=2) score+=45+(pc.white.bishop-2)*15; if(pc.black.bishop>=2) score-=45+(pc.black.bishop-2)*15; score+=evaluatePawnStructure(b,'white')-evaluatePawnStructure(b,'black'); score+=kingSafety(b,'white')-kingSafety(b,'black'); score+=mobilityScore(state,'white')-mobilityScore(state,'black'); score+=controlAndRookScore(b,'white')-controlAndRookScore(b,'black'); score+=knightOutpost(b,'white')-knightOutpost(b,'black'); if (isEndgame(b)) { for(let r=0;r<8;r++) for(let c=0;c<8;c++) { if (b[r][c]?.type === 'king') { const centerDist = Math.max(Math.abs(3.5 - r), Math.abs(3.5 - c)); score += (b[r][c].color === 'white' ? -centerDist : centerDist) * 10; } } } if(positionCount.has(hashState(state))&&positionCount.get(hashState(state))>=2) return 0; return state.turn==='white'?score:-score; }
-            function evaluatePawnStructure(board,color){ let val=0,pawns=[]; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(board[r][c]?.color===color&&board[r][c].type==='pawn') pawns.push({r,c}); let opp=color==='white'?'black':'white'; for(let p of pawns){ let col=p.c,row=p.r,dir=color==='white'?-1:1,isolated=true; for(let r2=0;r2<8;r2++){ if(col>0&&board[r2][col-1]?.color===color&&board[r2][col-1].type==='pawn') isolated=false; if(col<7&&board[r2][col+1]?.color===color&&board[r2][col+1].type==='pawn') isolated=false; } if(isolated) val-=20; let doubled=false; for(let r2=0;r2<8;r2++) if(r2!==row&&board[r2][col]?.color===color&&board[r2][col].type==='pawn') doubled=true; if(doubled) val-=18; let passed=true; for(let r3=row+dir;isWithin(r3,col);r3+=dir){ if(board[r3][col]?.color===opp&&board[r3][col].type==='pawn'){passed=false;break;} if(col>0&&board[r3][col-1]?.color===opp&&board[r3][col-1].type==='pawn'){passed=false;break;} if(col<7&&board[r3][col+1]?.color===opp&&board[r3][col+1].type==='pawn'){passed=false;break;} } if(passed){ let rank=color==='white'?8-row:row+1; val+=20+rank*5; if(col>0&&board[row][col-1]?.color===color&&board[row][col-1].type==='pawn') val+=12; if(col<7&&board[row][col+1]?.color===color&&board[row][col+1].type==='pawn') val+=12; } if(!passed&&row>=(color==='white'?4:3)){ let ahead=0; for(let r3=row+dir;isWithin(r3,col);r3+=dir) if(board[r3][col]?.color===opp&&board[r3][col].type==='pawn') ahead++; if(ahead===0&&!isolated) val+=8; } if(!passed&&!isolated){ let backward=true, rBehind=row-dir; if(isWithin(rBehind,col-1)&&board[rBehind][col-1]?.color===color&&board[rBehind][col-1].type==='pawn') backward=false; if(isWithin(rBehind,col+1)&&board[rBehind][col+1]?.color===color&&board[rBehind][col+1].type==='pawn') backward=false; if(backward) val-=10; } } return val; }
-            function kingSafety(board,color){ let pos=null; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(board[r][c]?.type==='king'&&board[r][c].color===color) pos=[r,c]; if(!pos) return 0; let [row,col]=pos,safety=0,dir=color==='white'?-1:1,pawnShield=0; for(let dc=-1;dc<=1;dc++){ let r2=row+dir,c2=col+dc; if(isWithin(r2,c2)&&board[r2][c2]?.color===color&&board[r2][c2].type==='pawn') pawnShield++; let r3=row+2*dir,c3=col+dc; if(isWithin(r3,c3)&&board[r3][c3]?.color===color&&board[r3][c3].type==='pawn') pawnShield+=0.5; } safety+=pawnShield*28; let opp=color==='white'?'black':'white'; for(let dc=-1;dc<=1;dc++){ let file=col+dc; if(file<0||file>7) continue; let friendly=false,enemy=false; for(let r=0;r<8;r++) if(board[r][file]?.type==='pawn'){ if(board[r][file].color===color) friendly=true; else enemy=true; } if(!friendly&&enemy) safety-=35; else if(!friendly&&!enemy) safety-=15; } let attackCount=0; for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++){ let nr=row+dr,nc=col+dc; if(isWithin(nr,nc)&&board[nr][nc]?.color===opp&&board[nr][nc].type!=='king') attackCount++; } safety-=attackCount*9; if((color==='white'&&row<=3)||(color==='black'&&row>=4)){ for(let dc=-1;dc<=1;dc+=2){ let stormFile=col+dc; if(stormFile>=0&&stormFile<=7) for(let r2=row+dir;isWithin(r2,stormFile);r2+=dir) if(board[r2][stormFile]?.color===opp&&board[r2][stormFile].type==='pawn'){ safety-=15; break; } } } return safety; }
-            function mobilityScore(state,color){ let orig=state.turn; state.turn=color; let m=getLegalMoves(state).length; state.turn=orig; return m*3; }
-            function controlAndRookScore(board,color){ let score=0; for(let [r,c] of [[3,3],[3,4],[4,3],[4,4]]) if(board[r][c]?.color===color) score+=10; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(board[r][c]?.color===color&&board[r][c].type==='rook'){ let open=true,semi=true; for(let r2=0;r2<8;r2++) if(board[r2][c]?.type==='pawn'){ open=false; if(board[r2][c].color===color) semi=false; } if(open) score+=20; else if(semi) score+=12; if(r===(color==='white'?1:6)) score+=30; } return score; }
-            function knightOutpost(board,color){ let score=0,opp=color==='white'?'black':'white'; for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(board[r][c]?.color===color&&board[r][c].type==='knight'){ let supported=false,dir=color==='white'?-1:1; if(isWithin(r+dir,c-1)&&board[r+dir][c-1]?.color===color&&board[r+dir][c-1].type==='pawn') supported=true; if(isWithin(r+dir,c+1)&&board[r+dir][c+1]?.color===color&&board[r+dir][c+1].type==='pawn') supported=true; if(!supported) continue; let attacked=false; if(opp==='white'){ if(isWithin(r-1,c-1)&&board[r-1][c-1]?.color==='white'&&board[r-1][c-1].type==='pawn') attacked=true; if(isWithin(r-1,c+1)&&board[r-1][c+1]?.color==='white'&&board[r-1][c+1].type==='pawn') attacked=true; } else { if(isWithin(r+1,c-1)&&board[r+1][c-1]?.color==='black'&&board[r+1][c-1].type==='pawn') attacked=true; if(isWithin(r+1,c+1)&&board[r+1][c+1]?.color==='black'&&board[r+1][c+1].type==='pawn') attacked=true; } if(!attacked&&supported) score+=25; } return score; }
+            function isEndgame(board) {
+                let totalMat = 0, queens = 0;
+                for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+                    const p = board[r][c];
+                    if (!p || p.type === 'king') continue;
+                    totalMat += pieceValues[p.type];
+                    if (p.type === 'queen') queens++;
+                }
+                return totalMat < 2000 || queens === 0;
+            }
+
+            function isPassedPawn(board, r, c, color) {
+                const dir = color === 'white' ? -1 : 1;
+                const opp = color === 'white' ? 'black' : 'white';
+                for (let dc = -1; dc <= 1; dc++) {
+                    const col = c + dc;
+                    if (col < 0 || col > 7) continue;
+                    for (let rr = r + dir; rr >= 0 && rr < 8; rr += dir) {
+                        if (board[rr][col] && board[rr][col].type === 'pawn' && board[rr][col].color === opp)
+                            return false;
+                    }
+                }
+                return true;
+            }
+
+            function evaluatePawns(pawns, board, color) {
+                let s = 0;
+                const opp = color === 'white' ? 'black' : 'white';
+                for (let col = 0; col < 8; col++) {
+                    const cnt = pawns[color][col];
+                    if (cnt === 0) continue;
+                    // معزول
+                    if ((col === 0 || pawns[color][col-1] === 0) && (col === 7 || pawns[color][col+1] === 0)) s -= 22;
+                    // مضاعف
+                    if (cnt > 1) s -= 20 * (cnt - 1);
+                }
+                // مار
+                for (let col = 0; col < 8; col++) {
+                    if (pawns[color][col] === 0) continue;
+                    let row = -1;
+                    if (color === 'white') {
+                        for (let r = 0; r < 8; r++) if (board[r][col] && board[r][col].type === 'pawn' && board[r][col].color === 'white') { row = r; break; }
+                    } else {
+                        for (let r = 7; r >= 0; r--) if (board[r][col] && board[r][col].type === 'pawn' && board[r][col].color === 'black') { row = r; break; }
+                    }
+                    if (row === -1) continue;
+                    if (isPassedPawn(board, row, col, color)) {
+                        const advance = color === 'white' ? (7 - row) : row;
+                        s += advance * 6;
+                    }
+                }
+                return s;
+            }
+
+            function findKing(board, color) {
+                for (let r=0;r<8;r++) for (let c=0;c<8;c++)
+                    if (board[r][c]?.type==='king' && board[r][c]?.color===color) return {row:r, col:c};
+                return null;
+            }
+
+            function kingSafety(board, color) {
+                const king = findKing(board, color);
+                if (!king) return 0;
+                const { row, col } = king;
+                const opp = color === 'white' ? 'black' : 'white';
+                let safety = 0;
+                const dir = color === 'white' ? 1 : -1;
+                // درع البيادق
+                for (let dc = -1; dc <= 1; dc++) {
+                    const c = col + dc;
+                    if (c >= 0 && c < 8) {
+                        for (let ro = 1; ro <= 2; ro++) {
+                            const r = row - (dir * ro);
+                            if (r >= 0 && r < 8 && board[r][c]?.type === 'pawn' && board[r][c]?.color === color)
+                                safety += (ro === 1 ? 28 : 14);
+                        }
+                    }
+                }
+                // تهديد الأحصنة
+                const knightMoves = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+                for (const [dr, dc] of knightMoves) {
+                    const r = row + dr, c = col + dc;
+                    if (r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c]?.color === opp && board[r][c]?.type === 'knight')
+                        safety -= 12;
+                }
+                // تهديد القطع البعيدة
+                const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+                for (const [dr, dc] of dirs) {
+                    let r = row + dr, c = col + dc;
+                    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                        if (board[r][c]) {
+                            if (board[r][c].color === opp && (board[r][c].type === 'q' || board[r][c].type === 'r' || board[r][c].type === 'b'))
+                                safety -= 8;
+                            break;
+                        }
+                        r += dr; c += dc;
+                    }
+                }
+                return safety;
+            }
+
+            function endgameKing(board, color) {
+                const king = findKing(board, color);
+                const oppKing = findKing(board, color === 'white' ? 'black' : 'white');
+                if (!king || !oppKing) return 0;
+                const centerDist = Math.max(3 - king.col, king.col - 4, 3 - king.row, king.row - 4);
+                let score = (4 - centerDist) * 10;
+                const dist = Math.abs(king.row - oppKing.row) + Math.abs(king.col - oppKing.col);
+                score += (14 - dist) * 4;
+                return score;
+            }
+
+            function evaluateRooks(board, color) {
+                let s = 0;
+                for (let c = 0; c < 8; c++) {
+                    let ourPawn = false, oppPawn = false;
+                    for (let r = 0; r < 8; r++) {
+                        if (board[r][c]?.type === 'pawn') {
+                            if (board[r][c].color === color) ourPawn = true;
+                            else oppPawn = true;
+                        }
+                    }
+                    for (let r = 0; r < 8; r++) {
+                        if (board[r][c]?.type === 'rook' && board[r][c]?.color === color) {
+                            if (!ourPawn && !oppPawn) s += 20;
+                            else if (!ourPawn && oppPawn) s += 10;
+                        }
+                    }
+                }
+                return s;
+            }
+
+            function evaluateBishops(board, color) {
+                let s = 0;
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const p = board[r][c];
+                        if (!p || p.type !== 'bishop' || p.color !== color) continue;
+                        let blocked = 0;
+                        for (let rr = 0; rr < 8; rr++) {
+                            for (let cc = 0; cc < 8; cc++) {
+                                if (board[rr][cc]?.type === 'pawn' && board[rr][cc].color === color && (rr + cc) % 2 === (r + c) % 2)
+                                    blocked++;
+                            }
+                        }
+                        s -= blocked * 8;
+                    }
+                }
+                return s;
+            }
+
+            function evaluateKnights(board, color) {
+                let s = 0;
+                const center = [27, 28, 35, 36];
+                for (let r = 0; r < 8; r++)
+                    for (let c = 0; c < 8; c++)
+                        if (board[r][c]?.type === 'knight' && board[r][c]?.color === color && center.includes(r * 8 + c))
+                            s += 10;
+                return s;
+            }
+
+            function isInsufficientMaterial(board) {
+                const pieces = {white:[], black:[]}, bishops = {white:[], black:[]};
+                for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (board[r][c]) {
+                    const p = board[r][c]; pieces[p.color].push(p.type);
+                    if (p.type === 'bishop') bishops[p.color].push((r+c)%2);
+                }
+                const only = (color, types) => pieces[color].length > 0 && pieces[color].every(t => types.includes(t));
+                if (pieces.white.length === 1 && pieces.black.length === 1) return true;
+                if (only('white', ['king','knight']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
+                if (only('black', ['king','knight']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
+                if (only('white', ['king','bishop']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
+                if (only('black', ['king','bishop']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
+                if (only('white', ['king','bishop']) && only('black', ['king','bishop']) && bishops.white[0] === bishops.black[0]) return true;
+                return false;
+            }
+
+            // ========== خوارزمية التبادل الآمن (SEE) – صحيحة Minimax ==========
+            function see(board, move, turn) {
+                // move يحتوي على from, to, capture, promotion, enPassant, piece
+                let gain = 0;
+                if (move.capture) gain = pieceValues[move.capture.type];
+                if (move.promotion) gain += pieceValues[move.promotion] - pieceValues.pawn;
+
+                // نسخ الرقعة
+                const b = board.map(row => row.map(cell => cell ? {type:cell.type, color:cell.color} : null));
+                const [fr, fc] = move.from;
+                const [tr, tc] = move.to;
+                // تنفيذ الحركة على النسخة
+                if (move.enPassant) {
+                    const capturedRow = turn === 'white' ? tr+1 : tr-1;
+                    b[capturedRow][tc] = null;
+                }
+                const movingPiece = move.promotion ? {type: move.promotion, color: turn} : {type: move.piece.type, color: turn};
+                b[tr][tc] = movingPiece;
+                b[fr][fc] = null;
+
+                let side = turn === 'white' ? 'black' : 'white';
+                let movingPieceVal = move.promotion ? pieceValues[move.promotion] : pieceValues[move.piece.type];
+                let gainList = [gain];
+                let depth = 0;
+
+                while (true) {
+                    const attackers = getAttackers(b, tr, tc, side);
+                    if (attackers.length === 0) break;
+                    // اختيار أرخص مهاجم
+                    attackers.sort((a,b) => (pieceValues[a.type]||0) - (pieceValues[b.type]||0));
+                    const cheapest = attackers[0];
+                    const attVal = pieceValues[cheapest.type] || 0;
+                    depth++;
+                    gainList[depth] = movingPieceVal - gainList[depth-1];
+
+                    // إزالة القطعة المهاجمة من مكانها الأصلي (سنبحث عنه)
+                    const fromSq = findPieceSquare(b, cheapest, tr, tc, side);
+                    if (!fromSq) break;
+                    // تنفيذ الأسر
+                    b[tr][tc] = {type: cheapest.type, color: side}; // المهاجم الجديد يحل محل القطعة المأسورة
+                    b[fromSq.row][fromSq.col] = null;
+                    movingPieceVal = attVal;
+                    side = side === 'white' ? 'black' : 'white';
+                }
+
+                // الطي
+                while (depth > 0) {
+                    gainList[depth-1] = -Math.max(-gainList[depth-1], gainList[depth]);
+                    depth--;
+                }
+                return gainList[0];
+            }
+
+            function getAttackers(board, row, col, attackerColor) {
+                const attackers = [];
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const p = board[r][c];
+                        if (!p || p.color !== attackerColor) continue;
+                        if (pieceAttacksSquare(board, r, c, row, col)) attackers.push(p);
+                    }
+                }
+                return attackers;
+            }
 
             function pieceAttacksSquare(board, row, col, tr, tc) {
-                const piece = board[row][col]; if (!piece) return false;
+                const piece = board[row][col];
+                if (!piece) return false;
                 const dr = Math.abs(row - tr), dc = Math.abs(col - tc);
                 switch (piece.type) {
-                    case 'pawn': const dir = piece.color === 'white' ? -1 : 1; return (row + dir === tr) && (dc === 1);
+                    case 'pawn': {
+                        const dir = piece.color === 'white' ? -1 : 1;
+                        return (row + dir === tr) && (dc === 1);
+                    }
                     case 'knight': return (dr === 2 && dc === 1) || (dr === 1 && dc === 2);
                     case 'king': return dr <= 1 && dc <= 1 && (dr + dc > 0);
                     case 'bishop': return dr === dc && dr !== 0 && isPathClear(board, row, col, tr, tc);
@@ -669,120 +816,153 @@
                     default: return false;
                 }
             }
+
             function isPathClear(board, r1, c1, r2, c2) {
                 const dr = r2 > r1 ? 1 : (r2 < r1 ? -1 : 0);
                 const dc = c2 > c1 ? 1 : (c2 < c1 ? -1 : 0);
                 let r = r1 + dr, c = c1 + dc;
-                while (r !== r2 || c !== c2) { if (board[r][c]) return false; r += dr; c += dc; }
+                while (r !== r2 || c !== c2) {
+                    if (board[r][c]) return false;
+                    r += dr; c += dc;
+                }
                 return true;
             }
 
-            function see(board, move, turn) {
-                const from = move.from, to = move.to;
-                const target = board[to[0]][to[1]];
-                const values = pieceValues;
-                const boardCopy = board.map(row => row.map(cell => cell ? {type:cell.type, color:cell.color} : null));
-                let gains = [target ? values[target.type] : 0];
-                boardCopy[to[0]][to[1]] = {type: move.piece.type, color: turn};
-                boardCopy[from[0]][from[1]] = null;
-                let side = turn === 'white' ? 'black' : 'white';
-                while (true) {
-                    const attackers = [];
-                    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-                        const p = boardCopy[r][c];
-                        if (!p || p.color !== side) continue;
-                        if (pieceAttacksSquare(boardCopy, r, c, to[0], to[1])) attackers.push({piece: p, from: [r,c], value: values[p.type]});
+            function findPieceSquare(board, piece, targetRow, targetCol, side) {
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const p = board[r][c];
+                        if (p && p.type === piece.type && p.color === side && pieceAttacksSquare(board, r, c, targetRow, targetCol))
+                            return { row: r, col: c };
                     }
-                    if (attackers.length === 0) break;
-                    attackers.sort((a,b) => a.value - b.value);
-                    const att = attackers[0];
-                    gains.push(att.value - gains[gains.length-1]);
-                    boardCopy[to[0]][to[1]] = {type: att.piece.type, color: side};
-                    boardCopy[att.from[0]][att.from[1]] = null;
-                    side = side === 'white' ? 'black' : 'white';
                 }
-                let score = gains[gains.length-1];
-                for (let i = gains.length-2; i >= 0; i--) score = Math.max(0, gains[i] - score);
-                return score;
+                return null;
             }
 
-            function isEndgame(board) {
-                let queens = 0, rooks = 0, minors = 0;
-                for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (board[r][c]) {
-                    if (board[r][c].type === 'queen') queens++;
-                    else if (board[r][c].type === 'rook') rooks++;
-                    else if (board[r][c].type === 'bishop' || board[r][c].type === 'knight') minors++;
+            // ========== البحث ==========
+            let searchStartTime, searchStopped, transTable, killerMoves, historyTable, lastBestScore, lastBestMove;
+            const EXACT=0, LOWER=1, UPPER=2;
+
+            function ttStore(h, e) { if (transTable.size >= 2000000) { const firstKey = transTable.keys().next().value; if (firstKey !== undefined) transTable.delete(firstKey); } transTable.set(h, e); }
+
+            function scoreMove(move, ply, hashMove, prevMove) {
+                if (hashMove && move.from[0]===hashMove.from[0] && move.from[1]===hashMove.from[1] && move.to[0]===hashMove.to[0] && move.to[1]===hashMove.to[1]) return 1000000;
+                if (move.capture) {
+                    const v = pieceValues[move.capture.type] || 0;
+                    const a = pieceValues[move.piece.type] || 0;
+                    return 10000 + v * 10 - a;
                 }
-                return (queens === 0 && rooks <= 2 && minors <= 2);
+                if (move.promotion) return 9000 + pieceValues[move.promotion];
+                if (killerMoves[ply][0] && move.from[0]===killerMoves[ply][0].from[0] && move.from[1]===killerMoves[ply][0].from[1] && move.to[0]===killerMoves[ply][0].to[0] && move.to[1]===killerMoves[ply][0].to[1]) return 8500;
+                if (killerMoves[ply][1] && move.from[0]===killerMoves[ply][1].from[0] && move.from[1]===killerMoves[ply][1].from[1] && move.to[0]===killerMoves[ply][1].to[0] && move.to[1]===killerMoves[ply][1].to[1]) return 7500;
+                const key = move.from[0]+','+move.from[1]+'-'+move.to[0]+','+move.to[1];
+                return historyTable.get(key) || 0;
             }
 
             function alphaBeta(state, depth, alpha, beta, ply, nullOk, timeLimit) {
-                if (searchStopped || performance.now() - searchStartTime > timeLimit) { searchStopped = true; return 0; }
-                const hash = hashState(state), tt = transTable.get(hash);
+                if (searchStopped || performance.now() - searchStartTime > timeLimit) { searchStopped = true; return evaluate(state); }
+                const hash = hashState(state);
+                const tt = transTable.get(hash);
                 if (tt && tt.depth >= depth) {
                     if (tt.flag === EXACT) return tt.score;
                     if (tt.flag === LOWER && tt.score > alpha) alpha = tt.score;
                     if (tt.flag === UPPER && tt.score < beta) beta = tt.score;
                     if (alpha >= beta) return tt.score;
                 }
-                if (depth <= 0) return quiescence(state, alpha, beta);
-                let moves = getLegalMoves(state);
-                if (!moves.length) return isKingInCheck(state, state.turn) ? -INF + ply : 0;
-                if (nullOk && !isKingInCheck(state, state.turn) && depth >= 3 && !isEndgame(state.board)) {
-                    const ns = cloneState(state); ns.turn = state.turn === 'white' ? 'black' : 'white'; ns.enPassant = null;
-                    if (-alphaBeta(ns, depth - 1 - 3 - Math.floor(depth/4), -beta, -beta+1, ply+1, false, timeLimit) >= beta) return beta;
+                if (depth <= 0) return quiescence(state, alpha, beta, ply, timeLimit);
+
+                const inCheck = isKingInCheck(state, state.turn);
+                if (inCheck) depth++;
+
+                // Null move
+                if (nullOk && depth >= 3 && !inCheck && !isEndgame(state.board)) {
+                    const ns = cloneState(state);
+                    ns.turn = ns.turn === 'white' ? 'black' : 'white';
+                    ns.enPassant = null;
+                    const R = 3 + Math.floor(depth / 4);
+                    const nullScore = -alphaBeta(ns, depth - 1 - R, -beta, -beta + 1, ply + 1, false, timeLimit);
+                    if (nullScore >= beta) return beta;
                 }
-                let hashMove = tt?.bestMove || null;
-                if (!hashMove && depth >= 4) { alphaBeta(state, depth-2, alpha, beta, ply+1, false, timeLimit); hashMove = transTable.get(hashState(state))?.bestMove; }
-                moves.forEach(m => m.score = scoreMove(m, ply, hashMove));
-                moves.sort((a,b) => b.score - a.score);
-                let best = null, origAlpha = alpha;
-                for (let i = 0; i < moves.length; i++) {
-                    const move = moves[i], next = makeMove(state, move);
-                    const givesCheck = isKingInCheck(next, next.turn);
+
+                const moves = getLegalMoves(state);
+                if (moves.length === 0) return inCheck ? -INF + ply : 0;
+                if (moves.length === 1 && !inCheck) depth++;
+
+                const ttBestMove = tt?.bestMove || null;
+                const scored = moves.map(m => ({ move: m, score: scoreMove(m, ply, ttBestMove, null) }));
+                scored.sort((a, b) => b.score - a.score);
+
+                let best = null, origAlpha = alpha, bestScore = -INF;
+                for (let i = 0; i < scored.length; i++) {
+                    const { move } = scored[i];
+                    const ns = makeMove(state, move);
+                    const givesCheck = isKingInCheck(ns, ns.turn);
                     let newDepth = depth - 1 + (givesCheck || (move.piece.type === 'pawn' && (move.to[0] === 0 || move.to[0] === 7)) ? 1 : 0);
-                    if (!move.capture && !move.promotion && !givesCheck && newDepth <= 3) {
-                        const futilityMargin = 150 + 50 * depth;
-                        if (evaluate(state) + futilityMargin <= alpha) continue;
+
+                    // Futility pruning
+                    if (depth <= 3 && !move.capture && !move.promotion && !givesCheck) {
+                        if (-evaluate(ns) + 250 * depth <= alpha) continue;
                     }
-                    const LMR = !move.capture && !move.promotion && i >= 4 && depth >= 3 && !givesCheck;
-                    let score = LMR ? -alphaBeta(next, newDepth-2, -alpha-1, -alpha, ply+1, true, timeLimit) : -alphaBeta(next, newDepth, -beta, -alpha, ply+1, true, timeLimit);
-                    if (searchStopped) return 0;
-                    if (LMR && score > alpha && score < beta) score = -alphaBeta(next, newDepth, -beta, -alpha, ply+1, true, timeLimit);
+
+                    // LMR
+                    let reduction = 0;
+                    if (depth >= 3 && i >= 4 && !move.capture && !move.promotion && !givesCheck) {
+                        reduction = Math.min(Math.floor(Math.log(depth) * Math.log(i) / 2) + 1, depth - 2);
+                    }
+
+                    let score;
+                    if (i === 0) {
+                        score = -alphaBeta(ns, newDepth - reduction, -beta, -alpha, ply + 1, true, timeLimit);
+                    } else {
+                        score = -alphaBeta(ns, newDepth - reduction, -alpha - 1, -alpha, ply + 1, true, timeLimit);
+                        if (score > alpha && score < beta)
+                            score = -alphaBeta(ns, newDepth, -beta, -alpha, ply + 1, true, timeLimit);
+                    }
+                    if (searchStopped) return evaluate(state);
+
                     if (score >= beta) {
-                        if (!move.capture && !move.promotion) { killerMoves[ply][1] = killerMoves[ply][0]; killerMoves[ply][0] = {from:[...move.from], to:[...move.to]}; }
-                        historyTable.set(move.from+','+move.from[1]+'-'+move.to[0]+','+move.to[1], (historyTable.get(move.from+','+move.from[1]+'-'+move.to[0]+','+move.to[1])||0) + depth*depth);
-                        ttStore(hash, {score: beta, depth, flag: LOWER, bestMove: move});
+                        if (!move.capture && !move.promotion) {
+                            killerMoves[ply][1] = killerMoves[ply][0];
+                            killerMoves[ply][0] = { from: [...move.from], to: [...move.to] };
+                        }
+                        const key = move.from[0]+','+move.from[1]+'-'+move.to[0]+','+move.to[1];
+                        historyTable.set(key, (historyTable.get(key)||0) + depth*depth);
+                        ttStore(hash, { score: beta, depth, flag: LOWER, bestMove: move });
                         return beta;
                     }
-                    if (score > alpha) { alpha = score; best = move; }
+                    if (score > alpha) { alpha = score; best = move; bestScore = score; }
                 }
-                ttStore(hash, {score: alpha, depth, flag: alpha > origAlpha ? EXACT : UPPER, bestMove: best});
-                return alpha;
+                if (best) ttStore(hash, { score: bestScore, depth, flag: bestScore > origAlpha ? EXACT : UPPER, bestMove: best });
+                return bestScore;
             }
 
-            function quiescence(state, alpha, beta) {
-                const hash = hashState(state), tt = transTable.get(hash);
-                if (tt && tt.depth >= 0) {
-                    if (tt.flag === EXACT) return tt.score;
-                    if (tt.flag === LOWER && tt.score > alpha) alpha = tt.score;
-                    if (tt.flag === UPPER && tt.score < beta) beta = tt.score;
-                    if (alpha >= beta) return tt.score;
-                }
-                const stand = evaluate(state);
-                if (stand >= beta) { ttStore(hash, {score: beta, depth: 0, flag: LOWER}); return beta; }
-                if (stand > alpha) alpha = stand;
-                let moves = generatePseudoMoves(state).filter(m => m.capture || m.promotion);
-                moves.sort((a,b) => (b.capture ? pieceValues[b.capture.type] : 0) - (a.capture ? pieceValues[a.capture.type] : 0));
-                for (const move of moves) {
-                    if (move.capture && !move.promotion) { if (see(state.board, move, state.turn) < -30) continue; }
-                    const next = makeMove(state, move);
-                    if (isKingInCheck(next, state.turn)) continue;
-                    const score = -quiescence(next, -beta, -alpha);
-                    if (score >= beta) { ttStore(hash, {score: beta, depth: 0, flag: LOWER}); return beta; }
+            function quiescence(state, alpha, beta, ply, timeLimit) {
+                if (searchStopped || performance.now() - searchStartTime > timeLimit) { searchStopped = true; return evaluate(state); }
+                const standPat = evaluate(state);
+                if (standPat >= beta) return beta;
+                if (standPat > alpha) alpha = standPat;
+
+                const inCheck = isKingInCheck(state, state.turn);
+                const allMoves = generatePseudoMoves(state);
+                const candidates = inCheck ? allMoves : allMoves.filter(m => m.capture || m.promotion);
+                if (candidates.length === 0) return standPat;
+
+                // فرز حسب SEE (للأسر غير الكش)
+                const scored = candidates.map(m => ({
+                    move: m,
+                    see: inCheck ? 0 : see(state.board, m, state.turn) // في الكش نبحث الكل بدون SEE
+                })).filter(s => inCheck || s.see >= 0)
+                  .sort((a, b) => b.see - a.see);
+
+                for (const { move } of scored) {
+                    const ns = makeMove(state, move);
+                    if (isKingInCheck(ns, state.turn)) continue;
+                    // تقليم دلتا
+                    if (!inCheck && standPat + 900 < alpha) continue; // 900 قيمة تقريبية
+                    const score = -quiescence(ns, -beta, -alpha, ply + 1, timeLimit);
+                    if (score >= beta) return beta;
                     if (score > alpha) alpha = score;
                 }
-                ttStore(hash, {score: alpha, depth: 0, flag: EXACT});
                 return alpha;
             }
 
@@ -805,111 +985,120 @@
                 return { move: bestMove, score: lastBestScore, depth: completedDepth };
             }
 
-            function isInsufficientMaterial(board) {
-                const pieces = {white:[], black:[]}, bishops = {white:[], black:[]};
-                for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (board[r][c]) {
-                    const p = board[r][c]; pieces[p.color].push(p.type);
-                    if (p.type === 'bishop') bishops[p.color].push((r+c)%2);
-                }
-                const only = (color, types) => pieces[color].length > 0 && pieces[color].every(t => types.includes(t));
-                if (pieces.white.length === 1 && pieces.black.length === 1) return true;
-                if (only('white', ['king','knight']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
-                if (only('black', ['king','knight']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
-                if (only('white', ['king','bishop']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
-                if (only('black', ['king','bishop']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
-                if (only('white', ['king','bishop']) && only('black', ['king','bishop']) && bishops.white[0] === bishops.black[0]) return true;
-                return false;
+            // ========== متغيرات اللعبة ==========
+            let gameState = fenToBoard(START_FEN);
+            let playerColor = 'white', selectedCell = null, legalMovesMap = [], gameOver = false, promotionResolve = null, moveCount = 0;
+            let gameHistory = [], positionCount = new Map(), lastComputerMoveHighlight = null, lastComputerDepth = 0;
+            let historyStack = [], redoStack = [], moveHistoryStr = [];
+
+            const DIFFICULTY_TIMES = { easy: 1500, medium: 2500, hard: 4000 };
+            let currentDifficulty = 'medium';
+            let SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[currentDifficulty];
+
+            function setDifficulty(level) {
+                currentDifficulty = level;
+                SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[level];
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('diff' + level.charAt(0).toUpperCase() + level.slice(1)).classList.add('active');
             }
+            document.getElementById('diffEasy').addEventListener('click', () => setDifficulty('easy'));
+            document.getElementById('diffMedium').addEventListener('click', () => setDifficulty('medium'));
+            document.getElementById('diffHard').addEventListener('click', () => setDifficulty('hard'));
 
-            const openingBook = new Map();
-            (function buildBook() {
-                const lines = [
-                    ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'e2e4', 'e4'],
-                    ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'd2d4', 'd4'],
-                    ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'g1f3', 'Nf3'],
-                ];
-                lines.forEach(l => { if (!openingBook.has(l[0])) openingBook.set(l[0], []); openingBook.get(l[0]).push({move:l[1], name:l[2]}); });
-            })();
+            function clonePositionData() { return { gameHistory: [...gameHistory], positionCount: new Map(positionCount), playerColor, moveCount, moveHistoryStr: [...moveHistoryStr] }; }
+            function restorePositionData(d) { gameHistory = [...d.gameHistory]; positionCount = new Map(d.positionCount); playerColor = d.playerColor; moveCount = d.moveCount; moveHistoryStr = [...d.moveHistoryStr]; }
+            function createSnapshot() { return { state: cloneState(gameState), data: clonePositionData() }; }
+            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearAllEffects(); }
+            function pushSnapshot() { historyStack.push(createSnapshot()); redoStack = []; }
 
-            function boardToFen(s) {
-                let fen = '';
-                for (let r=0;r<8;r++) {
-                    let empty = 0;
-                    for (let c=0;c<8;c++) {
-                        const p = s.board[r][c];
-                        if (!p) empty++;
-                        else {
-                            if (empty > 0) { fen += empty; empty = 0; }
-                            const pieceChar = {king:'k',queen:'q',rook:'r',bishop:'b',knight:'n',pawn:'p'}[p.type];
-                            fen += p.color === 'white' ? pieceChar.toUpperCase() : pieceChar;
-                        }
+            function moveToShortAlgebraic(move, state) {
+                try {
+                    if (!move || !move.piece) return '';
+                    const piece = move.piece, from = move.from, to = move.to;
+                    const files = 'abcdefgh';
+                    const fromFile = files[from[1]], fromRank = 8 - from[0];
+                    const toFile = files[to[1]], toRank = 8 - to[0];
+                    let notation = '';
+                    if (move.castlingRookFrom) return to[1] > from[1] ? 'O-O' : 'O-O-O';
+                    if (piece.type === 'pawn') {
+                        if (move.capture || move.enPassant) notation = fromFile + 'x' + toFile + toRank;
+                        else notation = toFile + toRank;
+                    } else {
+                        const pieceLetter = {king:'K', queen:'Q', rook:'R', bishop:'B', knight:'N'}[piece.type];
+                        notation = pieceLetter + toFile + toRank;
+                        if (move.capture) notation = pieceLetter + 'x' + toFile + toRank;
                     }
-                    if (empty > 0) fen += empty;
-                    if (r < 7) fen += '/';
-                }
-                fen += ' ' + (s.turn === 'white' ? 'w' : 'b') + ' ';
-                fen += (s.castling.K ? 'K' : '') + (s.castling.Q ? 'Q' : '') + (s.castling.k ? 'k' : '') + (s.castling.q ? 'q' : '') || '-';
-                fen += ' ' + (s.enPassant ? 'abcdefgh'[s.enPassant.col] + (8 - s.enPassant.row) : '-') + ' 0 1';
-                return fen;
+                    if (move.promotion) {
+                        const promoLetter = {queen:'Q', rook:'R', bishop:'B', knight:'N'}[move.promotion];
+                        notation += '=' + promoLetter;
+                    }
+                    return notation;
+                } catch(e) { return ''; }
             }
 
-            function getBookMove(state) {
-                const fenKey = boardToFen(state).split(' ').slice(0,4).join(' ');
-                const entries = openingBook.get(fenKey);
-                if (!entries) return null;
-                const entry = entries[Math.floor(Math.random() * entries.length)];
-                const fromCol = entry.move.charCodeAt(0)-97, fromRow = 8-parseInt(entry.move[1]);
-                const toCol = entry.move.charCodeAt(2)-97, toRow = 8-parseInt(entry.move[3]);
-                const moves = getLegalMoves(state);
-                for (const m of moves) if (m.from[0]===fromRow&&m.from[1]===fromCol&&m.to[0]===toRow&&m.to[1]===toCol) return {move:m, name:entry.name};
-                return null;
+            class OpeningTrie {
+                constructor() { this.root = {}; this.names = {}; }
+                _parseMoves(str) { try { const tokens = str.trim().split(/\s+/); return tokens.filter(t => !t.endsWith('.')); } catch(e) { return []; } }
+                insert(movesStr, name, eco='') { const moves = this._parseMoves(movesStr); let node = this.root; for (const m of moves) { if (!node[m]) node[m] = {}; node = node[m]; } this.names[node] = {name, eco}; }
+                find(movesStr) { try { const moves = this._parseMoves(movesStr); let node = this.root, lastName = null; for (const m of moves) { if (m in node) { node = node[m]; if (this.names[node]) lastName = this.names[node].name; } else break; } return { name: lastName }; } catch(e) { return {name: null}; } }
             }
 
-            function tryEndgameMate(state) { return null; }
-            function updateGameHistory(state) { const h = hashState(state); gameHistory.push(h); positionCount.set(h, (positionCount.get(h)||0)+1); }
-            function isRepetitionDraw(state) { return positionCount.has(hashState(state)) && positionCount.get(hashState(state)) >= 2; }
+            const openingTrie = new OpeningTrie();
+            [ ['', 'Opening Position'], ['1. e4', "King's Pawn"], ['1. d4', "Queen's Pawn"], ['1. e4 e5 2. Nf3 Nc6 3. Bc4', "Italian Game"], ['1. e4 e5 2. Nf3 Nc6 3. Bb5', "Ruy Lopez"], ['1. e4 c5', 'Sicilian Defense'], ['1. d4 d5 2. c4', "Queen's Gambit"] ].forEach(([moves, name]) => openingTrie.insert(moves, name));
+
+            function updateOpeningDisplaySafe() {
+                try {
+                    if (moveHistoryStr.length === 0) { document.querySelector('.opening-name').textContent = ''; return; }
+                    let fullStr = '';
+                    for (let i = 0; i < moveHistoryStr.length; i++) {
+                        if (i % 2 === 0) fullStr += (Math.floor(i/2)+1) + '. ';
+                        fullStr += moveHistoryStr[i] + ' ';
+                    }
+                    const result = openingTrie.find(fullStr.trim());
+                    document.querySelector('.opening-name').textContent = result.name ? '📖 ' + result.name : '';
+                } catch(e) {}
+            }
+
+            function recordMoveSafe(move) {
+                try {
+                    const notation = moveToShortAlgebraic(move, gameState);
+                    if (notation) moveHistoryStr.push(notation);
+                    updateOpeningDisplaySafe();
+                } catch(e) {}
+            }
 
             function getBestMove(state) {
                 if (isInsufficientMaterial(state.board)) return null;
-                const bookResult = getBookMove(state);
-                if (bookResult) { document.querySelector('.opening-name').textContent = '⚡ '+bookResult.name; return bookResult.move; }
                 const res = iterativeDeepening(state, SEARCH_TIME_PER_MOVE);
                 if (res.move) {
                     lastComputerDepth = res.depth;
                     const next = makeMove(state, res.move);
-                    if (isRepetitionDraw(next)) { const alt = getLegalMoves(state).find(m => !isRepetitionDraw(makeMove(state, m))); if (alt) res.move = alt; }
+                    if (positionCount.has(hashState(next)) && positionCount.get(hashState(next)) >= 2) {
+                        const alt = getLegalMoves(state).find(m => !positionCount.has(hashState(makeMove(state, m))) || positionCount.get(hashState(makeMove(state, m))) < 2);
+                        if (alt) res.move = alt;
+                    }
                 }
                 return res.move;
             }
 
+            function checkGameOver() {
+                const moves = getLegalMoves(gameState);
+                if (!moves.length) {
+                    gameOver = true;
+                    document.getElementById('status').textContent = isKingInCheck(gameState, gameState.turn) ? (gameState.turn===playerColor?'كش ملك! خسرت!':'كش ملك! فزت!') : 'تعادل (ردب)!';
+                    return true;
+                }
+                if (positionCount.has(hashState(gameState)) && positionCount.get(hashState(gameState)) >= 2) { gameOver=true; document.getElementById('status').textContent='تعادل (تكرار)'; return true; }
+                if (isInsufficientMaterial(gameState.board)) { gameOver=true; document.getElementById('status').textContent='تعادل (نقص مادة)'; return true; }
+                return false;
+            }
+
+            function updateGameHistory(state) { const h = hashState(state); gameHistory.push(h); positionCount.set(h, (positionCount.get(h)||0)+1); }
+
+            // ========== العرض والواجهة ==========
             function clearAllEffects() {
                 document.getElementById('suggestion-arrows').innerHTML = '';
                 document.querySelectorAll('.cell.player-move').forEach(c => c.classList.remove('player-move'));
-            }
-
-            function drawArrows(moves) {
-                const svg = document.getElementById('suggestion-arrows');
-                svg.innerHTML = '';
-                const size = 66, offset = size / 2;
-                const flipBoard = playerColor === 'black';
-                for (const move of moves) {
-                    let fr = move.from[0], fc = move.from[1];
-                    let tr = move.to[0], tc = move.to[1];
-                    if (flipBoard) {
-                        fr = 7 - fr; fc = 7 - fc;
-                        tr = 7 - tr; tc = 7 - tc;
-                    }
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", fc * size + offset);
-                    line.setAttribute("y1", fr * size + offset);
-                    line.setAttribute("x2", tc * size + offset);
-                    line.setAttribute("y2", tr * size + offset);
-                    line.setAttribute("stroke", "#ffaa00");
-                    line.setAttribute("stroke-width", "6");
-                    line.setAttribute("marker-end", "url(#arrowhead)");
-                    line.setAttribute("filter", "url(#glow)");
-                    svg.appendChild(line);
-                }
             }
 
             function highlightPlayerMove(fr, fc, tr, tc) {
@@ -924,15 +1113,6 @@
                 const toIdx = dtr * 8 + dtc;
                 if (cells[fromIdx]) cells[fromIdx].classList.add('player-move');
                 if (cells[toIdx]) cells[toIdx].classList.add('player-move');
-            }
-
-            function getPieceShadowStyle(color, isPlayerWhite) {
-                const hOffset = isPlayerWhite ? '2px' : '-2px';
-                const vOffset = '4px';
-                const blur = '10px';
-                const spread = '0px';
-                const shadowColor = 'rgba(0,0,0,0.5)';
-                return `${hOffset} ${vOffset} ${blur} ${spread} ${shadowColor}`;
             }
 
             function render() {
@@ -950,8 +1130,6 @@
                 for (let c=0;c<8;c++) { const d=document.createElement('div'); d.textContent=files[flipBoard?7-c:c]; coordsBottom.appendChild(d); }
                 coordsBottom.appendChild(document.createElement('div'));
 
-                const isPlayerWhite = playerColor === 'white';
-
                 for (let dr=0; dr<8; dr++) {
                     const r = flipBoard ? 7-dr : dr;
                     for (let c=0; c<8; c++) {
@@ -968,7 +1146,6 @@
                             const span = document.createElement('span');
                             span.className = 'piece ' + (piece.color==='white'?'w':'b');
                             span.textContent = pieceDisplay[piece.type];
-                            span.style.boxShadow = getPieceShadowStyle(piece.color, isPlayerWhite);
                             cell.appendChild(span);
                         }
                         (function(ir,ic){ cell.addEventListener('click', ()=>cellClicked(ir,ic)); })(r,c);
@@ -1011,25 +1188,15 @@
                         selectedCell=null; legalMovesMap=[]; render();
                         highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
                         pushSnapshot();
-                        if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
+                        if (!checkGameOver()) setTimeout(computerMove,60);
                     });
                 } else {
                     gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
                     selectedCell=null; legalMovesMap=[]; render();
                     highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
                     pushSnapshot();
-                    if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
+                    if (!checkGameOver()) setTimeout(computerMove,60);
                 }
-            }
-
-            function executePlayerMoveDirect(move) {
-                lastComputerMoveHighlight = null;
-                clearAllEffects();
-                gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
-                selectedCell=null; legalMovesMap=[]; render();
-                highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
-                pushSnapshot();
-                if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
             }
 
             function requestPromotion() {
@@ -1059,38 +1226,6 @@
                     document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
                     updateOpeningDisplaySafe();
                 }
-            }
-
-            function checkGameOver() {
-                const moves = getLegalMoves(gameState);
-                if (!moves.length) {
-                    gameOver = true;
-                    document.getElementById('status').textContent = isKingInCheck(gameState, gameState.turn) ? (gameState.turn===playerColor?'كش ملك! خسرت!':'كش ملك! فزت!') : 'تعادل (ردب)!';
-                    return true;
-                }
-                if (isRepetitionDraw(gameState)) { gameOver=true; document.getElementById('status').textContent='تعادل (تكرار)'; return true; }
-                if (isInsufficientMaterial(gameState.board)) { gameOver=true; document.getElementById('status').textContent='تعادل (نقص مادة)'; return true; }
-                return false;
-            }
-
-            function undoMove() {
-                if (historyStack.length < 3) return;
-                gameOver = false;
-                redoStack.push({ human: historyStack.pop(), computer: historyStack.pop() });
-                restoreFromSnapshot(historyStack[historyStack.length-1]);
-                clearAllEffects();
-                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
-                displaySuggestions();
-            }
-
-            function redoMove() {
-                if (!redoStack.length) return;
-                const pair = redoStack.pop();
-                historyStack.push(pair.human, pair.computer);
-                restoreFromSnapshot(pair.computer);
-                clearAllEffects();
-                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
-                displaySuggestions();
             }
 
             function startGame(asWhite) {
@@ -1129,10 +1264,28 @@
                 document.getElementById('computer-plan').style.display='none';
                 updateOpeningDisplaySafe(); render();
             });
-            document.getElementById('undoBtn').addEventListener('click', undoMove);
-            document.getElementById('redoBtn').addEventListener('click', redoMove);
-            document.getElementById('suggestion-btn').addEventListener('click', displaySuggestions);
 
+            function undoMove() {
+                if (historyStack.length < 3) return;
+                gameOver = false;
+                redoStack.push({ human: historyStack.pop(), computer: historyStack.pop() });
+                restoreFromSnapshot(historyStack[historyStack.length-1]);
+                clearAllEffects();
+                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
+            }
+            document.getElementById('undoBtn').addEventListener('click', undoMove);
+
+            function redoMove() {
+                if (!redoStack.length) return;
+                const pair = redoStack.pop();
+                historyStack.push(pair.human, pair.computer);
+                restoreFromSnapshot(pair.computer);
+                clearAllEffects();
+                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
+            }
+            document.getElementById('redoBtn').addEventListener('click', redoMove);
+
+            // Stockfish للاقتراحات (اختياري)
             class StockfishEngine {
                 constructor() {
                     try { this.worker = new Worker('stockfish.js'); } catch(e) {
@@ -1140,7 +1293,6 @@
                         return;
                     }
                     this.worker.onmessage = (e) => this.handleMessage(e.data);
-                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
                     this.isReady = false; this.pendingResolve = null; this.pvs = [];
                     this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
                 }
@@ -1170,7 +1322,6 @@
                         setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
                     });
                 }
-                destroy() { if (this.worker) this.worker.terminate(); }
             }
 
             let stockfish = null;
@@ -1178,126 +1329,46 @@
 
             async function displaySuggestions() {
                 if (gameOver || gameState.turn !== playerColor) return;
-                if (suggestionLoading) return;
                 const listDiv = document.getElementById('suggestions-list');
-                document.getElementById('computer-plan').style.display = 'none';
-                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل بـ Stockfish...</div>';
-                suggestionLoading = true;
-                document.getElementById('suggestion-btn').disabled = true;
-                clearAllEffects();
+                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل...</div>';
                 try {
                     if (!stockfish?.isReady) {
                         let w = 0;
                         while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100)); w += 100; }
-                        if (!stockfish?.isReady) throw new Error('المحرك غير جاهز');
                     }
-                    const fen = boardToFen(gameState);
-                    const res = await stockfish.analyze(fen, 2500);
-                    if (!res.length) throw new Error('لا توجد نتائج');
-                    res.sort((a,b) => b.score - a.score);
-                    const uniq = []; const seen = new Set();
-                    for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } if (uniq.length >= 3) break; }
-                    const movesToDraw = [];
-                    let html = '';
-                    for (const r of uniq) {
-                        const uci = r.bestMove;
-                        const fc = uci.charCodeAt(0)-97, fr = 8-parseInt(uci[1]);
-                        const tc = uci.charCodeAt(2)-97, tr = 8-parseInt(uci[3]);
-                        const promoChar = uci[4];
-                        const promo = promoChar ? {q:'queen',r:'rook',b:'bishop',n:'knight'}[promoChar] : null;
-                        const move = getLegalMoves(gameState).find(m =>
-                            m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                            ((!promo && !m.promotion) || (promo && m.promotion===promo))
-                        );
-                        if (!move) continue;
-                        movesToDraw.push(move);
-                        const notation = moveToShortAlgebraic(move, gameState);
-                        const evalPawn = (r.score/100).toFixed(2);
-                        const cls = evalPawn >= 0 ? 'positive' : 'negative';
-                        html += `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
-                            <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                        </div>`;
+                    if (stockfish?.isReady) {
+                        const fen = fenForStockfish();
+                        const res = await stockfish.analyze(fen, 2500);
+                        if (res.length) {
+                            const uniq = []; const seen = new Set();
+                            for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } }
+                            listDiv.innerHTML = uniq.map(r => `<div class="suggestion-entry">${r.bestMove} (${(r.score/100).toFixed(2)})</div>`).join('');
+                            return;
+                        }
                     }
-                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawArrows(movesToDraw);
-                    document.querySelectorAll('.suggestion-entry').forEach(el => {
-                        el.addEventListener('click', function() {
-                            const fr = +this.dataset.fr, fc = +this.dataset.fc, tr = +this.dataset.tr, tc = +this.dataset.tc;
-                            const promo = this.dataset.promo;
-                            const move = getLegalMoves(gameState).find(m =>
-                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                                (!promo || m.promotion===promo)
-                            );
-                            if (move) {
-                                clearAllEffects();
-                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
-                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else executePlayerMoveDirect(move);
-                            }
-                        });
-                    });
-                } catch(e) {
-                    console.warn(e);
-                    displayLocalSuggestions();
-                } finally {
-                    suggestionLoading = false;
-                    document.getElementById('suggestion-btn').disabled = false;
+                } catch(e) {}
+                listDiv.innerHTML = '<div style="color:#aaa;">تعذر الاتصال بـ Stockfish.</div>';
+            }
+
+            function fenForStockfish() {
+                let fen = '';
+                for (let r=0;r<8;r++) {
+                    let empty=0;
+                    for (let c=0;c<8;c++) {
+                        const p=gameState.board[r][c];
+                        if(!p) empty++;
+                        else { if(empty){fen+=empty;empty=0;} const ch={king:'k',queen:'q',rook:'r',bishop:'b',knight:'n',pawn:'p'}[p.type]; fen+=p.color==='white'?ch.toUpperCase():ch; }
+                    }
+                    if(empty) fen+=empty;
+                    if(r<7) fen+='/';
                 }
+                fen += ' ' + (gameState.turn==='white'?'w':'b') + ' ' + ((gameState.castling.K?'K':'')+(gameState.castling.Q?'Q':'')+(gameState.castling.k?'k':'')+(gameState.castling.q?'q':'')||'-') + ' ' + (gameState.enPassant?('abcdefgh'[gameState.enPassant.col]+(8-gameState.enPassant.row)):'-') + ' 0 1';
+                return fen;
             }
 
-            function displayLocalSuggestions() {
-                const listDiv = document.getElementById('suggestions-list');
-                document.getElementById('computer-plan').style.display = 'none';
-                listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ تحليل بالمحرك الداخلي...</div>';
-                clearAllEffects();
-                setTimeout(() => {
-                    const moves = getLegalMoves(gameState);
-                    const results = [];
-                    for (const move of moves.slice(0,10)) {
-                        const ns = makeMove(gameState, move);
-                        const res = iterativeDeepening(ns, 800, 12);
-                        results.push({move, score: -res.score});
-                    }
-                    results.sort((a,b)=>b.score-a.score);
-                    const top = results.slice(0,3);
-                    const movesToDraw = top.map(s=>s.move);
-                    let html = '';
-                    for (const s of top) {
-                        const m = s.move;
-                        const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8-m.from[0];
-                        const toCol = 'abcdefgh'[m.to[1]], toRow = 8-m.to[0];
-                        const notation = fromCol+fromRow+toCol+toRow+(m.promotion?'='+m.promotion[0].toUpperCase():'');
-                        const evalPawn = (s.score/100).toFixed(2);
-                        const cls = evalPawn>=0?'positive':'negative';
-                        html += `<div class="suggestion-entry" data-fr="${m.from[0]}" data-fc="${m.from[1]}" data-tr="${m.to[0]}" data-tc="${m.to[1]}" data-promo="${m.promotion||''}">
-                            <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                        </div>`;
-                    }
-                    listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawArrows(movesToDraw);
-                    document.querySelectorAll('.suggestion-entry').forEach(el => {
-                        el.addEventListener('click', function() {
-                            const fr=+this.dataset.fr, fc=+this.dataset.fc, tr=+this.dataset.tr, tc=+this.dataset.tc;
-                            const promo=this.dataset.promo;
-                            const move = getLegalMoves(gameState).find(m=>
-                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
-                                (!promo || m.promotion===promo)
-                            );
-                            if (move) {
-                                clearAllEffects();
-                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
-                                    requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else executePlayerMoveDirect(move);
-                            }
-                        });
-                    });
-                }, 50);
-            }
-
-            historyStack=[]; redoStack=[]; pushSnapshot(); render();
+            document.getElementById('suggestion-btn').addEventListener('click', displaySuggestions);
             initStockfish();
+            render();
         })();
     </script>
 </body>
