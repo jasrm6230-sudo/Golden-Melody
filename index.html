@@ -101,7 +101,6 @@
             font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
             transition: box-shadow 0.15s;
         }
-        /* يتم تعيين الظل ديناميكياً عبر JS ليتوافق مع اتجاه اللاعب */
         .piece.w { background: #f5f5f5; color: #111; }
         .piece.b { background: #1a1a1a; color: #eee; }
         #suggestion-arrows { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
@@ -202,13 +201,13 @@
 
     <script>
         (function() {
-            // ========== تأثير حقل النجوم (Starfield) – سرعة أبطأ ==========
+            // ========== تأثير حقل النجوم – سرعة بطيئة جداً ==========
             const starCanvas = document.getElementById('starfield');
             const ctx = starCanvas.getContext('2d');
             let width, height;
             const stars = [];
             const STAR_COUNT = 250;
-            const SPEED = 1.2; // تم تقليل السرعة لجعل النجوم تتحرك ببطء
+            const SPEED = 0.2; // سرعة هادئة جداً مع بقاء حركة مرئية
             const MAX_DEPTH = 50;
             const MAX_RADIUS = 2.5;
 
@@ -927,11 +926,7 @@
                 if (cells[toIdx]) cells[toIdx].classList.add('player-move');
             }
 
-            // ========== تعديل ظل القطع بناءً على منظور اللاعب ==========
             function getPieceShadowStyle(color, isPlayerWhite) {
-                // الظل يتجه دائماً للأسفل بالنسبة لنظر اللاعب
-                // اللاعب الأبيض يرى الظل إلى الأسفل يمين (2px, 4px)
-                // اللاعب الأسود يرى اللوحة مقلوبة، لذا نقلب الإزاحة الأفقية
                 const hOffset = isPlayerWhite ? '2px' : '-2px';
                 const vOffset = '4px';
                 const blur = '10px';
@@ -973,7 +968,6 @@
                             const span = document.createElement('span');
                             span.className = 'piece ' + (piece.color==='white'?'w':'b');
                             span.textContent = pieceDisplay[piece.type];
-                            // تطبيق الظل الديناميكي بناءً على منظور اللاعب
                             span.style.boxShadow = getPieceShadowStyle(piece.color, isPlayerWhite);
                             cell.appendChild(span);
                         }
@@ -1139,7 +1133,49 @@
             document.getElementById('redoBtn').addEventListener('click', redoMove);
             document.getElementById('suggestion-btn').addEventListener('click', displaySuggestions);
 
-            // ========== اقتراحات Stockfish ==========
+            class StockfishEngine {
+                constructor() {
+                    try { this.worker = new Worker('stockfish.js'); } catch(e) {
+                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js.';
+                        return;
+                    }
+                    this.worker.onmessage = (e) => this.handleMessage(e.data);
+                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
+                    this.isReady = false; this.pendingResolve = null; this.pvs = [];
+                    this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
+                }
+                send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
+                handleMessage(line) {
+                    if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز'; }
+                    else if (line.startsWith('bestmove')) {
+                        if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
+                    } else if (line.startsWith('info') && line.includes(' pv ')) {
+                        const sc = line.match(/score cp (-?\d+)/);
+                        const pv = line.match(/ pv (.+)/);
+                        if (sc && pv) {
+                            const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
+                            const moves = pv[1].trim().split(' ');
+                            const best = moves[0];
+                            const ex = this.pvs.find(p => p.bestMove === best);
+                            if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
+                            else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
+                        }
+                    }
+                }
+                analyze(fen, ms = 2500) {
+                    if (!this.worker) return Promise.resolve([]);
+                    this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
+                    return new Promise(res => {
+                        this.pendingResolve = res;
+                        setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
+                    });
+                }
+                destroy() { if (this.worker) this.worker.terminate(); }
+            }
+
+            let stockfish = null;
+            function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
+
             async function displaySuggestions() {
                 if (gameOver || gameState.turn !== playerColor) return;
                 if (suggestionLoading) return;
@@ -1259,49 +1295,6 @@
                     });
                 }, 50);
             }
-
-            class StockfishEngine {
-                constructor() {
-                    try { this.worker = new Worker('stockfish.js'); } catch(e) {
-                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js.';
-                        return;
-                    }
-                    this.worker.onmessage = (e) => this.handleMessage(e.data);
-                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
-                    this.isReady = false; this.pendingResolve = null; this.pvs = [];
-                    this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
-                }
-                send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
-                handleMessage(line) {
-                    if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز'; }
-                    else if (line.startsWith('bestmove')) {
-                        if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
-                    } else if (line.startsWith('info') && line.includes(' pv ')) {
-                        const sc = line.match(/score cp (-?\d+)/);
-                        const pv = line.match(/ pv (.+)/);
-                        if (sc && pv) {
-                            const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
-                            const moves = pv[1].trim().split(' ');
-                            const best = moves[0];
-                            const ex = this.pvs.find(p => p.bestMove === best);
-                            if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
-                            else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
-                        }
-                    }
-                }
-                analyze(fen, ms = 2500) {
-                    if (!this.worker) return Promise.resolve([]);
-                    this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
-                    return new Promise(res => {
-                        this.pendingResolve = res;
-                        setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
-                    });
-                }
-                destroy() { if (this.worker) this.worker.terminate(); }
-            }
-
-            let stockfish = null;
-            function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
 
             historyStack=[]; redoStack=[]; pushSnapshot(); render();
             initStockfish();
