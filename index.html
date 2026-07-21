@@ -3,58 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نيون شطرنج – بمحرك Stockfish للاقتراحات</title>
+    <title>نيون شطرنج – Stockfish مع أسهم وظلال الاقتراحات</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: radial-gradient(circle at center, #0a0f1a 0%, #000000 100%); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; color: #ccc; }
-        h1 { font-size: 2.5rem; margin: 0.5rem; color: #fff; text-shadow: 0 0 25px #00aaff, 0 0 10px #0066cc; letter-spacing: 2px; }
-        .main-container { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 25px; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0; }
-        .board-section { display: flex; flex-direction: column; align-items: center; }
-        .controls { display: flex; gap: 0.8rem; margin: 0.6rem; flex-wrap: wrap; justify-content: center; align-items: center; }
-        button { background: #0a1424; color: #e0f0ff; border: 2px solid #00aaff; padding: 0.7rem 1.5rem; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; box-shadow: 0 0 15px rgba(0,170,255,0.4); letter-spacing: 1px; }
-        button:hover { background: #1a3350; box-shadow: 0 0 30px #00aaff; transform: scale(1.03); }
-        .difficulty-btn { margin: 0.3rem; }
-        .difficulty-btn.active { background: #00aaff; color: #000; border-color: #00aaff; box-shadow: 0 0 25px #00aaff; }
-        .big-start { background: #00aaff; color: #000; border: none; padding: 1rem 2.5rem; font-size: 1.4rem; box-shadow: 0 0 35px #00aaff; margin: 0.8rem 0; }
-        #status { font-size: 1.3rem; margin: 0.5rem; padding: 0.6rem 1.8rem; background: rgba(0,0,0,0.7); border-radius: 30px; text-shadow: 0 0 12px #fff; border: 1px solid #00aaff; box-shadow: 0 0 20px rgba(0,170,255,0.5); min-height: 3rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        #board-container { display: inline-block; }
-        .coords-row { display: flex; justify-content: center; height: 25px; }
-        .coords-col { display: flex; flex-direction: column; width: 30px; }
-        .coords-row div, .coords-col div { color: #aabbcc; font-size: 1.1rem; font-weight: bold; user-select: none; display: flex; align-items: center; justify-content: center; }
-        #coords-top div { width: 66px; height: 25px; align-items: flex-end; padding-bottom: 5px; justify-content: flex-start; padding-left: 7px; }
-        #coords-bottom div { width: 66px; height: 25px; align-items: flex-start; padding-top: 5px; justify-content: flex-start; padding-left: 7px; }
-        #coords-left div { width: 30px; height: 66px; justify-content: flex-end; padding-right: 5px; }
-        #coords-right div { width: 30px; height: 66px; justify-content: flex-start; padding-left: 5px; }
-        .middle-row { display: flex; }
-        #board { display: grid; grid-template: repeat(8, 66px) / repeat(8, 66px); border: 3px solid #00aaff; box-shadow: 0 0 50px #00aaff; border-radius: 8px; overflow: hidden; margin: 0; }
-        .cell { width: 66px; height: 66px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; user-select: none; transition: background 0.2s; }
-        .cell.light { background: #d8c4a8; } .cell.dark { background: #8b6f4c; }
-        .cell.selected { background: #2e7db5 !important; box-shadow: inset 0 0 0 5px #00ccff; }
-        .cell.legal::after { content: ''; position: absolute; width: 24px; height: 24px; background: rgba(0,0,0,0.3); border-radius: 50%; }
-        .cell.capture::after { width: 56px; height: 56px; background: none; border: 5px solid rgba(0,0,0,0.5); border-radius: 50%; }
-        .cell.computer-move { background: #e6e6fa !important; box-shadow: inset 0 0 18px 6px rgba(220,220,255,0.9); }
-        .piece { display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; font-size: 20px; z-index: 2; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .piece.w { background: #f5f5f5; color: #111; box-shadow: 0 0 18px #ffffff; }
-        .piece.b { background: #1a1a1a; color: #eee; box-shadow: 0 0 18px #00aaff; }
-        #promo-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; }
-        #promo-dialog { background: #111c2b; padding: 2rem; border-radius: 20px; text-align: center; box-shadow: 0 0 50px #00aaff; }
-        #promo-dialog button { margin: 0.5rem; padding: 0.8rem 1.5rem; font-size: 1.2rem; }
-        .opening-name { font-size: 0.9rem; color: #88ccff; font-style: italic; }
-        #suggestions-panel { background: rgba(10, 15, 26, 0.96); border: 2px solid #ffaa00; border-radius: 16px; padding: 1.2rem; width: 270px; box-shadow: 0 0 35px #ffaa00; color: #e0f0ff; display: flex; flex-direction: column; gap: 0.9rem; font-size: 1rem; backdrop-filter: blur(5px); }
-        #suggestions-panel h3 { color: #ffcc00; text-align: center; margin: 0 0 0.2rem; font-size: 1.4rem; text-shadow: 0 0 15px #ffaa00; }
-        .suggestion-entry { background: rgba(255,170,0,0.08); border-radius: 10px; padding: 0.7rem; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,170,0,0.4); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .suggestion-entry:hover { background: rgba(255,170,0,0.25); border-color: #ffcc00; box-shadow: 0 0 20px #ffaa00; }
-        .suggestion-move { font-size: 1.3rem; color: #fff; letter-spacing: 1px; font-family: monospace; }
-        .suggestion-eval { font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.4); padding: 0.2rem 0.5rem; border-radius: 8px; }
-        .suggestion-eval.positive { color: #66ff66; } .suggestion-eval.negative { color: #ff6666; }
-        #suggestion-btn { background: #0a1424; color: #ffcc00; border: 2px solid #ffaa00; box-shadow: 0 0 15px rgba(255,170,0,0.5); }
+        body {
+            background: radial-gradient(circle at center, #0a0f1a 0%, #000000 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #ccc;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin: 0.5rem;
+            color: #fff;
+            text-shadow: 0 0 25px #00aaff, 0 0 10px #0066cc;
+            letter-spacing: 2px;
+        }
+        .main-container {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0.5rem 0;
+        }
+        .board-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            margin: 0.6rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        button {
+            background: #0a1424;
+            color: #e0f0ff;
+            border: 2px solid #00aaff;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0,170,255,0.4);
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: #1a3350;
+            box-shadow: 0 0 30px #00aaff;
+            transform: scale(1.03);
+        }
+        .difficulty-btn {
+            margin: 0.3rem;
+        }
+        .difficulty-btn.active {
+            background: #00aaff;
+            color: #000;
+            border-color: #00aaff;
+            box-shadow: 0 0 25px #00aaff;
+        }
+        .big-start {
+            background: #00aaff;
+            color: #000;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.4rem;
+            box-shadow: 0 0 35px #00aaff;
+            margin: 0.8rem 0;
+        }
+        #status {
+            font-size: 1.3rem;
+            margin: 0.5rem;
+            padding: 0.6rem 1.8rem;
+            background: rgba(0,0,0,0.7);
+            border-radius: 30px;
+            text-shadow: 0 0 12px #fff;
+            border: 1px solid #00aaff;
+            box-shadow: 0 0 20px rgba(0,170,255,0.5);
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        #board-container {
+            position: relative;
+            display: inline-block;
+        }
+        .coords-row {
+            display: flex;
+            justify-content: center;
+            height: 25px;
+        }
+        .coords-col {
+            display: flex;
+            flex-direction: column;
+            width: 30px;
+        }
+        .coords-row div, .coords-col div {
+            color: #aabbcc;
+            font-size: 1.1rem;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #coords-top div {
+            width: 66px;
+            height: 25px;
+            align-items: flex-end;
+            padding-bottom: 5px;
+            justify-content: flex-start;
+            padding-left: 7px;
+        }
+        #coords-bottom div {
+            width: 66px;
+            height: 25px;
+            align-items: flex-start;
+            padding-top: 5px;
+            justify-content: flex-start;
+            padding-left: 7px;
+        }
+        #coords-left div {
+            width: 30px;
+            height: 66px;
+            justify-content: flex-end;
+            padding-right: 5px;
+        }
+        #coords-right div {
+            width: 30px;
+            height: 66px;
+            justify-content: flex-start;
+            padding-left: 5px;
+        }
+        .middle-row {
+            display: flex;
+        }
+        #board {
+            display: grid;
+            grid-template: repeat(8, 66px) / repeat(8, 66px);
+            border: 3px solid #00aaff;
+            box-shadow: 0 0 50px #00aaff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .cell {
+            width: 66px;
+            height: 66px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .cell.light { background: #d8c4a8; }
+        .cell.dark { background: #8b6f4c; }
+        .cell.selected {
+            background: #2e7db5 !important;
+            box-shadow: inset 0 0 0 5px #00ccff;
+        }
+        .cell.legal::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+        }
+        .cell.capture::after {
+            width: 56px;
+            height: 56px;
+            background: none;
+            border: 5px solid rgba(0,0,0,0.5);
+            border-radius: 50%;
+        }
+        .cell.computer-move {
+            background: #e6e6fa !important;
+            box-shadow: inset 0 0 18px 6px rgba(220,220,255,0.9);
+        }
+        .piece {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 20px;
+            z-index: 2;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
+        }
+        .piece.w {
+            background: #f5f5f5;
+            color: #111;
+            box-shadow: 0 0 18px #ffffff;
+        }
+        .piece.b {
+            background: #1a1a1a;
+            color: #eee;
+            box-shadow: 0 0 18px #00aaff;
+        }
+        /* طبقة ظلال الاقتراحات */
+        .suggestion-highlight {
+            position: absolute;
+            pointer-events: none;
+            z-index: 5;
+            border: 3px solid rgba(255, 170, 0, 0.9);
+            box-shadow: 0 0 18px rgba(255, 170, 0, 0.7);
+            background: rgba(255, 170, 0, 0.25);
+            transition: opacity 0.2s;
+        }
+        .suggestion-highlight.to-square {
+            border-color: rgba(255, 140, 0, 0.9);
+            background: rgba(255, 140, 0, 0.35);
+            box-shadow: 0 0 22px rgba(255, 140, 0, 0.8);
+        }
+        #suggestion-arrows {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #promo-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #promo-dialog {
+            background: #111c2b;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 50px #00aaff;
+        }
+        #promo-dialog button {
+            margin: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.2rem;
+        }
+        .opening-name {
+            font-size: 0.9rem;
+            color: #88ccff;
+            font-style: italic;
+        }
+        #suggestions-panel {
+            background: rgba(10, 15, 26, 0.96);
+            border: 2px solid #ffaa00;
+            border-radius: 16px;
+            padding: 1.2rem;
+            width: 270px;
+            box-shadow: 0 0 35px #ffaa00;
+            color: #e0f0ff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            font-size: 1rem;
+            backdrop-filter: blur(5px);
+        }
+        #suggestions-panel h3 {
+            color: #ffcc00;
+            text-align: center;
+            margin: 0 0 0.2rem;
+            font-size: 1.4rem;
+            text-shadow: 0 0 15px #ffaa00;
+        }
+        .suggestion-entry {
+            background: rgba(255,170,0,0.08);
+            border-radius: 10px;
+            padding: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,170,0,0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .suggestion-entry:hover {
+            background: rgba(255,170,0,0.25);
+            border-color: #ffcc00;
+            box-shadow: 0 0 20px #ffaa00;
+        }
+        .suggestion-move {
+            font-size: 1.3rem;
+            color: #fff;
+            letter-spacing: 1px;
+            font-family: monospace;
+        }
+        .suggestion-eval {
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+        }
+        .suggestion-eval.positive { color: #66ff66; }
+        .suggestion-eval.negative { color: #ff6666; }
+        #suggestion-btn {
+            background: #0a1424;
+            color: #ffcc00;
+            border: 2px solid #ffaa00;
+            box-shadow: 0 0 15px rgba(255,170,0,0.5);
+        }
         #suggestion-btn:hover { box-shadow: 0 0 30px #ffaa00; }
-        .computer-plan { margin-top: 0.3rem; font-size: 0.9rem; background: rgba(0,170,255,0.15); border-radius: 8px; padding: 0.5rem; color: #88ccff; text-align: center; }
-        .engine-status { font-size: 0.8rem; color: #aaa; text-align: center; }
+        .computer-plan {
+            margin-top: 0.3rem;
+            font-size: 0.9rem;
+            background: rgba(0,170,255,0.15);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: #88ccff;
+            text-align: center;
+        }
+        .engine-status {
+            font-size: 0.8rem;
+            color: #aaa;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <h1>♛ نيون شطرنج – محرك Stockfish للاقتراحات ♛</h1>
+    <h1>♛ نيون شطرنج – Stockfish مع أسهم وظلال الاقتراحات ♛</h1>
     <div class="controls">
         <button id="startWhite">⚪ ابدأ (أبيض)</button>
         <button id="startBlack">⚫ ابدأ (أسود)</button>
@@ -88,6 +381,14 @@
                     <div id="coords-right" class="coords-col"></div>
                 </div>
                 <div id="coords-bottom" class="coords-row"></div>
+                <svg id="suggestion-arrows" width="528" height="528" style="position:absolute; top:0; left:0; pointer-events:none;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#ffaa00" />
+                        </marker>
+                    </defs>
+                </svg>
+                <div id="suggestion-highlights" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:8;"></div>
             </div>
         </div>
     </div>
@@ -103,7 +404,7 @@
 
     <script>
         (function() {
-            // ========== [Opening Trie] ==========
+            // ========== Opening Trie ==========
             class OpeningTrie {
                 constructor() { this.root = {}; this.names = {}; }
                 _parseMoves(str) {
@@ -177,7 +478,7 @@
             const openingTrie = new OpeningTrie();
             openingList.forEach(([moves, name]) => openingTrie.insert(moves, name));
 
-            // ========== محرك الشطرنج الداخلي (للعبة فقط) ==========
+            // ========== محرك الشطرنج الداخلي ==========
             const DIFFICULTY_TIMES = { easy: 1500, medium: 2500, hard: 4000 };
             let currentDifficulty = 'medium';
             let SEARCH_TIME_PER_MOVE = DIFFICULTY_TIMES[currentDifficulty];
@@ -267,7 +568,7 @@
             function clonePositionData() { return { gameHistory: [...gameHistory], positionCount: new Map(positionCount), playerColor, moveCount, moveHistoryStr: [...moveHistoryStr] }; }
             function restorePositionData(d) { gameHistory = [...d.gameHistory]; positionCount = new Map(d.positionCount); playerColor = d.playerColor; moveCount = d.moveCount; moveHistoryStr = [...d.moveHistoryStr]; }
             function createSnapshot() { return { state: cloneState(gameState), data: clonePositionData() }; }
-            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); }
+            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearHighlightsAndArrows(); }
             function pushSnapshot() { historyStack.push(createSnapshot()); redoStack = []; }
 
             function moveToShortAlgebraic(move, state) {
@@ -319,7 +620,7 @@
                 } catch(e) {}
             }
 
-            // ========== دوال المحرك الداخلي (لعب الخصم) ==========
+            // ========== دوال المحرك الداخلي الكاملة ==========
             function isSquareAttacked(board, row, col, attackerColor) {
                 const opp = attackerColor === 'white' ? 'black' : 'white';
                 if (attackerColor === 'white') {
@@ -460,7 +761,6 @@
 
             function getLegalMoves(state) { return generatePseudoMoves(state).filter(m => !isKingInCheck(makeMove(state, m), state.turn)); }
 
-            // محرك الخصم الداخلي (مبقي عليه للعب)
             const pieceValues = {pawn:100, knight:325, bishop:335, rook:510, queen:950, king:20000};
             const INF = 999999, MAX_DEPTH = 24;
             let searchStartTime, searchStopped, transTable, killerMoves, historyTable, lastBestScore;
@@ -657,11 +957,6 @@
                     ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'e2e4', 'e4'],
                     ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'd2d4', 'd4'],
                     ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'g1f3', 'Nf3'],
-                    ['rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -', 'e7e5', 'e5'],
-                    ['rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -', 'c7c5', 'c5'],
-                    ['rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -', 'g1f3', 'Nf3'],
-                    ['rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq -', 'b8c6', 'Nc6'],
-                    ['r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq -', 'f1b5', 'Bb5'],
                 ];
                 lines.forEach(l => { if (!openingBook.has(l[0])) openingBook.set(l[0], []); openingBook.get(l[0]).push({move:l[1], name:l[2]}); });
             })();
@@ -700,10 +995,7 @@
                 return null;
             }
 
-            function tryEndgameMate(state) { /* ... مختصر للطول ... */ return null; }
-            function forceMateKQvsK(state) { return null; }
-            function forceMateKRvsK(state) { return null; }
-
+            function tryEndgameMate(state) { return null; }
             function updateGameHistory(state) { const h = hashState(state); gameHistory.push(h); positionCount.set(h, (positionCount.get(h)||0)+1); }
             function isRepetitionDraw(state) { return positionCount.has(hashState(state)) && positionCount.get(hashState(state)) >= 2; }
 
@@ -720,7 +1012,86 @@
                 return res.move;
             }
 
-            // ========== اقتراحات Stockfish (جديد) ==========
+            // ========== دوال الأسهم والظلال ==========
+            function clearHighlightsAndArrows() {
+                document.getElementById('suggestion-arrows').innerHTML = '';
+                const highlightsDiv = document.getElementById('suggestion-highlights');
+                if (highlightsDiv) highlightsDiv.innerHTML = '';
+            }
+
+            function drawSuggestionHighlights(moves) {
+                const svg = document.getElementById('suggestion-arrows');
+                svg.innerHTML = '';
+                const highlightsDiv = document.getElementById('suggestion-highlights');
+                if (!highlightsDiv) return;
+                highlightsDiv.innerHTML = '';
+                const flip = playerColor === 'white';
+                const size = 66;
+                const offset = size / 2;
+
+                // ألوان مختلفة للتمييز
+                const colors = ['#ffaa00', '#ffbb33', '#ff9933'];
+
+                for (let i = 0; i < moves.length; i++) {
+                    const move = moves[i];
+                    let fr = move.from[0];
+                    let fc = move.from[1];
+                    let tr = move.to[0];
+                    let tc = move.to[1];
+
+                    if (flip) {
+                        fr = 7 - fr;
+                        fc = 7 - fc;
+                        tr = 7 - tr;
+                        tc = 7 - tc;
+                    }
+
+                    const color = colors[i % colors.length];
+
+                    // سهم
+                    const x1 = fc * size + offset;
+                    const y1 = fr * size + offset;
+                    const x2 = tc * size + offset;
+                    const y2 = tr * size + offset;
+
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", x1);
+                    line.setAttribute("y1", y1);
+                    line.setAttribute("x2", x2);
+                    line.setAttribute("y2", y2);
+                    line.setAttribute("stroke", color);
+                    line.setAttribute("stroke-width", "5");
+                    line.setAttribute("marker-end", "url(#arrowhead)");
+                    line.setAttribute("stroke-linecap", "round");
+                    svg.appendChild(line);
+
+                    // ظل مربع البداية
+                    const fromDiv = document.createElement('div');
+                    fromDiv.className = 'suggestion-highlight';
+                    fromDiv.style.left = (fc * size) + 'px';
+                    fromDiv.style.top = (fr * size) + 'px';
+                    fromDiv.style.width = size + 'px';
+                    fromDiv.style.height = size + 'px';
+                    fromDiv.style.borderColor = color;
+                    fromDiv.style.boxShadow = `0 0 18px ${color}`;
+                    fromDiv.style.background = color + '44'; // شفافية
+                    highlightsDiv.appendChild(fromDiv);
+
+                    // ظل مربع الهدف
+                    const toDiv = document.createElement('div');
+                    toDiv.className = 'suggestion-highlight to-square';
+                    toDiv.style.left = (tc * size) + 'px';
+                    toDiv.style.top = (tr * size) + 'px';
+                    toDiv.style.width = size + 'px';
+                    toDiv.style.height = size + 'px';
+                    toDiv.style.borderColor = color;
+                    toDiv.style.boxShadow = `0 0 22px ${color}`;
+                    toDiv.style.background = color + '66';
+                    highlightsDiv.appendChild(toDiv);
+                }
+            }
+
+            // ========== Stockfish Engine ==========
             class StockfishEngine {
                 constructor() {
                     try {
@@ -736,7 +1107,7 @@
                     };
                     this.isReady = false;
                     this.pendingResolve = null;
-                    this.pvs = []; // لتجميع الـ PVs من الأمر go
+                    this.pvs = [];
                     this.send('uci');
                     this.send('setoption name MultiPV value 3');
                     this.send('isready');
@@ -751,14 +1122,12 @@
                         document.getElementById('engine-status').textContent = '✅ Stockfish جاهز';
                     } else if (line.startsWith('bestmove')) {
                         if (this.pendingResolve) {
-                            // تجميع النتائج من الـ pvs التي وصلت
                             const result = this.pvs.slice();
                             this.pendingResolve(result);
                             this.pendingResolve = null;
                             this.pvs = [];
                         }
                     } else if (line.startsWith('info') && line.includes(' pv ')) {
-                        // استخراج البيانات من سطر info
                         const depthMatch = line.match(/depth (\d+)/);
                         const scoreMatch = line.match(/score cp (-?\d+)/);
                         const pvMatch = line.match(/ pv (.+)/);
@@ -767,7 +1136,6 @@
                             const score = parseInt(scoreMatch[1]);
                             const moves = pvMatch[1].trim().split(' ');
                             const bestMove = moves[0];
-                            // تحديث أو إضافة PV
                             const existing = this.pvs.find(p => p.bestMove === bestMove);
                             if (existing) {
                                 if (depth >= existing.depth) {
@@ -789,7 +1157,6 @@
                     this.send(`go movetime ${timeMs}`);
                     return new Promise(resolve => {
                         this.pendingResolve = resolve;
-                        // حماية من عدم الرد
                         setTimeout(() => {
                             if (this.pendingResolve) {
                                 this.pendingResolve(this.pvs);
@@ -808,7 +1175,7 @@
                 if (!stockfish) stockfish = new StockfishEngine();
             }
 
-            // دالة الاقتراحات باستخدام Stockfish
+            // ========== اقتراحات ==========
             async function displaySuggestions() {
                 if (gameOver || gameState.turn !== playerColor) return;
                 if (suggestionLoading) return;
@@ -818,10 +1185,10 @@
                 planDiv.style.display = 'none';
                 suggestionLoading = true;
                 document.getElementById('suggestion-btn').disabled = true;
+                clearHighlightsAndArrows();
 
                 try {
                     if (!stockfish || !stockfish.isReady) {
-                        // انتظر حتى يصبح جاهزًا
                         let waited = 0;
                         while (!stockfish?.isReady && waited < 10000) {
                             await new Promise(r => setTimeout(r, 100));
@@ -832,15 +1199,9 @@
 
                     const fen = boardToFen(gameState);
                     const results = await stockfish.analyze(fen, 2500);
+                    if (!results.length) throw new Error('لا توجد نتائج');
 
-                    if (!results.length) {
-                        // الرجوع للمحرك المحلي
-                        throw new Error('لا توجد نتائج من Stockfish');
-                    }
-
-                    // ترتيب حسب التقييم (الأعلى أولاً)
                     results.sort((a,b) => b.score - a.score);
-                    // إزالة التكرار والاحتفاظ بأفضل 3
                     const unique = [];
                     const seen = new Set();
                     for (const r of results) {
@@ -851,6 +1212,7 @@
                         if (unique.length >= 3) break;
                     }
 
+                    const movesToDraw = [];
                     let html = '';
                     for (const res of unique) {
                         const uci = res.bestMove;
@@ -869,6 +1231,7 @@
                         );
                         if (!move) continue;
 
+                        movesToDraw.push(move);
                         const notation = moveToShortAlgebraic(move, gameState);
                         const evalPawn = (res.score / 100).toFixed(2);
                         const evalClass = evalPawn >= 0 ? 'positive' : 'negative';
@@ -879,6 +1242,7 @@
                         </div>`;
                     }
                     listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
+                    drawSuggestionHighlights(movesToDraw);
 
                     document.querySelectorAll('.suggestion-entry').forEach(el => {
                         el.addEventListener('click', function() {
@@ -891,6 +1255,7 @@
                                 (!promo || m.promotion === promo)
                             );
                             if (move) {
+                                clearHighlightsAndArrows();
                                 if (move.piece.type === 'pawn' && move.to[0] === 0 && !move.promotion) {
                                     requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
                                 } else {
@@ -900,8 +1265,7 @@
                         });
                     });
                 } catch (error) {
-                    console.warn('Stockfish fallback to local:', error.message);
-                    // الاحتياطي المحلي
+                    console.warn('Stockfish fallback:', error.message);
                     displayLocalSuggestions();
                 } finally {
                     suggestionLoading = false;
@@ -909,12 +1273,12 @@
                 }
             }
 
-            // الاحتياطي المحلي (يبقى كما هو للطوارئ)
             function displayLocalSuggestions() {
                 const listDiv = document.getElementById('suggestions-list');
                 const planDiv = document.getElementById('computer-plan');
                 listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ تحليل بالمحرك الداخلي...</div>';
                 planDiv.style.display = 'none';
+                clearHighlightsAndArrows();
                 setTimeout(() => {
                     const moves = getLegalMoves(gameState);
                     const results = [];
@@ -925,6 +1289,7 @@
                     }
                     results.sort((a,b) => b.score - a.score);
                     const top = results.slice(0, 3);
+                    const movesToDraw = top.map(s => s.move);
                     let html = '';
                     for (const s of top) {
                         const m = s.move;
@@ -940,6 +1305,7 @@
                         </div>`;
                     }
                     listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
+                    drawSuggestionHighlights(movesToDraw);
                     document.querySelectorAll('.suggestion-entry').forEach(el => {
                         el.addEventListener('click', function() {
                             const fr = +this.dataset.fr, fc = +this.dataset.fc;
@@ -951,6 +1317,7 @@
                                 (!promo || m.promotion === promo)
                             );
                             if (move) {
+                                clearHighlightsAndArrows();
                                 if (move.piece.type === 'pawn' && move.to[0] === 0 && !move.promotion) {
                                     requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
                                 } else {
@@ -1042,6 +1409,7 @@
             function executePlayerMove(disp) {
                 lastComputerMoveHighlight = null;
                 const move = disp.fullMove;
+                clearHighlightsAndArrows();
                 if (move.piece.type === 'pawn' && move.to[0] === 0) {
                     requestPromotion().then(p => {
                         const nm = {...move, promotion: p};
@@ -1058,6 +1426,7 @@
 
             function executePlayerMoveDirect(move) {
                 lastComputerMoveHighlight = null;
+                clearHighlightsAndArrows();
                 gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
                 selectedCell = null; legalMovesMap = []; render(); pushSnapshot();
                 if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
@@ -1084,6 +1453,7 @@
                 gameState = makeMove(gameState, move); recordMoveSafe(move);
                 lastComputerMoveHighlight = { fromRow: move.from[0], fromCol: move.from[1], toRow: move.to[0], toCol: move.to[1] };
                 updateGameHistory(gameState); render(); pushSnapshot();
+                clearHighlightsAndArrows();
                 if (!checkGameOver()) {
                     gameState.turn = playerColor;
                     document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
@@ -1108,6 +1478,7 @@
                 gameOver = false;
                 redoStack.push({ human: historyStack.pop(), computer: historyStack.pop() });
                 restoreFromSnapshot(historyStack[historyStack.length-1]);
+                clearHighlightsAndArrows();
                 document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ' <span class="opening-name"></span>';
                 displaySuggestions();
             }
@@ -1117,6 +1488,7 @@
                 const pair = redoStack.pop();
                 historyStack.push(pair.human, pair.computer);
                 restoreFromSnapshot(pair.computer);
+                clearHighlightsAndArrows();
                 document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ' <span class="opening-name"></span>';
                 displaySuggestions();
             }
@@ -1129,6 +1501,7 @@
                 updateGameHistory(gameState); moveCount = 0;
                 lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
                 pushSnapshot();
+                clearHighlightsAndArrows();
                 document.getElementById('promo-overlay').style.display = 'none';
                 updateOpeningDisplaySafe(); render();
                 if (asWhite) {
@@ -1151,6 +1524,7 @@
                 updateGameHistory(gameState); moveCount = 0;
                 lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
                 pushSnapshot();
+                clearHighlightsAndArrows();
                 document.getElementById('status').innerHTML = 'اختر وضع اللعب <span class="opening-name"></span>';
                 document.getElementById('suggestions-list').innerHTML = '<div style="color:#aaa;text-align:center;">اضغط 💡 لتحليل Stockfish</div>';
                 document.getElementById('computer-plan').style.display = 'none';
@@ -1162,7 +1536,6 @@
 
             // بدء التشغيل
             historyStack = []; redoStack = []; pushSnapshot(); render();
-            // تحميل Stockfish
             initStockfish();
         })();
     </script>
