@@ -201,13 +201,13 @@
 
     <script>
         (function() {
-            // ========== تأثير حقل النجوم – سرعة بطيئة جداً ==========
+            // ========== تأثير حقل النجوم – أبطأ سرعة ممكنة ==========
             const starCanvas = document.getElementById('starfield');
             const ctx = starCanvas.getContext('2d');
             let width, height;
             const stars = [];
             const STAR_COUNT = 250;
-            const SPEED = 0.2; // سرعة هادئة جداً مع بقاء حركة مرئية
+            const SPEED = 0.05; // حركة شبه متجمدة لكنها مستمرة ببطء شديد جداً
             const MAX_DEPTH = 50;
             const MAX_RADIUS = 2.5;
 
