@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نيون شطرنج – Stockfish مع أسهم وظلال الاقتراحات</title>
+    <title>نيون شطرنج – Stockfish مع أسهم متوهجة وظل للاعب</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -17,337 +17,111 @@
             color: #ccc;
         }
         h1 {
-            font-size: 2.5rem;
-            margin: 0.5rem;
-            color: #fff;
-            text-shadow: 0 0 25px #00aaff, 0 0 10px #0066cc;
-            letter-spacing: 2px;
+            font-size: 2.5rem; margin: 0.5rem; color: #fff;
+            text-shadow: 0 0 25px #00aaff, 0 0 10px #0066cc; letter-spacing: 2px;
         }
-        .main-container {
-            display: flex;
-            flex-direction: row-reverse;
-            align-items: flex-start;
-            gap: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 0.5rem 0;
-        }
-        .board-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .controls {
-            display: flex;
-            gap: 0.8rem;
-            margin: 0.6rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
+        .main-container { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 25px; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0; }
+        .board-section { display: flex; flex-direction: column; align-items: center; }
+        .controls { display: flex; gap: 0.8rem; margin: 0.6rem; flex-wrap: wrap; justify-content: center; align-items: center; }
         button {
-            background: #0a1424;
-            color: #e0f0ff;
-            border: 2px solid #00aaff;
-            padding: 0.7rem 1.5rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: 0.3s;
-            box-shadow: 0 0 15px rgba(0,170,255,0.4);
-            letter-spacing: 1px;
+            background: #0a1424; color: #e0f0ff; border: 2px solid #00aaff;
+            padding: 0.7rem 1.5rem; border-radius: 50px; cursor: pointer;
+            font-weight: bold; font-size: 1rem; transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0,170,255,0.4); letter-spacing: 1px;
         }
-        button:hover {
-            background: #1a3350;
-            box-shadow: 0 0 30px #00aaff;
-            transform: scale(1.03);
-        }
-        .difficulty-btn {
-            margin: 0.3rem;
-        }
-        .difficulty-btn.active {
-            background: #00aaff;
-            color: #000;
-            border-color: #00aaff;
-            box-shadow: 0 0 25px #00aaff;
-        }
+        button:hover { background: #1a3350; box-shadow: 0 0 30px #00aaff; transform: scale(1.03); }
+        .difficulty-btn { margin: 0.3rem; }
+        .difficulty-btn.active { background: #00aaff; color: #000; border-color: #00aaff; box-shadow: 0 0 25px #00aaff; }
         .big-start {
-            background: #00aaff;
-            color: #000;
-            border: none;
-            padding: 1rem 2.5rem;
-            font-size: 1.4rem;
-            box-shadow: 0 0 35px #00aaff;
-            margin: 0.8rem 0;
+            background: #00aaff; color: #000; border: none; padding: 1rem 2.5rem;
+            font-size: 1.4rem; box-shadow: 0 0 35px #00aaff; margin: 0.8rem 0;
         }
         #status {
-            font-size: 1.3rem;
-            margin: 0.5rem;
-            padding: 0.6rem 1.8rem;
-            background: rgba(0,0,0,0.7);
-            border-radius: 30px;
-            text-shadow: 0 0 12px #fff;
-            border: 1px solid #00aaff;
-            box-shadow: 0 0 20px rgba(0,170,255,0.5);
-            min-height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            font-size: 1.3rem; margin: 0.5rem; padding: 0.6rem 1.8rem;
+            background: rgba(0,0,0,0.7); border-radius: 30px; text-shadow: 0 0 12px #fff;
+            border: 1px solid #00aaff; box-shadow: 0 0 20px rgba(0,170,255,0.5);
+            min-height: 3rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
-        #board-container {
-            position: relative;
-            display: inline-block;
-        }
-        .coords-row {
-            display: flex;
-            justify-content: center;
-            height: 25px;
-        }
-        .coords-col {
-            display: flex;
-            flex-direction: column;
-            width: 30px;
-        }
+        #board-container { position: relative; display: inline-block; }
+        .coords-row { display: flex; justify-content: center; height: 25px; }
+        .coords-col { display: flex; flex-direction: column; width: 30px; }
         .coords-row div, .coords-col div {
-            color: #aabbcc;
-            font-size: 1.1rem;
-            font-weight: bold;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #aabbcc; font-size: 1.1rem; font-weight: bold;
+            user-select: none; display: flex; align-items: center; justify-content: center;
         }
-        #coords-top div {
-            width: 66px;
-            height: 25px;
-            align-items: flex-end;
-            padding-bottom: 5px;
-            justify-content: flex-start;
-            padding-left: 7px;
-        }
-        #coords-bottom div {
-            width: 66px;
-            height: 25px;
-            align-items: flex-start;
-            padding-top: 5px;
-            justify-content: flex-start;
-            padding-left: 7px;
-        }
-        #coords-left div {
-            width: 30px;
-            height: 66px;
-            justify-content: flex-end;
-            padding-right: 5px;
-        }
-        #coords-right div {
-            width: 30px;
-            height: 66px;
-            justify-content: flex-start;
-            padding-left: 5px;
-        }
-        .middle-row {
-            display: flex;
-        }
+        #coords-top div { width: 66px; height: 25px; align-items: flex-end; padding-bottom: 5px; justify-content: flex-start; padding-left: 7px; }
+        #coords-bottom div { width: 66px; height: 25px; align-items: flex-start; padding-top: 5px; justify-content: flex-start; padding-left: 7px; }
+        #coords-left div { width: 30px; height: 66px; justify-content: flex-end; padding-right: 5px; }
+        #coords-right div { width: 30px; height: 66px; justify-content: flex-start; padding-left: 5px; }
+        .middle-row { display: flex; }
         #board {
-            display: grid;
-            grid-template: repeat(8, 66px) / repeat(8, 66px);
-            border: 3px solid #00aaff;
-            box-shadow: 0 0 50px #00aaff;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 0;
-            position: relative;
-            z-index: 1;
+            display: grid; grid-template: repeat(8, 66px) / repeat(8, 66px);
+            border: 3px solid #00aaff; box-shadow: 0 0 50px #00aaff;
+            border-radius: 8px; overflow: hidden; margin: 0; position: relative; z-index: 1;
         }
         .cell {
-            width: 66px;
-            height: 66px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-            transition: background 0.2s;
+            width: 66px; height: 66px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; user-select: none; transition: background 0.2s;
         }
-        .cell.light { background: #d8c4a8; }
-        .cell.dark { background: #8b6f4c; }
-        .cell.selected {
-            background: #2e7db5 !important;
-            box-shadow: inset 0 0 0 5px #00ccff;
-        }
+        .cell.light { background: #d8c4a8; } .cell.dark { background: #8b6f4c; }
+        .cell.selected { background: #2e7db5 !important; box-shadow: inset 0 0 0 5px #00ccff; }
         .cell.legal::after {
-            content: '';
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 50%;
+            content: ''; position: absolute; width: 24px; height: 24px;
+            background: rgba(0,0,0,0.3); border-radius: 50%;
         }
         .cell.capture::after {
-            width: 56px;
-            height: 56px;
-            background: none;
-            border: 5px solid rgba(0,0,0,0.5);
-            border-radius: 50%;
+            width: 56px; height: 56px; background: none;
+            border: 5px solid rgba(0,0,0,0.5); border-radius: 50%;
         }
-        .cell.computer-move {
-            background: #e6e6fa !important;
-            box-shadow: inset 0 0 18px 6px rgba(220,220,255,0.9);
+        .cell.computer-move { background: #e6e6fa !important; box-shadow: inset 0 0 18px 6px rgba(220,220,255,0.9); }
+        .cell.player-move {
+            outline: 3px solid #00ff88;
+            outline-offset: -3px;
+            box-shadow: 0 0 18px 8px rgba(0, 255, 136, 0.9) !important;
+            background: rgba(0, 255, 136, 0.25) !important;
+            z-index: 5;
         }
         .piece {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 20px;
-            z-index: 2;
-            pointer-events: none;
+            display: flex; align-items: center; justify-content: center;
+            width: 54px; height: 54px; border-radius: 50%; font-weight: bold;
+            font-size: 20px; z-index: 2; pointer-events: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
         }
-        .piece.w {
-            background: #f5f5f5;
-            color: #111;
-            box-shadow: 0 0 18px #ffffff;
-        }
-        .piece.b {
-            background: #1a1a1a;
-            color: #eee;
-            box-shadow: 0 0 18px #00aaff;
-        }
-        /* طبقة ظلال الاقتراحات */
-        .suggestion-highlight {
-            position: absolute;
-            pointer-events: none;
-            z-index: 5;
-            border: 3px solid rgba(255, 170, 0, 0.9);
-            box-shadow: 0 0 18px rgba(255, 170, 0, 0.7);
-            background: rgba(255, 170, 0, 0.25);
-            transition: opacity 0.2s;
-        }
-        .suggestion-highlight.to-square {
-            border-color: rgba(255, 140, 0, 0.9);
-            background: rgba(255, 140, 0, 0.35);
-            box-shadow: 0 0 22px rgba(255, 140, 0, 0.8);
-        }
-        #suggestion-arrows {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 10;
-        }
+        .piece.w { background: #f5f5f5; color: #111; box-shadow: 0 0 18px #ffffff; }
+        .piece.b { background: #1a1a1a; color: #eee; box-shadow: 0 0 18px #00aaff; }
+        #suggestion-arrows { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
         #promo-overlay {
-            display: none;
-            position: fixed;
-            top:0; left:0;
-            width:100%; height:100%;
-            background: rgba(0,0,0,0.85);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100;
         }
-        #promo-dialog {
-            background: #111c2b;
-            padding: 2rem;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 0 50px #00aaff;
-        }
-        #promo-dialog button {
-            margin: 0.5rem;
-            padding: 0.8rem 1.5rem;
-            font-size: 1.2rem;
-        }
-        .opening-name {
-            font-size: 0.9rem;
-            color: #88ccff;
-            font-style: italic;
-        }
+        #promo-dialog { background: #111c2b; padding: 2rem; border-radius: 20px; text-align: center; box-shadow: 0 0 50px #00aaff; }
+        #promo-dialog button { margin: 0.5rem; padding: 0.8rem 1.5rem; font-size: 1.2rem; }
+        .opening-name { font-size: 0.9rem; color: #88ccff; font-style: italic; }
         #suggestions-panel {
-            background: rgba(10, 15, 26, 0.96);
-            border: 2px solid #ffaa00;
-            border-radius: 16px;
-            padding: 1.2rem;
-            width: 270px;
-            box-shadow: 0 0 35px #ffaa00;
-            color: #e0f0ff;
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
-            font-size: 1rem;
-            backdrop-filter: blur(5px);
+            background: rgba(10, 15, 26, 0.96); border: 2px solid #ffaa00;
+            border-radius: 16px; padding: 1.2rem; width: 270px;
+            box-shadow: 0 0 35px #ffaa00; color: #e0f0ff;
+            display: flex; flex-direction: column; gap: 0.9rem; font-size: 1rem; backdrop-filter: blur(5px);
         }
-        #suggestions-panel h3 {
-            color: #ffcc00;
-            text-align: center;
-            margin: 0 0 0.2rem;
-            font-size: 1.4rem;
-            text-shadow: 0 0 15px #ffaa00;
-        }
+        #suggestions-panel h3 { color: #ffcc00; text-align: center; margin: 0 0 0.2rem; font-size: 1.4rem; text-shadow: 0 0 15px #ffaa00; }
         .suggestion-entry {
-            background: rgba(255,170,0,0.08);
-            border-radius: 10px;
-            padding: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid rgba(255,170,0,0.4);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
+            background: rgba(255,170,0,0.08); border-radius: 10px; padding: 0.7rem;
+            cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,170,0,0.4);
+            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
         }
-        .suggestion-entry:hover {
-            background: rgba(255,170,0,0.25);
-            border-color: #ffcc00;
-            box-shadow: 0 0 20px #ffaa00;
-        }
-        .suggestion-move {
-            font-size: 1.3rem;
-            color: #fff;
-            letter-spacing: 1px;
-            font-family: monospace;
-        }
-        .suggestion-eval {
-            font-size: 1rem;
-            font-weight: bold;
-            background: rgba(0,0,0,0.4);
-            padding: 0.2rem 0.5rem;
-            border-radius: 8px;
-        }
-        .suggestion-eval.positive { color: #66ff66; }
-        .suggestion-eval.negative { color: #ff6666; }
-        #suggestion-btn {
-            background: #0a1424;
-            color: #ffcc00;
-            border: 2px solid #ffaa00;
-            box-shadow: 0 0 15px rgba(255,170,0,0.5);
-        }
+        .suggestion-entry:hover { background: rgba(255,170,0,0.25); border-color: #ffcc00; box-shadow: 0 0 20px #ffaa00; }
+        .suggestion-move { font-size: 1.3rem; color: #fff; letter-spacing: 1px; font-family: monospace; }
+        .suggestion-eval { font-size: 1rem; font-weight: bold; background: rgba(0,0,0,0.4); padding: 0.2rem 0.5rem; border-radius: 8px; }
+        .suggestion-eval.positive { color: #66ff66; } .suggestion-eval.negative { color: #ff6666; }
+        #suggestion-btn { background: #0a1424; color: #ffcc00; border: 2px solid #ffaa00; box-shadow: 0 0 15px rgba(255,170,0,0.5); }
         #suggestion-btn:hover { box-shadow: 0 0 30px #ffaa00; }
-        .computer-plan {
-            margin-top: 0.3rem;
-            font-size: 0.9rem;
-            background: rgba(0,170,255,0.15);
-            border-radius: 8px;
-            padding: 0.5rem;
-            color: #88ccff;
-            text-align: center;
-        }
-        .engine-status {
-            font-size: 0.8rem;
-            color: #aaa;
-            text-align: center;
-        }
+        .computer-plan { margin-top: 0.3rem; font-size: 0.9rem; background: rgba(0,170,255,0.15); border-radius: 8px; padding: 0.5rem; color: #88ccff; text-align: center; }
+        .engine-status { font-size: 0.8rem; color: #aaa; text-align: center; }
     </style>
 </head>
 <body>
-    <h1>♛ نيون شطرنج – Stockfish مع أسهم وظلال الاقتراحات ♛</h1>
+    <h1>♛ نيون شطرنج – Stockfish مع أسهم متوهجة وظل للاعب ♛</h1>
     <div class="controls">
         <button id="startWhite">⚪ ابدأ (أبيض)</button>
         <button id="startBlack">⚫ ابدأ (أسود)</button>
@@ -383,12 +157,19 @@
                 <div id="coords-bottom" class="coords-row"></div>
                 <svg id="suggestion-arrows" width="528" height="528" style="position:absolute; top:0; left:0; pointer-events:none;">
                     <defs>
-                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                            <polygon points="0 0, 10 3.5, 0 7" fill="#ffaa00" />
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+                            <polygon points="0 0, 12 4, 0 8" fill="#ffaa00" />
                         </marker>
                     </defs>
                 </svg>
-                <div id="suggestion-highlights" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:8;"></div>
             </div>
         </div>
     </div>
@@ -568,7 +349,7 @@
             function clonePositionData() { return { gameHistory: [...gameHistory], positionCount: new Map(positionCount), playerColor, moveCount, moveHistoryStr: [...moveHistoryStr] }; }
             function restorePositionData(d) { gameHistory = [...d.gameHistory]; positionCount = new Map(d.positionCount); playerColor = d.playerColor; moveCount = d.moveCount; moveHistoryStr = [...d.moveHistoryStr]; }
             function createSnapshot() { return { state: cloneState(gameState), data: clonePositionData() }; }
-            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearHighlightsAndArrows(); }
+            function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearAllEffects(); }
             function pushSnapshot() { historyStack.push(createSnapshot()); redoStack = []; }
 
             function moveToShortAlgebraic(move, state) {
@@ -939,15 +720,13 @@
                     const p = board[r][c]; pieces[p.color].push(p.type);
                     if (p.type === 'bishop') bishops[p.color].push((r+c)%2);
                 }
-                const only = (color, types) => pieces[color].every(t => types.includes(t));
+                const only = (color, types) => pieces[color].length > 0 && pieces[color].every(t => types.includes(t));
                 if (pieces.white.length === 1 && pieces.black.length === 1) return true;
-                if (only('white', ['king','knight']) && pieces.black.length === 1) return true;
-                if (only('black', ['king','knight']) && pieces.white.length === 1) return true;
-                if (only('white', ['king','bishop']) && pieces.black.length === 1) return true;
-                if (only('black', ['king','bishop']) && pieces.white.length === 1) return true;
+                if (only('white', ['king','knight']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
+                if (only('black', ['king','knight']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
+                if (only('white', ['king','bishop']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
+                if (only('black', ['king','bishop']) && pieces.white.length === 1 && pieces.white[0] === 'king') return true;
                 if (only('white', ['king','bishop']) && only('black', ['king','bishop']) && bishops.white[0] === bishops.black[0]) return true;
-                if (only('white', ['king','knight','knight']) && pieces.black.length === 1) return true;
-                if (only('black', ['king','knight','knight']) && pieces.white.length === 1) return true;
                 return false;
             }
 
@@ -1012,260 +791,160 @@
                 return res.move;
             }
 
-            // ========== دوال الأسهم والظلال ==========
-            function clearHighlightsAndArrows() {
+            // ========== التأثيرات البصرية ==========
+            function clearAllEffects() {
                 document.getElementById('suggestion-arrows').innerHTML = '';
-                const highlightsDiv = document.getElementById('suggestion-highlights');
-                if (highlightsDiv) highlightsDiv.innerHTML = '';
+                document.querySelectorAll('.cell.player-move').forEach(c => c.classList.remove('player-move'));
             }
 
-            function drawSuggestionHighlights(moves) {
+            function drawArrows(moves) {
                 const svg = document.getElementById('suggestion-arrows');
                 svg.innerHTML = '';
-                const highlightsDiv = document.getElementById('suggestion-highlights');
-                if (!highlightsDiv) return;
-                highlightsDiv.innerHTML = '';
-                const flip = playerColor === 'white';
-                const size = 66;
-                const offset = size / 2;
-
-                // ألوان مختلفة للتمييز
-                const colors = ['#ffaa00', '#ffbb33', '#ff9933'];
-
-                for (let i = 0; i < moves.length; i++) {
-                    const move = moves[i];
-                    let fr = move.from[0];
-                    let fc = move.from[1];
-                    let tr = move.to[0];
-                    let tc = move.to[1];
-
-                    if (flip) {
-                        fr = 7 - fr;
-                        fc = 7 - fc;
-                        tr = 7 - tr;
-                        tc = 7 - tc;
+                const size = 66, offset = size / 2;
+                // قلب كامل للاعب الأسود (اللوحة معكوسة)
+                const flipBoard = playerColor === 'black';
+                for (const move of moves) {
+                    let fr = move.from[0], fc = move.from[1];
+                    let tr = move.to[0], tc = move.to[1];
+                    if (flipBoard) {
+                        fr = 7 - fr; fc = 7 - fc;
+                        tr = 7 - tr; tc = 7 - tc;
                     }
-
-                    const color = colors[i % colors.length];
-
-                    // سهم
-                    const x1 = fc * size + offset;
-                    const y1 = fr * size + offset;
-                    const x2 = tc * size + offset;
-                    const y2 = tr * size + offset;
-
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute("x1", x1);
-                    line.setAttribute("y1", y1);
-                    line.setAttribute("x2", x2);
-                    line.setAttribute("y2", y2);
-                    line.setAttribute("stroke", color);
-                    line.setAttribute("stroke-width", "5");
+                    line.setAttribute("x1", fc * size + offset);
+                    line.setAttribute("y1", fr * size + offset);
+                    line.setAttribute("x2", tc * size + offset);
+                    line.setAttribute("y2", tr * size + offset);
+                    line.setAttribute("stroke", "#ffaa00");
+                    line.setAttribute("stroke-width", "6");
                     line.setAttribute("marker-end", "url(#arrowhead)");
-                    line.setAttribute("stroke-linecap", "round");
+                    line.setAttribute("filter", "url(#glow)");
                     svg.appendChild(line);
-
-                    // ظل مربع البداية
-                    const fromDiv = document.createElement('div');
-                    fromDiv.className = 'suggestion-highlight';
-                    fromDiv.style.left = (fc * size) + 'px';
-                    fromDiv.style.top = (fr * size) + 'px';
-                    fromDiv.style.width = size + 'px';
-                    fromDiv.style.height = size + 'px';
-                    fromDiv.style.borderColor = color;
-                    fromDiv.style.boxShadow = `0 0 18px ${color}`;
-                    fromDiv.style.background = color + '44'; // شفافية
-                    highlightsDiv.appendChild(fromDiv);
-
-                    // ظل مربع الهدف
-                    const toDiv = document.createElement('div');
-                    toDiv.className = 'suggestion-highlight to-square';
-                    toDiv.style.left = (tc * size) + 'px';
-                    toDiv.style.top = (tr * size) + 'px';
-                    toDiv.style.width = size + 'px';
-                    toDiv.style.height = size + 'px';
-                    toDiv.style.borderColor = color;
-                    toDiv.style.boxShadow = `0 0 22px ${color}`;
-                    toDiv.style.background = color + '66';
-                    highlightsDiv.appendChild(toDiv);
                 }
+            }
+
+            function highlightPlayerMove(fr, fc, tr, tc) {
+                document.querySelectorAll('.cell.player-move').forEach(c => c.classList.remove('player-move'));
+                const cells = document.querySelectorAll('#board .cell');
+                const flipBoard = playerColor === 'black';
+                let dfr = flipBoard ? 7 - fr : fr;
+                let dfc = flipBoard ? 7 - fc : fc;
+                let dtr = flipBoard ? 7 - tr : tr;
+                let dtc = flipBoard ? 7 - tc : tc;
+                const fromIdx = dfr * 8 + dfc;
+                const toIdx = dtr * 8 + dtc;
+                if (cells[fromIdx]) cells[fromIdx].classList.add('player-move');
+                if (cells[toIdx]) cells[toIdx].classList.add('player-move');
             }
 
             // ========== Stockfish Engine ==========
             class StockfishEngine {
                 constructor() {
-                    try {
-                        this.worker = new Worker('stockfish.js');
-                    } catch(e) {
-                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js. تأكد من وجوده في نفس المجلد وأن الصفحة تعمل على خادم محلي.';
+                    try { this.worker = new Worker('stockfish.js'); } catch(e) {
+                        document.getElementById('engine-status').textContent = '❌ تعذر تحميل stockfish.js.';
                         return;
                     }
                     this.worker.onmessage = (e) => this.handleMessage(e.data);
-                    this.worker.onerror = (e) => {
-                        document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
-                        console.error(e);
-                    };
-                    this.isReady = false;
-                    this.pendingResolve = null;
-                    this.pvs = [];
-                    this.send('uci');
-                    this.send('setoption name MultiPV value 3');
-                    this.send('isready');
+                    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
+                    this.isReady = false; this.pendingResolve = null; this.pvs = [];
+                    this.send('uci'); this.send('setoption name MultiPV value 3'); this.send('isready');
                 }
-                send(command) {
-                    if (this.worker) this.worker.postMessage(command);
-                }
+                send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
                 handleMessage(line) {
-                    console.log('SF:', line);
-                    if (line === 'readyok') {
-                        this.isReady = true;
-                        document.getElementById('engine-status').textContent = '✅ Stockfish جاهز';
-                    } else if (line.startsWith('bestmove')) {
-                        if (this.pendingResolve) {
-                            const result = this.pvs.slice();
-                            this.pendingResolve(result);
-                            this.pendingResolve = null;
-                            this.pvs = [];
-                        }
+                    if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز'; }
+                    else if (line.startsWith('bestmove')) {
+                        if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
                     } else if (line.startsWith('info') && line.includes(' pv ')) {
-                        const depthMatch = line.match(/depth (\d+)/);
-                        const scoreMatch = line.match(/score cp (-?\d+)/);
-                        const pvMatch = line.match(/ pv (.+)/);
-                        if (scoreMatch && pvMatch) {
-                            const depth = parseInt(depthMatch?.[1] || '0');
-                            const score = parseInt(scoreMatch[1]);
-                            const moves = pvMatch[1].trim().split(' ');
-                            const bestMove = moves[0];
-                            const existing = this.pvs.find(p => p.bestMove === bestMove);
-                            if (existing) {
-                                if (depth >= existing.depth) {
-                                    existing.depth = depth;
-                                    existing.score = score;
-                                    existing.moves = moves;
-                                }
-                            } else {
-                                this.pvs.push({ depth, score, bestMove, moves });
-                            }
+                        const sc = line.match(/score cp (-?\d+)/);
+                        const pv = line.match(/ pv (.+)/);
+                        if (sc && pv) {
+                            const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
+                            const moves = pv[1].trim().split(' ');
+                            const best = moves[0];
+                            const ex = this.pvs.find(p => p.bestMove === best);
+                            if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
+                            else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
                         }
                     }
                 }
-                analyze(fen, timeMs = 2500) {
+                analyze(fen, ms = 2500) {
                     if (!this.worker) return Promise.resolve([]);
-                    this.pvs = [];
-                    this.send('ucinewgame');
-                    this.send(`position fen ${fen}`);
-                    this.send(`go movetime ${timeMs}`);
-                    return new Promise(resolve => {
-                        this.pendingResolve = resolve;
-                        setTimeout(() => {
-                            if (this.pendingResolve) {
-                                this.pendingResolve(this.pvs);
-                                this.pendingResolve = null;
-                            }
-                        }, timeMs + 500);
+                    this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
+                    return new Promise(res => {
+                        this.pendingResolve = res;
+                        setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
                     });
                 }
-                destroy() {
-                    if (this.worker) this.worker.terminate();
-                }
+                destroy() { if (this.worker) this.worker.terminate(); }
             }
 
             let stockfish = null;
-            function initStockfish() {
-                if (!stockfish) stockfish = new StockfishEngine();
-            }
+            function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
 
             // ========== اقتراحات ==========
             async function displaySuggestions() {
                 if (gameOver || gameState.turn !== playerColor) return;
                 if (suggestionLoading) return;
                 const listDiv = document.getElementById('suggestions-list');
-                const planDiv = document.getElementById('computer-plan');
+                document.getElementById('computer-plan').style.display = 'none';
                 listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل بـ Stockfish...</div>';
-                planDiv.style.display = 'none';
                 suggestionLoading = true;
                 document.getElementById('suggestion-btn').disabled = true;
-                clearHighlightsAndArrows();
-
+                clearAllEffects();
                 try {
-                    if (!stockfish || !stockfish.isReady) {
-                        let waited = 0;
-                        while (!stockfish?.isReady && waited < 10000) {
-                            await new Promise(r => setTimeout(r, 100));
-                            waited += 100;
-                        }
+                    if (!stockfish?.isReady) {
+                        let w = 0;
+                        while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100)); w += 100; }
                         if (!stockfish?.isReady) throw new Error('المحرك غير جاهز');
                     }
-
                     const fen = boardToFen(gameState);
-                    const results = await stockfish.analyze(fen, 2500);
-                    if (!results.length) throw new Error('لا توجد نتائج');
-
-                    results.sort((a,b) => b.score - a.score);
-                    const unique = [];
-                    const seen = new Set();
-                    for (const r of results) {
-                        if (!seen.has(r.bestMove)) {
-                            seen.add(r.bestMove);
-                            unique.push(r);
-                        }
-                        if (unique.length >= 3) break;
-                    }
-
+                    const res = await stockfish.analyze(fen, 2500);
+                    if (!res.length) throw new Error('لا توجد نتائج');
+                    res.sort((a,b) => b.score - a.score);
+                    const uniq = []; const seen = new Set();
+                    for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } if (uniq.length >= 3) break; }
                     const movesToDraw = [];
                     let html = '';
-                    for (const res of unique) {
-                        const uci = res.bestMove;
-                        const fromCol = uci.charCodeAt(0) - 97;
-                        const fromRow = 8 - parseInt(uci[1]);
-                        const toCol = uci.charCodeAt(2) - 97;
-                        const toRow = 8 - parseInt(uci[3]);
+                    for (const r of uniq) {
+                        const uci = r.bestMove;
+                        const fc = uci.charCodeAt(0)-97, fr = 8-parseInt(uci[1]);
+                        const tc = uci.charCodeAt(2)-97, tr = 8-parseInt(uci[3]);
                         const promoChar = uci[4];
-                        const promo = promoChar ? { q:'queen', r:'rook', b:'bishop', n:'knight' }[promoChar] || null : null;
-
-                        const legalMoves = getLegalMoves(gameState);
-                        const move = legalMoves.find(m =>
-                            m.from[0] === fromRow && m.from[1] === fromCol &&
-                            m.to[0] === toRow && m.to[1] === toCol &&
-                            ((!promo && !m.promotion) || (promo && m.promotion === promo))
+                        const promo = promoChar ? {q:'queen',r:'rook',b:'bishop',n:'knight'}[promoChar] : null;
+                        const move = getLegalMoves(gameState).find(m =>
+                            m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                            ((!promo && !m.promotion) || (promo && m.promotion===promo))
                         );
                         if (!move) continue;
-
                         movesToDraw.push(move);
                         const notation = moveToShortAlgebraic(move, gameState);
-                        const evalPawn = (res.score / 100).toFixed(2);
-                        const evalClass = evalPawn >= 0 ? 'positive' : 'negative';
-                        const evalText = (evalPawn > 0 ? '+' : '') + evalPawn;
-                        html += `<div class="suggestion-entry" data-fr="${move.from[0]}" data-fc="${move.from[1]}" data-tr="${move.to[0]}" data-tc="${move.to[1]}" data-promo="${move.promotion||''}">
+                        const evalPawn = (r.score/100).toFixed(2);
+                        const cls = evalPawn >= 0 ? 'positive' : 'negative';
+                        html += `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
                             <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${evalClass}">${evalText}</span>
+                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
                         </div>`;
                     }
                     listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawSuggestionHighlights(movesToDraw);
-
+                    drawArrows(movesToDraw);
                     document.querySelectorAll('.suggestion-entry').forEach(el => {
                         el.addEventListener('click', function() {
-                            const fr = +this.dataset.fr, fc = +this.dataset.fc;
-                            const tr = +this.dataset.tr, tc = +this.dataset.tc;
+                            const fr = +this.dataset.fr, fc = +this.dataset.fc, tr = +this.dataset.tr, tc = +this.dataset.tc;
                             const promo = this.dataset.promo;
                             const move = getLegalMoves(gameState).find(m =>
-                                m.from[0] === fr && m.from[1] === fc &&
-                                m.to[0] === tr && m.to[1] === tc &&
-                                (!promo || m.promotion === promo)
+                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                                (!promo || m.promotion===promo)
                             );
                             if (move) {
-                                clearHighlightsAndArrows();
-                                if (move.piece.type === 'pawn' && move.to[0] === 0 && !move.promotion) {
+                                clearAllEffects();
+                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
                                     requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else {
-                                    executePlayerMoveDirect(move);
-                                }
+                                } else executePlayerMoveDirect(move);
                             }
                         });
                     });
-                } catch (error) {
-                    console.warn('Stockfish fallback:', error.message);
+                } catch(e) {
+                    console.warn(e);
                     displayLocalSuggestions();
                 } finally {
                     suggestionLoading = false;
@@ -1275,109 +954,89 @@
 
             function displayLocalSuggestions() {
                 const listDiv = document.getElementById('suggestions-list');
-                const planDiv = document.getElementById('computer-plan');
+                document.getElementById('computer-plan').style.display = 'none';
                 listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ تحليل بالمحرك الداخلي...</div>';
-                planDiv.style.display = 'none';
-                clearHighlightsAndArrows();
+                clearAllEffects();
                 setTimeout(() => {
                     const moves = getLegalMoves(gameState);
                     const results = [];
-                    for (const move of moves.slice(0, 10)) {
-                        const nextState = makeMove(gameState, move);
-                        const res = iterativeDeepening(nextState, 800, 12);
-                        results.push({ move, score: -res.score });
+                    for (const move of moves.slice(0,10)) {
+                        const ns = makeMove(gameState, move);
+                        const res = iterativeDeepening(ns, 800, 12);
+                        results.push({move, score: -res.score});
                     }
-                    results.sort((a,b) => b.score - a.score);
-                    const top = results.slice(0, 3);
-                    const movesToDraw = top.map(s => s.move);
+                    results.sort((a,b)=>b.score-a.score);
+                    const top = results.slice(0,3);
+                    const movesToDraw = top.map(s=>s.move);
                     let html = '';
                     for (const s of top) {
                         const m = s.move;
-                        const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8 - m.from[0];
-                        const toCol = 'abcdefgh'[m.to[1]], toRow = 8 - m.to[0];
-                        const notation = fromCol + fromRow + toCol + toRow + (m.promotion ? '=' + m.promotion[0].toUpperCase() : '');
-                        const evalPawn = (s.score / 100).toFixed(2);
-                        const evalClass = evalPawn >= 0 ? 'positive' : 'negative';
-                        const evalText = (evalPawn > 0 ? '+' : '') + evalPawn;
+                        const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8-m.from[0];
+                        const toCol = 'abcdefgh'[m.to[1]], toRow = 8-m.to[0];
+                        const notation = fromCol+fromRow+toCol+toRow+(m.promotion?'='+m.promotion[0].toUpperCase():'');
+                        const evalPawn = (s.score/100).toFixed(2);
+                        const cls = evalPawn>=0?'positive':'negative';
                         html += `<div class="suggestion-entry" data-fr="${m.from[0]}" data-fc="${m.from[1]}" data-tr="${m.to[0]}" data-tc="${m.to[1]}" data-promo="${m.promotion||''}">
                             <span class="suggestion-move">${notation}</span>
-                            <span class="suggestion-eval ${evalClass}">${evalText}</span>
+                            <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
                         </div>`;
                     }
                     listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-                    drawSuggestionHighlights(movesToDraw);
+                    drawArrows(movesToDraw);
                     document.querySelectorAll('.suggestion-entry').forEach(el => {
                         el.addEventListener('click', function() {
-                            const fr = +this.dataset.fr, fc = +this.dataset.fc;
-                            const tr = +this.dataset.tr, tc = +this.dataset.tc;
-                            const promo = this.dataset.promo;
-                            const move = getLegalMoves(gameState).find(m =>
-                                m.from[0] === fr && m.from[1] === fc &&
-                                m.to[0] === tr && m.to[1] === tc &&
-                                (!promo || m.promotion === promo)
+                            const fr=+this.dataset.fr, fc=+this.dataset.fc, tr=+this.dataset.tr, tc=+this.dataset.tc;
+                            const promo=this.dataset.promo;
+                            const move = getLegalMoves(gameState).find(m=>
+                                m.from[0]===fr && m.from[1]===fc && m.to[0]===tr && m.to[1]===tc &&
+                                (!promo || m.promotion===promo)
                             );
                             if (move) {
-                                clearHighlightsAndArrows();
-                                if (move.piece.type === 'pawn' && move.to[0] === 0 && !move.promotion) {
+                                clearAllEffects();
+                                if (move.piece.type==='pawn' && move.to[0]===0 && !move.promotion) {
                                     requestPromotion().then(p => executePlayerMoveDirect({...move, promotion: p}));
-                                } else {
-                                    executePlayerMoveDirect(move);
-                                }
+                                } else executePlayerMoveDirect(move);
                             }
                         });
                     });
                 }, 50);
             }
 
-            // ========== واجهة المستخدم والرسم ==========
+            // ========== واجهة المستخدم ==========
             function render() {
                 const boardDiv = document.getElementById('board'); boardDiv.innerHTML = '';
-                const flip = playerColor === 'white';
+                const flipBoard = playerColor === 'black';
                 const files = 'abcdefgh';
                 const coordsTop = document.getElementById('coords-top'), coordsBottom = document.getElementById('coords-bottom');
                 const coordsLeft = document.getElementById('coords-left'), coordsRight = document.getElementById('coords-right');
                 coordsTop.innerHTML = ''; coordsBottom.innerHTML = ''; coordsLeft.innerHTML = ''; coordsRight.innerHTML = '';
-
                 coordsTop.appendChild(document.createElement('div'));
-                for (let c = 0; c < 8; c++) {
-                    const fileIndex = flip ? 7 - c : c;
-                    const div = document.createElement('div'); div.textContent = files[fileIndex]; coordsTop.appendChild(div);
-                }
+                for (let c=0;c<8;c++) { const d=document.createElement('div'); d.textContent=files[flipBoard?7-c:c]; coordsTop.appendChild(d); }
                 coordsTop.appendChild(document.createElement('div'));
-
-                for (let r = 0; r < 8; r++) {
-                    const rankIndex = flip ? r + 1 : 8 - r;
-                    const divL = document.createElement('div'); divL.textContent = rankIndex; coordsLeft.appendChild(divL);
-                    const divR = document.createElement('div'); divR.textContent = rankIndex; coordsRight.appendChild(divR);
-                }
-
+                for (let r=0;r<8;r++) { const d=document.createElement('div'); d.textContent=flipBoard?r+1:8-r; coordsLeft.appendChild(d); coordsRight.appendChild(d.cloneNode()); }
                 coordsBottom.appendChild(document.createElement('div'));
-                for (let c = 0; c < 8; c++) {
-                    const fileIndex = flip ? 7 - c : c;
-                    const div = document.createElement('div'); div.textContent = files[fileIndex]; coordsBottom.appendChild(div);
-                }
+                for (let c=0;c<8;c++) { const d=document.createElement('div'); d.textContent=files[flipBoard?7-c:c]; coordsBottom.appendChild(d); }
                 coordsBottom.appendChild(document.createElement('div'));
 
-                for (let dr = 0; dr < 8; dr++) {
-                    const r = flip ? 7 - dr : dr;
-                    for (let c = 0; c < 8; c++) {
+                for (let dr=0; dr<8; dr++) {
+                    const r = flipBoard ? 7-dr : dr;
+                    for (let c=0; c<8; c++) {
                         const cell = document.createElement('div');
-                        const isLight = (r + c) % 2 === 0;
-                        cell.className = 'cell ' + (isLight ? 'light' : 'dark');
-                        if (selectedCell && selectedCell.row === r && selectedCell.col === c) cell.className += ' selected';
-                        const lm = legalMovesMap.find(m => m.row === r && m.col === c);
+                        cell.className = 'cell ' + ((r+c)%2===0 ? 'light' : 'dark');
+                        if (selectedCell && selectedCell.row===r && selectedCell.col===c) cell.className += ' selected';
+                        const lm = legalMovesMap.find(m=>m.row===r && m.col===c);
                         if (lm) { cell.className += ' legal'; if (lm.capture) cell.className += ' capture'; }
-                        if (lastComputerMoveHighlight && ((r === lastComputerMoveHighlight.fromRow && c === lastComputerMoveHighlight.fromCol) || (r === lastComputerMoveHighlight.toRow && c === lastComputerMoveHighlight.toCol))) {
+                        if (lastComputerMoveHighlight && ((r===lastComputerMoveHighlight.fromRow && c===lastComputerMoveHighlight.fromCol) || (r===lastComputerMoveHighlight.toRow && c===lastComputerMoveHighlight.toCol))) {
                             cell.className += ' computer-move';
                         }
                         const piece = gameState.board[r][c];
                         if (piece) {
                             const span = document.createElement('span');
-                            span.className = 'piece ' + (piece.color === 'white' ? 'w' : 'b');
+                            span.className = 'piece ' + (piece.color==='white'?'w':'b');
                             span.textContent = pieceDisplay[piece.type];
                             cell.appendChild(span);
                         }
-                        (function(ir, ic) { cell.addEventListener('click', () => cellClicked(ir, ic)); })(r, c);
+                        (function(ir,ic){ cell.addEventListener('click', ()=>cellClicked(ir,ic)); })(r,c);
                         boardDiv.appendChild(cell);
                     }
                 }
@@ -1385,23 +1044,23 @@
 
             function cellClicked(r, c) {
                 if (gameOver || gameState.turn !== playerColor) return;
-                if (selectedCell && selectedCell.row === r && selectedCell.col === c) { selectedCell = null; legalMovesMap = []; render(); return; }
+                if (selectedCell && selectedCell.row===r && selectedCell.col===c) { selectedCell=null; legalMovesMap=[]; render(); return; }
                 if (selectedCell) {
-                    const move = legalMovesMap.find(m => m.row === r && m.col === c);
+                    const move = legalMovesMap.find(m=>m.row===r && m.col===c);
                     if (move) { executePlayerMove(move); return; }
                     const piece = gameState.board[r][c];
-                    if (piece && piece.color === playerColor) setSelected(r, c);
-                    else { selectedCell = null; legalMovesMap = []; render(); }
+                    if (piece && piece.color===playerColor) setSelected(r,c);
+                    else { selectedCell=null; legalMovesMap=[]; render(); }
                 } else {
                     const piece = gameState.board[r][c];
-                    if (piece && piece.color === playerColor) setSelected(r, c);
+                    if (piece && piece.color===playerColor) setSelected(r,c);
                 }
             }
 
-            function setSelected(r, c) {
-                selectedCell = {row: r, col: c};
-                legalMovesMap = getLegalMoves(gameState).filter(m => m.from[0] === r && m.from[1] === c).map(m => ({
-                    row: m.to[0], col: m.to[1], capture: !!(m.capture || m.enPassant), promotion: m.promotion, fullMove: m
+            function setSelected(r,c) {
+                selectedCell = {row:r, col:c};
+                legalMovesMap = getLegalMoves(gameState).filter(m=>m.from[0]===r && m.from[1]===c).map(m=>({
+                    row:m.to[0], col:m.to[1], capture:!!(m.capture||m.enPassant), promotion:m.promotion, fullMove:m
                 }));
                 render();
             }
@@ -1409,27 +1068,33 @@
             function executePlayerMove(disp) {
                 lastComputerMoveHighlight = null;
                 const move = disp.fullMove;
-                clearHighlightsAndArrows();
-                if (move.piece.type === 'pawn' && move.to[0] === 0) {
+                clearAllEffects();
+                if (move.piece.type==='pawn' && move.to[0]===0) {
                     requestPromotion().then(p => {
-                        const nm = {...move, promotion: p};
+                        const nm = {...move, promotion:p};
                         gameState = makeMove(gameState, nm); recordMoveSafe(nm); updateGameHistory(gameState);
-                        selectedCell = null; legalMovesMap = []; render(); pushSnapshot();
-                        if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+                        selectedCell=null; legalMovesMap=[]; render();
+                        highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
+                        pushSnapshot();
+                        if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
                     });
                 } else {
                     gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
-                    selectedCell = null; legalMovesMap = []; render(); pushSnapshot();
-                    if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+                    selectedCell=null; legalMovesMap=[]; render();
+                    highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
+                    pushSnapshot();
+                    if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
                 }
             }
 
             function executePlayerMoveDirect(move) {
                 lastComputerMoveHighlight = null;
-                clearHighlightsAndArrows();
+                clearAllEffects();
                 gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
-                selectedCell = null; legalMovesMap = []; render(); pushSnapshot();
-                if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+                selectedCell=null; legalMovesMap=[]; render();
+                highlightPlayerMove(move.from[0],move.from[1],move.to[0],move.to[1]);
+                pushSnapshot();
+                if (!checkGameOver()) { gameState.turn = playerColor==='white'?'black':'white'; setTimeout(computerMove,60); }
             }
 
             function requestPromotion() {
@@ -1448,15 +1113,15 @@
 
             function computerMove() {
                 if (gameOver) return;
+                clearAllEffects();
                 const move = getBestMove(gameState);
-                if (!move) { gameOver = true; document.getElementById('status').textContent = 'تعادل'; return; }
+                if (!move) { gameOver=true; document.getElementById('status').textContent='تعادل'; return; }
                 gameState = makeMove(gameState, move); recordMoveSafe(move);
-                lastComputerMoveHighlight = { fromRow: move.from[0], fromCol: move.from[1], toRow: move.to[0], toCol: move.to[1] };
+                lastComputerMoveHighlight = { fromRow:move.from[0], fromCol:move.from[1], toRow:move.to[0], toCol:move.to[1] };
                 updateGameHistory(gameState); render(); pushSnapshot();
-                clearHighlightsAndArrows();
                 if (!checkGameOver()) {
                     gameState.turn = playerColor;
-                    document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
+                    document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
                     updateOpeningDisplaySafe();
                 }
             }
@@ -1465,11 +1130,11 @@
                 const moves = getLegalMoves(gameState);
                 if (!moves.length) {
                     gameOver = true;
-                    document.getElementById('status').textContent = isKingInCheck(gameState, gameState.turn) ? (gameState.turn === playerColor ? 'كش ملك! خسرت!' : 'كش ملك! فزت!') : 'تعادل (ردب)!';
+                    document.getElementById('status').textContent = isKingInCheck(gameState, gameState.turn) ? (gameState.turn===playerColor?'كش ملك! خسرت!':'كش ملك! فزت!') : 'تعادل (ردب)!';
                     return true;
                 }
-                if (isRepetitionDraw(gameState)) { gameOver = true; document.getElementById('status').textContent = 'تعادل (تكرار)'; return true; }
-                if (isInsufficientMaterial(gameState.board)) { gameOver = true; document.getElementById('status').textContent = 'تعادل (نقص مادة)'; return true; }
+                if (isRepetitionDraw(gameState)) { gameOver=true; document.getElementById('status').textContent='تعادل (تكرار)'; return true; }
+                if (isInsufficientMaterial(gameState.board)) { gameOver=true; document.getElementById('status').textContent='تعادل (نقص مادة)'; return true; }
                 return false;
             }
 
@@ -1478,8 +1143,8 @@
                 gameOver = false;
                 redoStack.push({ human: historyStack.pop(), computer: historyStack.pop() });
                 restoreFromSnapshot(historyStack[historyStack.length-1]);
-                clearHighlightsAndArrows();
-                document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ' <span class="opening-name"></span>';
+                clearAllEffects();
+                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
                 displaySuggestions();
             }
 
@@ -1488,54 +1153,52 @@
                 const pair = redoStack.pop();
                 historyStack.push(pair.human, pair.computer);
                 restoreFromSnapshot(pair.computer);
-                clearHighlightsAndArrows();
-                document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ' <span class="opening-name"></span>';
+                clearAllEffects();
+                document.getElementById('status').innerHTML = (playerColor==='white'?'دورك (أبيض)':'دورك (أسود)') + ' <span class="opening-name"></span>';
                 displaySuggestions();
             }
 
             function startGame(asWhite) {
                 playerColor = asWhite ? 'white' : 'black';
                 gameState = fenToBoard(START_FEN);
-                selectedCell = null; legalMovesMap = []; gameOver = false;
-                gameHistory = []; positionCount.clear(); moveHistoryStr = [];
-                updateGameHistory(gameState); moveCount = 0;
-                lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
+                selectedCell=null; legalMovesMap=[]; gameOver=false;
+                gameHistory=[]; positionCount.clear(); moveHistoryStr=[];
+                updateGameHistory(gameState); moveCount=0;
+                lastComputerMoveHighlight=null; historyStack=[]; redoStack=[]; lastComputerDepth=0;
                 pushSnapshot();
-                clearHighlightsAndArrows();
-                document.getElementById('promo-overlay').style.display = 'none';
+                clearAllEffects();
+                document.getElementById('promo-overlay').style.display='none';
                 updateOpeningDisplaySafe(); render();
                 if (asWhite) {
-                    gameState.turn = 'white';
-                    document.getElementById('status').innerHTML = 'دورك (أبيض) <span class="opening-name"></span>';
+                    gameState.turn='white';
+                    document.getElementById('status').innerHTML='دورك (أبيض) <span class="opening-name"></span>';
                 } else {
-                    gameState.turn = 'white';
-                    document.getElementById('status').innerHTML = 'الحاسوب يفكر... <span class="opening-name"></span>';
-                    setTimeout(computerMove, 250);
+                    gameState.turn='white';
+                    document.getElementById('status').innerHTML='الحاسوب يفكر... <span class="opening-name"></span>';
+                    setTimeout(computerMove,250);
                 }
             }
 
-            document.getElementById('startWhite').addEventListener('click', () => startGame(true));
-            document.getElementById('startBlack').addEventListener('click', () => startGame(false));
-            document.getElementById('bigStart').addEventListener('click', () => startGame(true));
-            document.getElementById('reset').addEventListener('click', () => {
-                playerColor = 'white'; gameState = fenToBoard(START_FEN);
-                selectedCell = null; legalMovesMap = []; gameOver = false;
-                gameHistory = []; positionCount.clear(); moveHistoryStr = [];
-                updateGameHistory(gameState); moveCount = 0;
-                lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
-                pushSnapshot();
-                clearHighlightsAndArrows();
-                document.getElementById('status').innerHTML = 'اختر وضع اللعب <span class="opening-name"></span>';
-                document.getElementById('suggestions-list').innerHTML = '<div style="color:#aaa;text-align:center;">اضغط 💡 لتحليل Stockfish</div>';
-                document.getElementById('computer-plan').style.display = 'none';
+            document.getElementById('startWhite').addEventListener('click', ()=>startGame(true));
+            document.getElementById('startBlack').addEventListener('click', ()=>startGame(false));
+            document.getElementById('bigStart').addEventListener('click', ()=>startGame(true));
+            document.getElementById('reset').addEventListener('click', ()=>{
+                playerColor='white'; gameState=fenToBoard(START_FEN);
+                selectedCell=null; legalMovesMap=[]; gameOver=false;
+                gameHistory=[]; positionCount.clear(); moveHistoryStr=[];
+                updateGameHistory(gameState); moveCount=0;
+                lastComputerMoveHighlight=null; historyStack=[]; redoStack=[]; lastComputerDepth=0;
+                pushSnapshot(); clearAllEffects();
+                document.getElementById('status').innerHTML='اختر وضع اللعب <span class="opening-name"></span>';
+                document.getElementById('suggestions-list').innerHTML='<div style="color:#aaa;text-align:center;">اضغط 💡 لتحليل Stockfish</div>';
+                document.getElementById('computer-plan').style.display='none';
                 updateOpeningDisplaySafe(); render();
             });
             document.getElementById('undoBtn').addEventListener('click', undoMove);
             document.getElementById('redoBtn').addEventListener('click', redoMove);
             document.getElementById('suggestion-btn').addEventListener('click', displaySuggestions);
 
-            // بدء التشغيل
-            historyStack = []; redoStack = []; pushSnapshot(); render();
+            historyStack=[]; redoStack=[]; pushSnapshot(); render();
             initStockfish();
         })();
     </script>
