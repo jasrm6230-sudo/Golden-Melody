@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نيون شطرنج – وضع الصياد الذكي</title>
+    <title>نيون شطرنج – Stockfish بعمق غير محدود</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -136,7 +136,7 @@
 <body>
     <canvas id="starfield"></canvas>
 
-    <h1>♛ نيون شطرنج – وضع الصياد 🕸️</h1>
+    <h1>♛ نيون شطرنج – Stockfish بقوة كاملة</h1>
     <div class="controls">
         <button id="startWhite">⚪ ابدأ (أبيض)</button>
         <button id="startBlack">⚫ ابدأ (أسود)</button>
@@ -267,7 +267,7 @@
             drawStars();
         })();
 
-        // ========== كود الشطرنج الكامل – النسخة النهائية ==========
+        // ========== كود الشطرنج الكامل – النسخة مع Stockfish غير محدود الوقت ==========
         (function() {
             // -------- هياكل البيانات الأساسية --------
             class OpeningTrie {
@@ -775,7 +775,6 @@
                 transTable.set(h, e);
             }
 
-            // MVV-LVA لترتيب الأسر
             const mvvLva = {pawn:100, knight:200, bishop:300, rook:400, queen:500};
             function scoreMove(move, ply, state, hashMove) {
                 if (hashMove && move.from[0]===hashMove.from[0] && move.from[1]===hashMove.from[1] && move.to[0]===hashMove.to[0] && move.to[1]===hashMove.to[1])
@@ -791,7 +790,6 @@
                 return historyTable.get(move.from[0]+','+move.from[1]+'-'+move.to[0]+','+move.to[1]) || 0;
             }
 
-            // دوال التقييم
             function evaluate(state) {
                 let b = state.board, score = 0;
                 let pc = {white:{queen:0,rook:0,bishop:0,knight:0,pawn:0},black:{queen:0,rook:0,bishop:0,knight:0,pawn:0}};
@@ -1142,7 +1140,7 @@
                 return res.move;
             }
 
-            // -------- Stockfish ووضع الصياد --------
+            // -------- Stockfish غير محدود الوقت (عمق 20) --------
             function uciToMove(uci, state) {
                 const fc = uci.charCodeAt(0) - 97;
                 const fr = 8 - parseInt(uci[1]);
@@ -1196,13 +1194,18 @@
                 };
                 if (!trapModeActive) {
                     if (useStockfish) {
-                        stockfish.send('ucinewgame'); stockfish.send(`position fen ${fen}`); stockfish.send(`go movetime ${SEARCH_TIME_PER_MOVE}`);
+                        // استخدام Stockfish بعمق ثابت كبير (20) بدلاً من وقت محدود
+                        stockfish.send('ucinewgame');
+                        stockfish.send(`position fen ${fen}`);
+                        stockfish.send('go depth 20');
                         const onMsg = (e) => {
                             if (e.data.startsWith('bestmove')) {
                                 const best = e.data.split(' ')[1];
                                 stockfish.worker.removeEventListener('message', onMsg);
-                                if (best && best !== '(none)') { lastComputerDepth = 'SF'; doMove(uciToMove(best, gameState)); }
-                                else doMove(null);
+                                if (best && best !== '(none)') {
+                                    lastComputerDepth = 'SF-D20';
+                                    doMove(uciToMove(best, gameState));
+                                } else doMove(null);
                             }
                         };
                         stockfish.worker.addEventListener('message', onMsg);
@@ -1211,8 +1214,10 @@
                     const timeLimit = SEARCH_TIME_PER_MOVE * 1.5;
                     if (useStockfish) {
                         const candidates = [];
-                        stockfish.send('ucinewgame'); stockfish.send(`position fen ${fen}`);
-                        stockfish.send('setoption name MultiPV value 15'); stockfish.send(`go movetime ${timeLimit}`);
+                        stockfish.send('ucinewgame');
+                        stockfish.send(`position fen ${fen}`);
+                        stockfish.send('setoption name MultiPV value 15');
+                        stockfish.send(`go movetime ${timeLimit}`);
                         const onInfo = (e) => {
                             const line = e.data;
                             if (line.startsWith('bestmove')) {
