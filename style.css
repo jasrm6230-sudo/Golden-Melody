@@ -265,7 +265,7 @@ button:hover {
     pointer-events: none;
     font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
     line-height: 1;
-    /* إزالة الدوائر والخلفيات */
+    /* إزالة الدوائر والخلفيات تماماً */
     background: transparent !important;
     border-radius: 0;
     box-shadow: none;
