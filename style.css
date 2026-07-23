@@ -259,23 +259,23 @@ button:hover {
     justify-content: center;
     width: 58px;
     height: 58px;
-    border-radius: 50%;
     font-weight: bold;
     font-size: 38px;
     z-index: 2;
     pointer-events: none;
     font-family: 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
-    transition: box-shadow 0.15s;
     line-height: 1;
+    /* إزالة الدوائر والخلفيات */
+    background: transparent !important;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .piece.w {
-    background: #f5f5f5;
     color: #111;
 }
 
 .piece.b {
-    background: #1a1a1a;
     color: #eee;
 }
 
