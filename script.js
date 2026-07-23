@@ -26,7 +26,9 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     const MAX_DEPTH = 50;
     const MAX_RADIUS = 2.5;
 
-    function randomRange(min, max) { return Math.random() * (max - min) + min; }
+    function randomRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
     function initStars() {
         stars.length = 0;
         for (let i = 0; i < STAR_COUNT; i++) {
@@ -86,35 +88,53 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 (function () {
     // -------- هياكل البيانات الأساسية --------
     class OpeningTrie {
-        constructor() { this.root = {}; this.names = {}; }
+        constructor() {
+            this.root = {};
+            this.names = {};
+        }
         _parseMoves(str) {
-            try { const tokens = str.trim().split(/\s+/); return tokens.filter(t => !t.endsWith('.')); }
-            catch(e) { return []; }
+            try {
+                const tokens = str.trim().split(/\s+/);
+                return tokens.filter(t => !t.endsWith('.'));
+            } catch (e) {
+                return [];
+            }
         }
         insert(movesStr, name, eco = '') {
             const moves = this._parseMoves(movesStr);
             let node = this.root;
-            for (const m of moves) { if (!node[m]) node[m] = {}; node = node[m]; }
+            for (const m of moves) {
+                if (!node[m]) node[m] = {};
+                node = node[m];
+            }
             this.names[node] = { name, eco };
         }
         find(movesStr) {
             try {
                 const moves = this._parseMoves(movesStr);
-                let node = this.root, lastName = null, lastEco = null;
+                let node = this.root,
+                    lastName = null,
+                    lastEco = null;
                 for (const m of moves) {
                     if (m in node) {
                         node = node[m];
-                        if (this.names[node]) { lastName = this.names[node].name; lastEco = this.names[node].eco; }
+                        if (this.names[node]) {
+                            lastName = this.names[node].name;
+                            lastEco = this.names[node].eco;
+                        }
                     } else break;
                 }
                 return { name: lastName, eco: lastEco };
-            } catch(e) { return { name: null, eco: null }; }
+            } catch (e) {
+                return { name: null, eco: null };
+            }
         }
     }
 
     const openingList = [
         ['', 'Opening Position'],
-        ['1. e4', "King's Pawn"], ['1. d4', "Queen's Pawn"],
+        ['1. e4', "King's Pawn"],
+        ['1. d4', "Queen's Pawn"],
         ['1. e4 e5 2. Nf3 Nc6 3. Bc4', "Italian Game"],
         ['1. e4 e5 2. Nf3 Nc6 3. Bb5', "Ruy Lopez"],
         ['1. e4 e5 2. Nf3 Nc6 3. d4', 'Scotch Game'],
@@ -132,7 +152,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         ['1. e4 c6', 'Caro-Kann Defense'],
         ['1. d4 d5 2. c4', "Queen's Gambit"],
         ['1. d4 Nf6', 'Indian Game'],
-        ['1. c4', 'English'], ['1. Nf3', 'Réti'],
+        ['1. c4', 'English'],
+        ['1. Nf3', 'Réti'],
         ['1. e4 c5 2. Nf3 Nc6 3. d4', 'Open Sicilian'],
         ['1. e4 c5 2. Nf3 e6', 'Sicilian: French Var.'],
         ['1. d4 d5 2. c4 dxc4', "QG Accepted"],
@@ -145,14 +166,21 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         ['1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5', 'Scandinavian: Main Line'],
         ['1. e4 e5 2. Bc4', "Bishop's Opening"],
         ['1. e4 e5 2. f4', "King's Gambit"],
-        ['1. e3', "Van't Kruijs"], ['1. g3', 'Hungarian'],
-        ['1. f4', 'Bird'], ['1. b3', 'Nimzowitsch-Larsen'],
-        ['1. d3', 'Mieses'], ['1. b4', 'Orangutan'],
-        ['1. e4 d6', 'Pirc Defense'], ['1. e4 g6', 'Modern Defense'],
-        ['1. e4 b6', 'Owen Defense'], ['1. e4 Nf6', 'Alekhine Defense'],
+        ['1. e3', "Van't Kruijs"],
+        ['1. g3', 'Hungarian'],
+        ['1. f4', 'Bird'],
+        ['1. b3', 'Nimzowitsch-Larsen'],
+        ['1. d3', 'Mieses'],
+        ['1. b4', 'Orangutan'],
+        ['1. e4 d6', 'Pirc Defense'],
+        ['1. e4 g6', 'Modern Defense'],
+        ['1. e4 b6', 'Owen Defense'],
+        ['1. e4 Nf6', 'Alekhine Defense'],
         ['1. e4 Nc6', 'Nimzowitsch Defense'],
-        ['1. d4 e6', 'Horwitz Defense'], ['1. d4 g6', 'Modern Defense (d4)'],
-        ['1. d4 e5', 'Englund Gambit'], ['1. d4 c5', 'Old Benoni Defense'],
+        ['1. d4 e6', 'Horwitz Defense'],
+        ['1. d4 g6', 'Modern Defense (d4)'],
+        ['1. d4 e5', 'Englund Gambit'],
+        ['1. d4 c5', 'Old Benoni Defense'],
         ['1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4', 'Ruy Lopez: Morphy Defense'],
         ['1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Bxc6', 'Ruy Lopez: Exchange Var.'],
         ['1. e4 c5 2. Nf3 d6 3. d4', 'Sicilian: Najdorf'],
@@ -183,8 +211,12 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 
     const pieceDisplay = { king: '♚', queen: '♛', rook: '♜', bishop: '♝', knight: '♞', pawn: '♟' };
     const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    let gameHistory = [], positionCount = new Map(), lastComputerMoveHighlight = null;
-    let historyStack = [], redoStack = [], lastComputerDepth = 0;
+    let gameHistory = [],
+        positionCount = new Map(),
+        lastComputerMoveHighlight = null;
+    let historyStack = [],
+        redoStack = [],
+        lastComputerDepth = 0;
     let moveHistoryStr = [];
 
     function setDifficulty(level) {
@@ -216,8 +248,10 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         }
         const turn = parts[1] === 'w' ? 'white' : 'black';
         const castling = {
-            K: parts[2].includes('K'), Q: parts[2].includes('Q'),
-            k: parts[2].includes('k'), q: parts[2].includes('q')
+            K: parts[2].includes('K'),
+            Q: parts[2].includes('Q'),
+            k: parts[2].includes('k'),
+            q: parts[2].includes('q')
         };
         const ep = parts[3] === '-' ? null : { row: turn === 'white' ? 2 : 5, col: 'abcdefgh'.indexOf(parts[3][0]) };
         const halfMoveClock = parseInt(parts[4]) || 0;
@@ -233,7 +267,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                 const p = s.board[r][c];
                 if (!p) empty++;
                 else {
-                    if (empty > 0) { fen += empty; empty = 0; }
+                    if (empty > 0) { fen += empty;
+                        empty = 0; }
                     const pieceChar = { king: 'k', queen: 'q', rook: 'r', bishop: 'b', knight: 'n', pawn: 'p' }[p.type];
                     fen += p.color === 'white' ? pieceChar.toUpperCase() : pieceChar;
                 }
@@ -251,7 +286,11 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function hashState(s) { return boardToFen(s).split(' ').slice(0, 4).join(' '); }
 
     let gameState = fenToBoard(START_FEN);
-    let playerColor = 'white', selectedCell = null, legalMovesMap = [], gameOver = false, promotionResolve = null;
+    let playerColor = 'white',
+        selectedCell = null,
+        legalMovesMap = [],
+        gameOver = false,
+        promotionResolve = null;
     const isWithin = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
 
     const cloneState = (s) => ({
@@ -264,17 +303,38 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     });
 
     function clonePositionData() { return { gameHistory: [...gameHistory], positionCount: new Map(positionCount), playerColor, moveHistoryStr: [...moveHistoryStr] }; }
-    function restorePositionData(d) { gameHistory = [...d.gameHistory]; positionCount = new Map(d.positionCount); playerColor = d.playerColor; moveHistoryStr = [...d.moveHistoryStr]; }
+
+    function restorePositionData(d) { gameHistory = [...d.gameHistory];
+        positionCount = new Map(d.positionCount);
+        playerColor = d.playerColor;
+        moveHistoryStr = [...d.moveHistoryStr]; }
+
     function createSnapshot() { return { state: cloneState(gameState), data: clonePositionData() }; }
-    function restoreFromSnapshot(snap) { gameState = cloneState(snap.state); restorePositionData(snap.data); selectedCell = null; legalMovesMap = []; gameOver = false; lastComputerMoveHighlight = null; document.getElementById('promo-overlay').style.display = 'none'; updateOpeningDisplaySafe(); render(); clearAllEffects(); }
-    function pushSnapshot() { historyStack.push(createSnapshot()); redoStack = []; }
+
+    function restoreFromSnapshot(snap) { gameState = cloneState(snap.state);
+        restorePositionData(snap.data);
+        selectedCell = null;
+        legalMovesMap = [];
+        gameOver = false;
+        lastComputerMoveHighlight = null;
+        document.getElementById('promo-overlay').style.display = 'none';
+        updateOpeningDisplaySafe();
+        render();
+        clearAllEffects(); }
+
+    function pushSnapshot() { historyStack.push(createSnapshot());
+        redoStack = []; }
 
     function moveToShortAlgebraic(move, state) {
         try {
             if (!move || !move.piece) return '';
-            const piece = move.piece, from = move.from, to = move.to;
+            const piece = move.piece,
+                from = move.from,
+                to = move.to;
             const files = 'abcdefgh';
-            const fromFile = files[from[1]], toFile = files[to[1]], toRank = 8 - to[0];
+            const fromFile = files[from[1]],
+                toFile = files[to[1]],
+                toRank = 8 - to[0];
             let notation = '';
             if (move.castlingRookFrom) return to[1] > from[1] ? 'O-O' : 'O-O-O';
             if (piece.type === 'pawn') {
@@ -290,7 +350,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                 notation += '=' + promoLetter;
             }
             return notation;
-        } catch(e) { return ''; }
+        } catch (e) { return ''; }
     }
 
     function updateOpeningDisplaySafe() {
@@ -306,7 +366,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             }
             const result = openingTrie.find(fullStr.trim());
             document.querySelector('.opening-name').textContent = result.name ? '📖 ' + result.name : '';
-        } catch(e) { document.querySelector('.opening-name').textContent = ''; }
+        } catch (e) { document.querySelector('.opening-name').textContent = ''; }
     }
 
     function recordMoveSafe(move) {
@@ -314,7 +374,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             const notation = moveToShortAlgebraic(move, gameState);
             if (notation) moveHistoryStr.push(notation);
             updateOpeningDisplaySafe();
-        } catch(e) {}
+        } catch (e) {}
     }
 
     function isSquareAttacked(board, row, col, attackerColor) {
@@ -330,26 +390,30 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             if (isWithin(row + dr, col + dc) && board[row + dr][col + dc]?.color === attackerColor && board[row + dr][col + dc].type === 'knight') return true;
         }
         for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (dr || dc) {
-            if (isWithin(row + dr, col + dc) && board[row + dr][col + dc]?.color === attackerColor && board[row + dr][col + dc].type === 'king') return true;
-        }
+                if (isWithin(row + dr, col + dc) && board[row + dr][col + dc]?.color === attackerColor && board[row + dr][col + dc].type === 'king') return true;
+            }
         for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-            let r = row + dr, c = col + dc;
+            let r = row + dr,
+                c = col + dc;
             while (isWithin(r, c)) {
                 if (board[r][c]) {
                     if (board[r][c].color === attackerColor && (board[r][c].type === 'rook' || board[r][c].type === 'queen')) return true;
                     break;
                 }
-                r += dr; c += dc;
+                r += dr;
+                c += dc;
             }
         }
         for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
-            let r = row + dr, c = col + dc;
+            let r = row + dr,
+                c = col + dc;
             while (isWithin(r, c)) {
                 if (board[r][c]) {
                     if (board[r][c].color === attackerColor && (board[r][c].type === 'bishop' || board[r][c].type === 'queen')) return true;
                     break;
                 }
-                r += dr; c += dc;
+                r += dr;
+                c += dc;
             }
         }
         return false;
@@ -357,86 +421,111 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 
     function isKingInCheck(state, color) {
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-            if (state.board[r][c]?.type === 'king' && state.board[r][c].color === color)
-                return isSquareAttacked(state.board, r, c, color === 'white' ? 'black' : 'white');
-        }
+                if (state.board[r][c]?.type === 'king' && state.board[r][c].color === color)
+                    return isSquareAttacked(state.board, r, c, color === 'white' ? 'black' : 'white');
+            }
         return false;
     }
 
     function generatePseudoMoves(state) {
-        const board = state.board, castling = state.castling, ep = state.enPassant, turn = state.turn;
-        const opp = turn === 'white' ? 'black' : 'white', dir = turn === 'white' ? -1 : 1, startRow = turn === 'white' ? 6 : 1, promoRow = turn === 'white' ? 0 : 7;
+        const board = state.board,
+            castling = state.castling,
+            ep = state.enPassant,
+            turn = state.turn;
+        const opp = turn === 'white' ? 'black' : 'white',
+            dir = turn === 'white' ? -1 : 1,
+            startRow = turn === 'white' ? 6 : 1,
+            promoRow = turn === 'white' ? 0 : 7;
         const moves = [];
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-            const piece = board[r][c];
-            if (!piece || piece.color !== turn) continue;
-            const add = (tr, tc, extra) => {
-                if (!isWithin(tr, tc)) return;
-                const target = board[tr][tc];
-                if (target && target.color === turn) return;
-                const capture = target && target.color === opp ? { type: target.type, color: target.color } : null;
-                if (piece.type === 'pawn' && tr === promoRow) {
-                    for (const p of ['queen', 'rook', 'bishop', 'knight']) moves.push({
-                        from: [r, c], to: [tr, tc], piece, capture, promotion: p,
+                const piece = board[r][c];
+                if (!piece || piece.color !== turn) continue;
+                const add = (tr, tc, extra) => {
+                    if (!isWithin(tr, tc)) return;
+                    const target = board[tr][tc];
+                    if (target && target.color === turn) return;
+                    const capture = target && target.color === opp ? { type: target.type, color: target.color } : null;
+                    if (piece.type === 'pawn' && tr === promoRow) {
+                        for (const p of ['queen', 'rook', 'bishop', 'knight']) moves.push({
+                            from: [r, c],
+                            to: [tr, tc],
+                            piece,
+                            capture,
+                            promotion: p,
+                            enPassant: extra?.enPassant || false,
+                            castlingRookFrom: extra?.castlingRookFrom || null,
+                            castlingRookTo: extra?.castlingRookTo || null
+                        });
+                    } else moves.push({
+                        from: [r, c],
+                        to: [tr, tc],
+                        piece,
+                        capture,
+                        promotion: null,
                         enPassant: extra?.enPassant || false,
                         castlingRookFrom: extra?.castlingRookFrom || null,
                         castlingRookTo: extra?.castlingRookTo || null
                     });
-                } else moves.push({
-                    from: [r, c], to: [tr, tc], piece, capture, promotion: null,
-                    enPassant: extra?.enPassant || false,
-                    castlingRookFrom: extra?.castlingRookFrom || null,
-                    castlingRookTo: extra?.castlingRookTo || null
-                });
-            };
-            switch (piece.type) {
-                case 'pawn':
-                    const one = r + dir;
-                    if (isWithin(one, c) && !board[one][c]) {
-                        add(one, c);
-                        if (r === startRow) { const two = r + 2 * dir; if (isWithin(two, c) && !board[two][c]) moves.push({ from: [r, c], to: [two, c], piece, capture: null, promotion: null }); }
-                    }
-                    for (const dc of [-1, 1]) { const nc = c + dc; if (isWithin(one, nc) && board[one][nc]?.color === opp) add(one, nc); }
-                    if (ep && ep.row === one && Math.abs(c - ep.col) === 1 && board[r][ep.col]?.color === opp && board[r][ep.col].type === 'pawn')
-                        moves.push({ from: [r, c], to: [ep.row, ep.col], piece, capture: { type: 'pawn', color: opp }, promotion: null, enPassant: true });
-                    break;
-                case 'knight':
-                    for (const [dr, dc] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]) add(r + dr, c + dc);
-                    break;
-                case 'bishop':
-                    for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc); nr += dr; nc += dc; } }
-                    break;
-                case 'rook':
-                    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc); nr += dr; nc += dc; } }
-                    break;
-                case 'queen':
-                    for (const [dr, dc] of [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc); nr += dr; nc += dc; } }
-                    break;
-                case 'king':
-                    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (dr || dc) add(r + dr, c + dc);
-                    if (!piece.hasMoved && !isKingInCheck(state, turn)) {
-                        const row = r;
-                        if (castling[turn === 'white' ? 'K' : 'k']) {
-                            const rook = board[row][7];
-                            if (rook?.type === 'rook' && !rook.hasMoved && !board[row][5] && !board[row][6] && !isSquareAttacked(board, row, 5, opp) && !isSquareAttacked(board, row, 6, opp))
-                                moves.push({ from: [r, c], to: [row, 6], piece, capture: null, promotion: null, castlingRookFrom: [row, 7], castlingRookTo: [row, 5] });
+                };
+                switch (piece.type) {
+                    case 'pawn':
+                        const one = r + dir;
+                        if (isWithin(one, c) && !board[one][c]) {
+                            add(one, c);
+                            if (r === startRow) { const two = r + 2 * dir; if (isWithin(two, c) && !board[two][c]) moves.push({ from: [r, c], to: [two, c], piece, capture: null, promotion: null }); }
                         }
-                        if (castling[turn === 'white' ? 'Q' : 'q']) {
-                            const rook = board[row][0];
-                            if (rook?.type === 'rook' && !rook.hasMoved && !board[row][1] && !board[row][2] && !board[row][3] && !isSquareAttacked(board, row, 2, opp) && !isSquareAttacked(board, row, 3, opp))
-                                moves.push({ from: [r, c], to: [row, 2], piece, capture: null, promotion: null, castlingRookFrom: [row, 0], castlingRookTo: [row, 3] });
+                        for (const dc of [-1, 1]) { const nc = c + dc; if (isWithin(one, nc) && board[one][nc]?.color === opp) add(one, nc); }
+                        if (ep && ep.row === one && Math.abs(c - ep.col) === 1 && board[r][ep.col]?.color === opp && board[r][ep.col].type === 'pawn')
+                            moves.push({ from: [r, c], to: [ep.row, ep.col], piece, capture: { type: 'pawn', color: opp }, promotion: null, enPassant: true });
+                        break;
+                    case 'knight':
+                        for (const [dr, dc] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]) add(r + dr, c + dc);
+                        break;
+                    case 'bishop':
+                        for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc);
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'rook':
+                        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc);
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'queen':
+                        for (const [dr, dc] of [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { if (board[nr][nc]) { if (board[nr][nc].color === opp) add(nr, nc); break; } add(nr, nc);
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'king':
+                        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if (dr || dc) add(r + dr, c + dc);
+                        if (!piece.hasMoved && !isKingInCheck(state, turn)) {
+                            const row = r;
+                            if (castling[turn === 'white' ? 'K' : 'k']) {
+                                const rook = board[row][7];
+                                if (rook?.type === 'rook' && !rook.hasMoved && !board[row][5] && !board[row][6] && !isSquareAttacked(board, row, 5, opp) && !isSquareAttacked(board, row, 6, opp))
+                                    moves.push({ from: [r, c], to: [row, 6], piece, capture: null, promotion: null, castlingRookFrom: [row, 7], castlingRookTo: [row, 5] });
+                            }
+                            if (castling[turn === 'white' ? 'Q' : 'q']) {
+                                const rook = board[row][0];
+                                if (rook?.type === 'rook' && !rook.hasMoved && !board[row][1] && !board[row][2] && !board[row][3] && !isSquareAttacked(board, row, 2, opp) && !isSquareAttacked(board, row, 3, opp))
+                                    moves.push({ from: [r, c], to: [row, 2], piece, capture: null, promotion: null, castlingRookFrom: [row, 0], castlingRookTo: [row, 3] });
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
-        }
         return moves;
     }
 
     function makeMove(state, move) {
         const ns = cloneState(state);
-        const board = ns.board, castling = ns.castling;
-        const [fr, fc] = move.from, [tr, tc] = move.to;
+        const board = ns.board,
+            castling = ns.castling;
+        const [fr, fc] = move.from,
+            [tr, tc] = move.to;
         const piece = board[fr][fc];
         const captured = move.capture ? (move.enPassant ? board[state.turn === 'white' ? tr + 1 : tr - 1][tc] : board[tr][tc]) : null;
 
@@ -448,8 +537,9 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         board[tr][tc] = { type: move.promotion || piece.type, color: piece.color, hasMoved: true };
 
         if (piece.type === 'king') {
-            if (piece.color === 'white') { castling.K = false; castling.Q = false; }
-            else { castling.k = false; castling.q = false; }
+            if (piece.color === 'white') { castling.K = false;
+                castling.Q = false; } else { castling.k = false;
+                castling.q = false; }
         }
         if (piece.type === 'rook') {
             if (fr === 7 && fc === 0) castling.Q = false;
@@ -487,25 +577,35 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function pieceAttacksSquare(board, r, c, tr, tc, piece = null) {
         if (!piece) piece = board[r][c];
         if (!piece) return false;
-        const dr = Math.abs(r - tr), dc = Math.abs(c - tc);
+        const dr = Math.abs(r - tr),
+            dc = Math.abs(c - tc);
         switch (piece.type) {
-            case 'pawn': { const dir = piece.color === 'white' ? -1 : 1; return (r + dir === tr) && Math.abs(c - tc) === 1; }
-            case 'knight': return (dr === 2 && dc === 1) || (dr === 1 && dc === 2);
-            case 'king': return dr <= 1 && dc <= 1 && (dr + dc > 0);
-            case 'bishop': return dr === dc && dr !== 0 && isPathClear(board, r, c, tr, tc);
-            case 'rook': return (dr === 0 || dc === 0) && (dr + dc !== 0) && isPathClear(board, r, c, tr, tc);
-            case 'queen': return (dr === dc || dr === 0 || dc === 0) && (dr + dc !== 0) && isPathClear(board, r, c, tr, tc);
-            default: return false;
+            case 'pawn':
+                { const dir = piece.color === 'white' ? -1 : 1; return (r + dir === tr) && Math.abs(c - tc) === 1; }
+            case 'knight':
+                return (dr === 2 && dc === 1) || (dr === 1 && dc === 2);
+            case 'king':
+                return dr <= 1 && dc <= 1 && (dr + dc > 0);
+            case 'bishop':
+                return dr === dc && dr !== 0 && isPathClear(board, r, c, tr, tc);
+            case 'rook':
+                return (dr === 0 || dc === 0) && (dr + dc !== 0) && isPathClear(board, r, c, tr, tc);
+            case 'queen':
+                return (dr === dc || dr === 0 || dc === 0) && (dr + dc !== 0) && isPathClear(board, r, c, tr, tc);
+            default:
+                return false;
         }
     }
 
     function isPathClear(board, r1, c1, r2, c2) {
         const dr = r2 > r1 ? 1 : (r2 < r1 ? -1 : 0);
         const dc = c2 > c1 ? 1 : (c2 < c1 ? -1 : 0);
-        let r = r1 + dr, c = c1 + dc;
+        let r = r1 + dr,
+            c = c1 + dc;
         while (r !== r2 || c !== c2) {
             if (board[r][c]) return false;
-            r += dr; c += dc;
+            r += dr;
+            c += dc;
         }
         return true;
     }
@@ -566,11 +666,14 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     }
 
     // ========== خوارزميات البحث ==========
-    const INF = 999999, MAX_DEPTH = 24;
+    const INF = 999999,
+        MAX_DEPTH = 24;
     let searchStartTime, searchStopped;
     let transTable = new Map();
     let killerMoves, historyTable, lastBestScore;
-    const EXACT = 0, LOWER = 1, UPPER = 2;
+    const EXACT = 0,
+        LOWER = 1,
+        UPPER = 2;
     const MAX_QUIESCENCE_DEPTH = 8;
     const TT_MAX_SIZE = 500000;
 
@@ -585,6 +688,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     }
 
     const mvvLva = { pawn: 100, knight: 200, bishop: 300, rook: 400, queen: 500 };
+
     function scoreMove(move, ply, state, hashMove) {
         if (hashMove && move.from[0] === hashMove.from[0] && move.from[1] === hashMove.from[1] && move.to[0] === hashMove.to[0] && move.to[1] === hashMove.to[1])
             return 1000000;
@@ -605,80 +709,127 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function fastMobility(board, color) {
         let count = 0;
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-            const piece = board[r][c];
-            if (!piece || piece.color !== color) continue;
-            switch (piece.type) {
-                case 'pawn':
-                    if (color === 'white') { if (isWithin(r - 1, c)) count++; } else { if (isWithin(r + 1, c)) count++; }
-                    break;
-                case 'knight':
-                    for (const [dr, dc] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]) if (isWithin(r + dr, c + dc)) count++;
-                    break;
-                case 'bishop':
-                    for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break; nr += dr; nc += dc; } }
-                    break;
-                case 'rook':
-                    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break; nr += dr; nc += dc; } }
-                    break;
-                case 'queen':
-                    for (const [dr, dc] of [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]) { let nr = r + dr, nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break; nr += dr; nc += dc; } }
-                    break;
-                case 'king':
-                    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if ((dr || dc) && isWithin(r + dr, c + dc)) count++;
-                    break;
+                const piece = board[r][c];
+                if (!piece || piece.color !== color) continue;
+                switch (piece.type) {
+                    case 'pawn':
+                        if (color === 'white') { if (isWithin(r - 1, c)) count++; } else { if (isWithin(r + 1, c)) count++; }
+                        break;
+                    case 'knight':
+                        for (const [dr, dc] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]])
+                            if (isWithin(r + dr, c + dc)) count++;
+                        break;
+                    case 'bishop':
+                        for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break;
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'rook':
+                        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break;
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'queen':
+                        for (const [dr, dc] of [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]) { let nr = r + dr,
+                                nc = c + dc; while (isWithin(nr, nc)) { count++; if (board[nr][nc]) break;
+                                nr += dr;
+                                nc += dc; } }
+                        break;
+                    case 'king':
+                        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if ((dr || dc) && isWithin(r + dr, c + dc)) count++;
+                        break;
+                }
             }
-        }
         return count;
     }
 
     // -------- جداول PST المزدوجة --------
-    const pstPawnMG = [0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0];
-    const pstPawnEG = [0,0,0,0,0,0,0,0,60,60,60,60,60,60,60,60,30,30,40,50,50,40,30,30,10,10,20,35,35,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,0,0,0,0,0,0,0,0];
-    const pstKnightMG = [-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50];
-    const pstKnightEG = [-40,-30,-20,-20,-20,-20,-30,-40,-30,-10,0,5,5,0,-10,-30,-20,0,10,15,15,10,0,-20,-10,5,15,20,20,15,5,-10,-10,0,15,20,20,15,0,-10,-20,5,10,15,15,10,5,-20,-30,-10,0,5,5,0,-10,-30,-40,-30,-20,-20,-20,-20,-30,-40];
-    const pstBishopMG = [-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,10,10,10,10,0,-10,-10,5,5,10,10,5,5,-10,-10,0,5,10,10,5,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20];
-    const pstBishopEG = [-15,-10,-5,-5,-5,-5,-10,-15,-10,0,5,5,5,5,0,-10,-5,5,10,10,10,10,5,-5,-5,5,10,15,15,10,5,-5,-5,5,10,15,15,10,5,-5,-5,0,10,10,10,10,0,-5,-10,5,5,5,5,5,5,-10,-15,-10,-5,-5,-5,-5,-10,-15];
-    const pstRookMG = [0,0,0,0,0,0,0,0,5,10,10,10,10,10,10,5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,5,5,0,0,0,0,0,0,5,5,0,0,0];
-    const pstRookEG = [0,0,0,0,0,0,0,0,10,10,10,10,10,10,10,10,5,5,5,5,5,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    const pstQueenMG = [-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20];
-    const pstQueenEG = [-15,-5,-5,-3,-3,-5,-5,-15,-5,0,3,5,5,3,0,-5,-3,3,8,10,10,8,3,-3,-3,5,10,12,12,10,5,-3,0,5,10,12,12,10,5,0,-5,3,8,10,10,8,3,-5,-5,0,3,5,5,3,0,-5,-15,-5,-5,-3,-3,-5,-5,-15];
-    const pstKingMG = [-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20];
-    const pstKingEG = [-50,-40,-30,-20,-20,-30,-40,-50,-30,-20,-10,0,0,-10,-20,-30,-20,-10,5,15,15,5,-10,-20,-10,0,15,25,25,15,0,-10,-10,0,15,25,25,15,0,-10,-20,-10,5,15,15,5,-10,-20,-30,-20,-10,0,0,-10,-20,-30,-50,-40,-30,-20,-20,-30,-40,-50];
+    const pstPawnMG = [0, 0, 0, 0, 0, 0, 0, 0, 50, 50, 50, 50, 50, 50, 50, 50, 10, 10, 20, 30, 30, 20, 10, 10, 5, 5, 10, 25, 25, 10, 5, 5, 0, 0, 0, 20, 20, 0, 0, 0, 5, -5, -10, 0, 0, -10, -5, 5, 5, 10, 10, -20, -20, 10, 10, 5, 0, 0, 0, 0, 0, 0, 0, 0];
+    const pstPawnEG = [0, 0, 0, 0, 0, 0, 0, 0, 60, 60, 60, 60, 60, 60, 60, 60, 30, 30, 40, 50, 50, 40, 30, 30, 10, 10, 20, 35, 35, 20, 10, 10, 5, 5, 10, 25, 25, 10, 5, 5, 0, 0, 0, 20, 20, 0, 0, 0, 5, -5, -10, 0, 0, -10, -5, 5, 0, 0, 0, 0, 0, 0, 0, 0];
+    const pstKnightMG = [-50, -40, -30, -30, -30, -30, -40, -50, -40, -20, 0, 0, 0, 0, -20, -40, -30, 0, 10, 15, 15, 10, 0, -30, -30, 5, 15, 20, 20, 15, 5, -30, -30, 0, 15, 20, 20, 15, 0, -30, -30, 5, 10, 15, 15, 10, 5, -30, -40, -20, 0, 5, 5, 0, -20, -40, -50, -40, -30, -30, -30, -30, -40, -50];
+    const pstKnightEG = [-40, -30, -20, -20, -20, -20, -30, -40, -30, -10, 0, 5, 5, 0, -10, -30, -20, 0, 10, 15, 15, 10, 0, -20, -10, 5, 15, 20, 20, 15, 5, -10, -10, 0, 15, 20, 20, 15, 0, -10, -20, 5, 10, 15, 15, 10, 5, -20, -30, -10, 0, 5, 5, 0, -10, -30, -40, -30, -20, -20, -20, -20, -30, -40];
+    const pstBishopMG = [-20, -10, -10, -10, -10, -10, -10, -20, -10, 0, 0, 0, 0, 0, 0, -10, -10, 0, 10, 10, 10, 10, 0, -10, -10, 5, 5, 10, 10, 5, 5, -10, -10, 0, 5, 10, 10, 5, 0, -10, -10, 10, 10, 10, 10, 10, 10, -10, -10, 5, 0, 0, 0, 0, 5, -10, -20, -10, -10, -10, -10, -10, -10, -20];
+    const pstBishopEG = [-15, -10, -5, -5, -5, -5, -10, -15, -10, 0, 5, 5, 5, 5, 0, -10, -5, 5, 10, 10, 10, 10, 5, -5, -5, 5, 10, 15, 15, 10, 5, -5, -5, 5, 10, 15, 15, 10, 5, -5, -5, 0, 10, 10, 10, 10, 0, -5, -10, 5, 5, 5, 5, 5, 5, -10, -15, -10, -5, -5, -5, -5, -10, -15];
+    const pstRookMG = [0, 0, 0, 0, 0, 0, 0, 0, 5, 10, 10, 10, 10, 10, 10, 5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0];
+    const pstRookEG = [0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const pstQueenMG = [-20, -10, -10, -5, -5, -10, -10, -20, -10, 0, 0, 0, 0, 0, 0, -10, -10, 0, 5, 5, 5, 5, 0, -10, -5, 0, 5, 5, 5, 5, 0, -5, 0, 0, 5, 5, 5, 5, 0, -5, -10, 5, 5, 5, 5, 5, 0, -10, -10, 0, 5, 0, 0, 0, 0, -10, -20, -10, -10, -5, -5, -10, -10, -20];
+    const pstQueenEG = [-15, -5, -5, -3, -3, -5, -5, -15, -5, 0, 3, 5, 5, 3, 0, -5, -3, 3, 8, 10, 10, 8, 3, -3, -3, 5, 10, 12, 12, 10, 5, -3, 0, 5, 10, 12, 12, 10, 5, 0, -5, 3, 8, 10, 10, 8, 3, -5, -5, 0, 3, 5, 5, 3, 0, -5, -15, -5, -5, -3, -3, -5, -5, -15];
+    const pstKingMG = [-30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -20, -30, -30, -40, -40, -30, -30, -20, -10, -20, -20, -20, -20, -20, -20, -10, 20, 20, 0, 0, 0, 0, 20, 20, 20, 30, 10, 0, 0, 10, 30, 20];
+    const pstKingEG = [-50, -40, -30, -20, -20, -30, -40, -50, -30, -20, -10, 0, 0, -10, -20, -30, -20, -10, 5, 15, 15, 5, -10, -20, -10, 0, 15, 25, 25, 15, 0, -10, -10, 0, 15, 25, 25, 15, 0, -10, -20, -10, 5, 15, 15, 5, -10, -20, -30, -20, -10, 0, 0, -10, -20, -30, -50, -40, -30, -20, -20, -30, -40, -50];
 
     const pieceValues = { pawn: 100, knight: 325, bishop: 335, rook: 510, queen: 950, king: 20000 };
 
     function gamePhase(board) {
         let mat = 0;
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]) {
-            const t = board[r][c].type;
-            if (t === 'knight' || t === 'bishop') mat += 1;
-            else if (t === 'rook') mat += 2;
-            else if (t === 'queen') mat += 4;
-        }
+                const t = board[r][c].type;
+                if (t === 'knight' || t === 'bishop') mat += 1;
+                else if (t === 'rook') mat += 2;
+                else if (t === 'queen') mat += 4;
+            }
         return Math.max(0, Math.min(1, (mat - 6) / 18));
     }
 
     function getPstValue(pt, color, r, c, phase) {
         const idx = r * 8 + c;
         let mg, eg;
-        switch(pt) {
-            case 'pawn': mg = pstPawnMG[idx]; eg = pstPawnEG[idx]; break;
-            case 'knight': mg = pstKnightMG[idx]; eg = pstKnightEG[idx]; break;
-            case 'bishop': mg = pstBishopMG[idx]; eg = pstBishopEG[idx]; break;
-            case 'rook': mg = pstRookMG[idx]; eg = pstRookEG[idx]; break;
-            case 'queen': mg = pstQueenMG[idx]; eg = pstQueenEG[idx]; break;
-            case 'king': mg = pstKingMG[idx]; eg = pstKingEG[idx]; break;
-            default: return 0;
+        switch (pt) {
+            case 'pawn':
+                mg = pstPawnMG[idx];
+                eg = pstPawnEG[idx];
+                break;
+            case 'knight':
+                mg = pstKnightMG[idx];
+                eg = pstKnightEG[idx];
+                break;
+            case 'bishop':
+                mg = pstBishopMG[idx];
+                eg = pstBishopEG[idx];
+                break;
+            case 'rook':
+                mg = pstRookMG[idx];
+                eg = pstRookEG[idx];
+                break;
+            case 'queen':
+                mg = pstQueenMG[idx];
+                eg = pstQueenEG[idx];
+                break;
+            case 'king':
+                mg = pstKingMG[idx];
+                eg = pstKingEG[idx];
+                break;
+            default:
+                return 0;
         }
         if (color === 'black') {
             const revIdx = 63 - idx;
-            switch(pt) {
-                case 'pawn': mg = pstPawnMG[revIdx]; eg = pstPawnEG[revIdx]; break;
-                case 'knight': mg = pstKnightMG[revIdx]; eg = pstKnightEG[revIdx]; break;
-                case 'bishop': mg = pstBishopMG[revIdx]; eg = pstBishopEG[revIdx]; break;
-                case 'rook': mg = pstRookMG[revIdx]; eg = pstRookEG[revIdx]; break;
-                case 'queen': mg = pstQueenMG[revIdx]; eg = pstQueenEG[revIdx]; break;
-                case 'king': mg = pstKingMG[revIdx]; eg = pstKingEG[revIdx]; break;
+            switch (pt) {
+                case 'pawn':
+                    mg = pstPawnMG[revIdx];
+                    eg = pstPawnEG[revIdx];
+                    break;
+                case 'knight':
+                    mg = pstKnightMG[revIdx];
+                    eg = pstKnightEG[revIdx];
+                    break;
+                case 'bishop':
+                    mg = pstBishopMG[revIdx];
+                    eg = pstBishopEG[revIdx];
+                    break;
+                case 'rook':
+                    mg = pstRookMG[revIdx];
+                    eg = pstRookEG[revIdx];
+                    break;
+                case 'queen':
+                    mg = pstQueenMG[revIdx];
+                    eg = pstQueenEG[revIdx];
+                    break;
+                case 'king':
+                    mg = pstKingMG[revIdx];
+                    eg = pstKingEG[revIdx];
+                    break;
             }
         }
         return mg * phase + eg * (1 - phase);
@@ -686,13 +837,15 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 
     function evaluate(state) {
         const phase = gamePhase(state.board);
-        let b = state.board, score = 0;
+        let b = state.board,
+            score = 0;
         let pc = { white: { queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0 }, black: { queen: 0, rook: 0, bishop: 0, knight: 0, pawn: 0 } };
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (b[r][c]) {
-            let p = b[r][c], val = pieceValues[p.type] + getPstValue(p.type, p.color, r, c, phase);
-            score += p.color === 'white' ? val : -val;
-            pc[p.color][p.type]++;
-        }
+                let p = b[r][c],
+                    val = pieceValues[p.type] + getPstValue(p.type, p.color, r, c, phase);
+                score += p.color === 'white' ? val : -val;
+                pc[p.color][p.type]++;
+            }
         if (pc.white.bishop >= 2) score += 45 + (pc.white.bishop - 2) * 15;
         if (pc.black.bishop >= 2) score -= 45 + (pc.black.bishop - 2) * 15;
         score += evaluatePawnStructure(b, 'white') - evaluatePawnStructure(b, 'black');
@@ -702,21 +855,25 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         score += knightOutpost(b, 'white') - knightOutpost(b, 'black');
         if (isEndgame(b)) {
             for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-                if (b[r][c]?.type === 'king') {
-                    const centerDist = Math.max(Math.abs(3.5 - r), Math.abs(3.5 - c));
-                    score += (b[r][c].color === 'white' ? -centerDist : centerDist) * 12;
+                    if (b[r][c]?.type === 'king') {
+                        const centerDist = Math.max(Math.abs(3.5 - r), Math.abs(3.5 - c));
+                        score += (b[r][c].color === 'white' ? -centerDist : centerDist) * 12;
+                    }
                 }
-            }
         }
         return state.turn === 'white' ? score : -score;
     }
 
     function evaluatePawnStructure(board, color) {
-        let val = 0, pawns = [];
+        let val = 0,
+            pawns = [];
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]?.color === color && board[r][c].type === 'pawn') pawns.push({ r, c });
         let opp = color === 'white' ? 'black' : 'white';
         for (let p of pawns) {
-            let col = p.c, row = p.r, dir = color === 'white' ? -1 : 1, isolated = true;
+            let col = p.c,
+                row = p.r,
+                dir = color === 'white' ? -1 : 1,
+                isolated = true;
             for (let r2 = 0; r2 < 8; r2++) {
                 if (col > 0 && board[r2][col - 1]?.color === color && board[r2][col - 1].type === 'pawn') isolated = false;
                 if (col < 7 && board[r2][col + 1]?.color === color && board[r2][col + 1].type === 'pawn') isolated = false;
@@ -743,7 +900,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                 if (ahead === 0 && !isolated) val += 8;
             }
             if (!passed && !isolated) {
-                let backward = true, rBehind = row - dir;
+                let backward = true,
+                    rBehind = row - dir;
                 if (isWithin(rBehind, col - 1) && board[rBehind][col - 1]?.color === color && board[rBehind][col - 1].type === 'pawn') backward = false;
                 if (isWithin(rBehind, col + 1) && board[rBehind][col + 1]?.color === color && board[rBehind][col + 1].type === 'pawn') backward = false;
                 if (backward) val -= 10;
@@ -756,11 +914,16 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         let pos = null;
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]?.type === 'king' && board[r][c].color === color) pos = [r, c];
         if (!pos) return 0;
-        let [row, col] = pos, safety = 0, dir = color === 'white' ? -1 : 1, pawnShield = 0;
+        let [row, col] = pos,
+            safety = 0,
+            dir = color === 'white' ? -1 : 1,
+            pawnShield = 0;
         for (let dc = -1; dc <= 1; dc++) {
-            let r2 = row + dir, c2 = col + dc;
+            let r2 = row + dir,
+                c2 = col + dc;
             if (isWithin(r2, c2) && board[r2][c2]?.color === color && board[r2][c2].type === 'pawn') pawnShield++;
-            let r3 = row + 2 * dir, c3 = col + dc;
+            let r3 = row + 2 * dir,
+                c3 = col + dc;
             if (isWithin(r3, c3) && board[r3][c3]?.color === color && board[r3][c3].type === 'pawn') pawnShield += 0.5;
         }
         safety += pawnShield * 28;
@@ -768,29 +931,33 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         for (let dc = -1; dc <= 1; dc++) {
             let file = col + dc;
             if (file < 0 || file > 7) continue;
-            let friendly = false, enemy = false;
+            let friendly = false,
+                enemy = false;
             for (let r = 0; r < 8; r++) if (board[r][file]?.type === 'pawn') {
-                if (board[r][file].color === color) friendly = true; else enemy = true;
-            }
+                    if (board[r][file].color === color) friendly = true;
+                    else enemy = true;
+                }
             if (!friendly && enemy) safety -= 35;
             else if (!friendly && !enemy) safety -= 15;
         }
         let attackCount = 0;
         for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
-            let nr = row + dr, nc = col + dc;
-            if (isWithin(nr, nc) && board[nr][nc]?.color === opp && board[nr][nc].type !== 'king') attackCount++;
-        }
+                let nr = row + dr,
+                    nc = col + dc;
+                if (isWithin(nr, nc) && board[nr][nc]?.color === opp && board[nr][nc].type !== 'king') attackCount++;
+            }
         safety -= attackCount * 9;
         let closeAttack = 0;
         for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            let nr = row + dr, nc = col + dc;
-            if (isWithin(nr, nc) && board[nr][nc] && board[nr][nc].color === opp) {
-                if (board[nr][nc].type === 'queen') closeAttack += 40;
-                else if (board[nr][nc].type === 'rook') closeAttack += 25;
-                else if (board[nr][nc].type === 'bishop' || board[nr][nc].type === 'knight') closeAttack += 12;
+                if (dr === 0 && dc === 0) continue;
+                let nr = row + dr,
+                    nc = col + dc;
+                if (isWithin(nr, nc) && board[nr][nc] && board[nr][nc].color === opp) {
+                    if (board[nr][nc].type === 'queen') closeAttack += 40;
+                    else if (board[nr][nc].type === 'rook') closeAttack += 25;
+                    else if (board[nr][nc].type === 'bishop' || board[nr][nc].type === 'knight') closeAttack += 12;
+                }
             }
-        }
         safety -= closeAttack;
         return safety;
     }
@@ -799,41 +966,47 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         let score = 0;
         for (let [r, c] of [[3, 3], [3, 4], [4, 3], [4, 4]]) if (board[r][c]?.color === color) score += 10;
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]?.color === color && board[r][c].type === 'rook') {
-            let open = true, semi = true;
-            for (let r2 = 0; r2 < 8; r2++) if (board[r2][c]?.type === 'pawn') { open = false; if (board[r2][c].color === color) semi = false; }
-            if (open) score += 20; else if (semi) score += 12;
-            if (r === (color === 'white' ? 1 : 6)) score += 30;
-        }
+                let open = true,
+                    semi = true;
+                for (let r2 = 0; r2 < 8; r2++) if (board[r2][c]?.type === 'pawn') { open = false; if (board[r2][c].color === color) semi = false; }
+                if (open) score += 20;
+                else if (semi) score += 12;
+                if (r === (color === 'white' ? 1 : 6)) score += 30;
+            }
         return score;
     }
 
     function knightOutpost(board, color) {
-        let score = 0, opp = color === 'white' ? 'black' : 'white';
+        let score = 0,
+            opp = color === 'white' ? 'black' : 'white';
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]?.color === color && board[r][c].type === 'knight') {
-            let supported = false, dir = color === 'white' ? -1 : 1;
-            if (isWithin(r + dir, c - 1) && board[r + dir][c - 1]?.color === color && board[r + dir][c - 1].type === 'pawn') supported = true;
-            if (isWithin(r + dir, c + 1) && board[r + dir][c + 1]?.color === color && board[r + dir][c + 1].type === 'pawn') supported = true;
-            if (!supported) continue;
-            let attacked = false;
-            if (opp === 'white') {
-                if (isWithin(r - 1, c - 1) && board[r - 1][c - 1]?.color === 'white' && board[r - 1][c - 1].type === 'pawn') attacked = true;
-                if (isWithin(r - 1, c + 1) && board[r - 1][c + 1]?.color === 'white' && board[r - 1][c + 1].type === 'pawn') attacked = true;
-            } else {
-                if (isWithin(r + 1, c - 1) && board[r + 1][c - 1]?.color === 'black' && board[r + 1][c - 1].type === 'pawn') attacked = true;
-                if (isWithin(r + 1, c + 1) && board[r + 1][c + 1]?.color === 'black' && board[r + 1][c + 1].type === 'pawn') attacked = true;
+                let supported = false,
+                    dir = color === 'white' ? -1 : 1;
+                if (isWithin(r + dir, c - 1) && board[r + dir][c - 1]?.color === color && board[r + dir][c - 1].type === 'pawn') supported = true;
+                if (isWithin(r + dir, c + 1) && board[r + dir][c + 1]?.color === color && board[r + dir][c + 1].type === 'pawn') supported = true;
+                if (!supported) continue;
+                let attacked = false;
+                if (opp === 'white') {
+                    if (isWithin(r - 1, c - 1) && board[r - 1][c - 1]?.color === 'white' && board[r - 1][c - 1].type === 'pawn') attacked = true;
+                    if (isWithin(r - 1, c + 1) && board[r - 1][c + 1]?.color === 'white' && board[r - 1][c + 1].type === 'pawn') attacked = true;
+                } else {
+                    if (isWithin(r + 1, c - 1) && board[r + 1][c - 1]?.color === 'black' && board[r + 1][c - 1].type === 'pawn') attacked = true;
+                    if (isWithin(r + 1, c + 1) && board[r + 1][c + 1]?.color === 'black' && board[r + 1][c + 1].type === 'pawn') attacked = true;
+                }
+                if (!attacked && supported) score += 25;
             }
-            if (!attacked && supported) score += 25;
-        }
         return score;
     }
 
     function isEndgame(board) {
-        let queens = 0, rooks = 0, minors = 0;
+        let queens = 0,
+            rooks = 0,
+            minors = 0;
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]) {
-            if (board[r][c].type === 'queen') queens++;
-            else if (board[r][c].type === 'rook') rooks++;
-            else if (board[r][c].type === 'bishop' || board[r][c].type === 'knight') minors++;
-        }
+                if (board[r][c].type === 'queen') queens++;
+                else if (board[r][c].type === 'rook') rooks++;
+                else if (board[r][c].type === 'bishop' || board[r][c].type === 'knight') minors++;
+            }
         return (queens === 0 && rooks <= 2 && minors <= 2);
     }
 
@@ -856,10 +1029,10 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         const candidates = inCheck ? allMoves : allMoves.filter(m => m.capture || m.promotion);
 
         const scored = candidates.map(m => ({
-            move: m,
-            seeVal: m.capture ? see(m, state) : 0
-        })).filter(item => inCheck || item.seeVal >= 0)
-          .sort((a, b) => b.seeVal - a.seeVal);
+                move: m,
+                seeVal: m.capture ? see(m, state) : 0
+            })).filter(item => inCheck || item.seeVal >= 0)
+            .sort((a, b) => b.seeVal - a.seeVal);
 
         for (const { move } of scored) {
             if (!inCheck && !move.promotion && move.capture) {
@@ -881,7 +1054,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 
     function alphaBeta(state, depth, alpha, beta, ply, nullOk, timeLimit) {
         if (searchStopped || performance.now() - searchStartTime > timeLimit) { searchStopped = true; return 0; }
-        const hash = hashState(state), tt = transTable.get(hash);
+        const hash = hashState(state),
+            tt = transTable.get(hash);
         if (tt && tt.depth >= depth) {
             if (tt.flag === EXACT) return tt.score;
             if (tt.flag === LOWER && tt.score > alpha) alpha = tt.score;
@@ -893,7 +1067,9 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         if (!moves.length) return isKingInCheck(state, state.turn) ? -INF + ply : 0;
 
         if (nullOk && !isKingInCheck(state, state.turn) && depth >= 3 && !isEndgame(state.board)) {
-            const ns = cloneState(state); ns.turn = state.turn === 'white' ? 'black' : 'white'; ns.enPassant = null;
+            const ns = cloneState(state);
+            ns.turn = state.turn === 'white' ? 'black' : 'white';
+            ns.enPassant = null;
             const R = 3 + Math.floor(depth / 4);
             if (-alphaBeta(ns, depth - 1 - R, -beta, -beta + 1, ply + 1, false, timeLimit) >= beta) return beta;
         }
@@ -901,12 +1077,15 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         if (moves.length === 1) depth += 1;
 
         let hashMove = tt?.bestMove || null;
-        if (!hashMove && depth >= 4) { alphaBeta(state, depth - 2, alpha, beta, ply + 1, false, timeLimit); hashMove = transTable.get(hashState(state))?.bestMove; }
+        if (!hashMove && depth >= 4) { alphaBeta(state, depth - 2, alpha, beta, ply + 1, false, timeLimit);
+            hashMove = transTable.get(hashState(state))?.bestMove; }
         moves.forEach(m => m.score = scoreMove(m, ply, state, hashMove));
         moves.sort((a, b) => b.score - a.score);
-        let best = null, origAlpha = alpha;
+        let best = null,
+            origAlpha = alpha;
         for (let i = 0; i < moves.length; i++) {
-            const move = moves[i], next = makeMove(state, move);
+            const move = moves[i],
+                next = makeMove(state, move);
             const givesCheck = isKingInCheck(next, next.turn);
             let newDepth = depth - 1 + (givesCheck || (move.piece.type === 'pawn' && (move.to[0] === 0 || move.to[0] === 7)) ? 1 : 0);
             if (!move.capture && !move.promotion && !givesCheck && newDepth <= 3) {
@@ -918,29 +1097,41 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             if (searchStopped) return 0;
             if (LMR && score > alpha && score < beta) score = -alphaBeta(next, newDepth, -beta, -alpha, ply + 1, true, timeLimit);
             if (score >= beta) {
-                if (!move.capture && !move.promotion) { killerMoves[ply][1] = killerMoves[ply][0]; killerMoves[ply][0] = { from: [...move.from], to: [...move.to] }; }
+                if (!move.capture && !move.promotion) { killerMoves[ply][1] = killerMoves[ply][0];
+                    killerMoves[ply][0] = { from: [...move.from], to: [...move.to] }; }
                 historyTable.set(move.from[0] + ',' + move.from[1] + '-' + move.to[0] + ',' + move.to[1], (historyTable.get(move.from[0] + ',' + move.from[1] + '-' + move.to[0] + ',' + move.to[1]) || 0) + depth * depth);
                 ttStore(hash, { score: beta, depth, flag: LOWER, bestMove: move });
                 return beta;
             }
-            if (score > alpha) { alpha = score; best = move; }
+            if (score > alpha) { alpha = score;
+                best = move; }
         }
         ttStore(hash, { score: alpha, depth, flag: alpha > origAlpha ? EXACT : UPPER, bestMove: best });
         return alpha;
     }
 
     function iterativeDeepening(state, timeLimit, maxDepth = MAX_DEPTH) {
-        searchStartTime = performance.now(); searchStopped = false;
-        killerMoves = Array(maxDepth + 2).fill().map(() => [null, null]); historyTable = new Map();
-        const moves = getLegalMoves(state); let bestMove = moves[0] || null, alpha = -INF, beta = INF, completedDepth = 0;
+        searchStartTime = performance.now();
+        searchStopped = false;
+        killerMoves = Array(maxDepth + 2).fill().map(() => [null, null]);
+        historyTable = new Map();
+        const moves = getLegalMoves(state);
+        let bestMove = moves[0] || null,
+            alpha = -INF,
+            beta = INF,
+            completedDepth = 0;
         for (let d = 1; d <= maxDepth; d++) {
             if (performance.now() - searchStartTime > timeLimit * 0.9) break;
-            if (d >= 2 && bestMove) { alpha = lastBestScore - 25; beta = lastBestScore + 25; }
+            if (d >= 2 && bestMove) { alpha = lastBestScore - 25;
+                beta = lastBestScore + 25; }
             let score = alphaBeta(state, d, alpha, beta, 0, true, timeLimit);
             if (searchStopped) break;
-            if (score <= alpha || score >= beta) { alpha = -INF; beta = INF; score = alphaBeta(state, d, alpha, beta, 0, true, timeLimit); if (searchStopped) break; }
+            if (score <= alpha || score >= beta) { alpha = -INF;
+                beta = INF;
+                score = alphaBeta(state, d, alpha, beta, 0, true, timeLimit); if (searchStopped) break; }
             lastBestScore = score;
-            const entry = transTable.get(hashState(state)); if (entry?.bestMove) bestMove = entry.bestMove;
+            const entry = transTable.get(hashState(state));
+            if (entry?.bestMove) bestMove = entry.bestMove;
             completedDepth = d;
             if (score > 9000 || score < -9000) break;
         }
@@ -948,11 +1139,13 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     }
 
     function isInsufficientMaterial(board) {
-        const pieces = { white: [], black: [] }, bishops = { white: [], black: [] };
+        const pieces = { white: [], black: [] },
+            bishops = { white: [], black: [] };
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (board[r][c]) {
-            const p = board[r][c]; pieces[p.color].push(p.type);
-            if (p.type === 'bishop') bishops[p.color].push((r + c) % 2);
-        }
+                const p = board[r][c];
+                pieces[p.color].push(p.type);
+                if (p.type === 'bishop') bishops[p.color].push((r + c) % 2);
+            }
         const only = (color, types) => pieces[color].length > 0 && pieces[color].every(t => types.includes(t));
         if (pieces.white.length === 1 && pieces.black.length === 1) return true;
         if (only('white', ['king', 'knight']) && pieces.black.length === 1 && pieces.black[0] === 'king') return true;
@@ -970,7 +1163,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'd2d4', 'd4'],
             ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -', 'g1f3', 'Nf3'],
         ];
-        lines.forEach(l => { if (!openingBook.has(l[0])) openingBook.set(l[0], []); openingBook.get(l[0]).push({ move: l[1], name: l[2] }); });
+        lines.forEach(l => { if (!openingBook.has(l[0])) openingBook.set(l[0], []);
+            openingBook.get(l[0]).push({ move: l[1], name: l[2] }); });
     })();
 
     function getBookMove(state) {
@@ -978,14 +1172,19 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         const entries = openingBook.get(fenKey);
         if (!entries) return null;
         const entry = entries[Math.floor(Math.random() * entries.length)];
-        const fromCol = entry.move.charCodeAt(0) - 97, fromRow = 8 - parseInt(entry.move[1]);
-        const toCol = entry.move.charCodeAt(2) - 97, toRow = 8 - parseInt(entry.move[3]);
+        const fromCol = entry.move.charCodeAt(0) - 97,
+            fromRow = 8 - parseInt(entry.move[1]);
+        const toCol = entry.move.charCodeAt(2) - 97,
+            toRow = 8 - parseInt(entry.move[3]);
         const moves = getLegalMoves(state);
         for (const m of moves) if (m.from[0] === fromRow && m.from[1] === fromCol && m.to[0] === toRow && m.to[1] === toCol) return { move: m, name: entry.name };
         return null;
     }
 
-    function updateGameHistory(state) { const h = hashState(state); gameHistory.push(h); positionCount.set(h, (positionCount.get(h) || 0) + 1); }
+    function updateGameHistory(state) { const h = hashState(state);
+        gameHistory.push(h);
+        positionCount.set(h, (positionCount.get(h) || 0) + 1); }
+
     function isRepetitionDraw(state) { return positionCount.has(hashState(state)) && positionCount.get(hashState(state)) >= 2; }
 
     function getDynamicStockfishTime(state) {
@@ -1020,12 +1219,14 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             try {
                 this.worker = new Worker(stockfishUrl);
             } catch (e) {
-                document.getElementById('engine-status').textContent = '⚠️ لم يتم تحميل stockfish.js (اختياري)';
+                document.getElementById('engine-status').textContent = '⚠️ لم يتم تحميل المحرك (خطأ في المتصفح)';
                 return;
             }
             this.worker.onmessage = (e) => this.handleMessage(e.data);
             this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في المحرك.';
-            this.isReady = false; this.pendingResolve = null; this.pvs = [];
+            this.isReady = false;
+            this.pendingResolve = null;
+            this.pvs = [];
             this.currentListener = null;
             this.send('uci');
             this.send('setoption name Threads value 1');
@@ -1035,9 +1236,11 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         }
         send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
         handleMessage(line) {
-            if (line === 'readyok') { this.isReady = true; document.getElementById('engine-status').textContent = '✅ Stockfish جاهز (قوة قصوى)'; }
-            else if (line.startsWith('bestmove')) {
-                if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; this.pvs = []; }
+            if (line === 'readyok') { this.isReady = true;
+                document.getElementById('engine-status').textContent = '✅ Stockfish جاهز (قوة قصوى)'; } else if (line.startsWith('bestmove')) {
+                if (this.pendingResolve) { this.pendingResolve(this.pvs);
+                    this.pendingResolve = null;
+                    this.pvs = []; }
             } else if (line.startsWith('info') && line.includes(' pv ')) {
                 const sc = line.match(/score cp (-?\d+)/);
                 const pv = line.match(/ pv (.+)/);
@@ -1046,28 +1249,36 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                     const moves = pv[1].trim().split(' ');
                     const best = moves[0];
                     const ex = this.pvs.find(p => p.bestMove === best);
-                    if (ex) { if (depth >= ex.depth) { ex.depth = depth; ex.score = parseInt(sc[1]); ex.moves = moves; } }
-                    else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
+                    if (ex) { if (depth >= ex.depth) { ex.depth = depth;
+                            ex.score = parseInt(sc[1]);
+                            ex.moves = moves; } } else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
                 }
             }
         }
         analyze(fen, ms = 2500) {
             if (!this.worker) return Promise.resolve([]);
-            this.pvs = []; this.send('ucinewgame'); this.send(`position fen ${fen}`); this.send(`go movetime ${ms}`);
+            this.pvs = [];
+            this.send('ucinewgame');
+            this.send(`position fen ${fen}`);
+            this.send(`go movetime ${ms}`);
             return new Promise(res => {
                 this.pendingResolve = res;
-                setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs); this.pendingResolve = null; } }, ms + 500);
+                setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs);
+                        this.pendingResolve = null; } }, ms + 500);
             });
         }
         destroy() { if (this.worker) this.worker.terminate(); }
     }
 
     let stockfish = null;
+
     function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
 
     function uciToMove(uci, state) {
-        const fc = uci.charCodeAt(0) - 97, fr = 8 - parseInt(uci[1]);
-        const tc = uci.charCodeAt(2) - 97, tr = 8 - parseInt(uci[3]);
+        const fc = uci.charCodeAt(0) - 97,
+            fr = 8 - parseInt(uci[1]);
+        const tc = uci.charCodeAt(2) - 97,
+            tr = 8 - parseInt(uci[3]);
         const promoChar = uci[4];
         const promo = promoChar ? { q: 'queen', r: 'rook', b: 'bishop', n: 'knight' }[promoChar] : null;
         return getLegalMoves(state).find(m =>
@@ -1104,10 +1315,14 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         const fen = boardToFen(gameState);
         const useStockfish = stockfish && stockfish.worker && stockfish.isReady;
         const doMove = (move) => {
-            if (!move) { gameOver = true; document.getElementById('status').textContent = 'تعادل'; return; }
-            gameState = makeMove(gameState, move); recordMoveSafe(move);
+            if (!move) { gameOver = true;
+                document.getElementById('status').textContent = 'تعادل'; return; }
+            gameState = makeMove(gameState, move);
+            recordMoveSafe(move);
             lastComputerMoveHighlight = { fromRow: move.from[0], fromCol: move.from[1], toRow: move.to[0], toCol: move.to[1] };
-            updateGameHistory(gameState); render(); pushSnapshot();
+            updateGameHistory(gameState);
+            render();
+            pushSnapshot();
             if (!checkGameOver()) {
                 gameState.turn = playerColor;
                 document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') + ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
@@ -1123,8 +1338,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                         const best = e.data.split(' ')[1];
                         stockfish.worker.removeEventListener('message', listener);
                         stockfish.currentListener = null;
-                        if (best && best !== '(none)') { lastComputerDepth = 'SF'; doMove(uciToMove(best, gameState)); }
-                        else doMove(null);
+                        if (best && best !== '(none)') { lastComputerDepth = 'SF';
+                            doMove(uciToMove(best, gameState)); } else doMove(null);
                     }
                 };
                 stockfish.currentListener = listener;
@@ -1157,7 +1372,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                             if (move) {
                                 const ex = candidates.find(c => c.move.from[0] === move.from[0] && c.move.from[1] === move.from[1] && c.move.to[0] === move.to[0] && c.move.to[1] === move.to[1]);
                                 if (!ex) candidates.push({ move, score: parseInt(scoreCp[1]), depth });
-                                else if (depth > ex.depth) { ex.score = parseInt(scoreCp[1]); ex.depth = depth; }
+                                else if (depth > ex.depth) { ex.score = parseInt(scoreCp[1]);
+                                    ex.depth = depth; }
                             }
                         }
                     }
@@ -1189,12 +1405,18 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function drawArrows(moves) {
         const svg = document.getElementById('suggestion-arrows');
         svg.innerHTML = '';
-        const size = 66, offset = size / 2;
+        const size = 66,
+            offset = size / 2;
         const flipBoard = playerColor === 'black';
         for (const move of moves) {
-            let fr = move.from[0], fc = move.from[1];
-            let tr = move.to[0], tc = move.to[1];
-            if (flipBoard) { fr = 7 - fr; fc = 7 - fc; tr = 7 - tr; tc = 7 - tc; }
+            let fr = move.from[0],
+                fc = move.from[1];
+            let tr = move.to[0],
+                tc = move.to[1];
+            if (flipBoard) { fr = 7 - fr;
+                fc = 7 - fc;
+                tr = 7 - tr;
+                tc = 7 - tc; }
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
             line.setAttribute("x1", fc * size + offset);
             line.setAttribute("y1", fr * size + offset);
@@ -1212,33 +1434,51 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         document.querySelectorAll('.cell.player-move').forEach(c => c.classList.remove('player-move'));
         const cells = document.querySelectorAll('#board .cell');
         const flipBoard = playerColor === 'black';
-        let dfr = flipBoard ? 7 - fr : fr, dfc = flipBoard ? 7 - fc : fc;
-        let dtr = flipBoard ? 7 - tr : tr, dtc = flipBoard ? 7 - tc : tc;
-        const fromIdx = dfr * 8 + dfc, toIdx = dtr * 8 + dtc;
+        let dfr = flipBoard ? 7 - fr : fr,
+            dfc = flipBoard ? 7 - fc : fc;
+        let dtr = flipBoard ? 7 - tr : tr,
+            dtc = flipBoard ? 7 - tc : tc;
+        const fromIdx = dfr * 8 + dfc,
+            toIdx = dtr * 8 + dtc;
         if (cells[fromIdx]) cells[fromIdx].classList.add('player-move');
         if (cells[toIdx]) cells[toIdx].classList.add('player-move');
     }
 
     function getPieceShadowStyle(color, isPlayerWhite) {
         const hOffset = isPlayerWhite ? '2px' : '-2px';
-        const vOffset = '4px', blur = '10px', spread = '0px';
+        const vOffset = '4px',
+            blur = '10px',
+            spread = '0px';
         const shadowColor = 'rgba(0,0,0,0.5)';
         return `${hOffset} ${vOffset} ${blur} ${spread} ${shadowColor}`;
     }
 
     function render() {
-        const boardDiv = document.getElementById('board'); boardDiv.innerHTML = '';
+        const boardDiv = document.getElementById('board');
+        boardDiv.innerHTML = '';
         const flipBoard = playerColor === 'black';
         const files = 'abcdefgh';
-        const coordsTop = document.getElementById('coords-top'), coordsBottom = document.getElementById('coords-bottom');
-        const coordsLeft = document.getElementById('coords-left'), coordsRight = document.getElementById('coords-right');
-        coordsTop.innerHTML = ''; coordsBottom.innerHTML = ''; coordsLeft.innerHTML = ''; coordsRight.innerHTML = '';
+        const coordsTop = document.getElementById('coords-top'),
+            coordsBottom = document.getElementById('coords-bottom');
+        const coordsLeft = document.getElementById('coords-left'),
+            coordsRight = document.getElementById('coords-right');
+        coordsTop.innerHTML = '';
+        coordsBottom.innerHTML = '';
+        coordsLeft.innerHTML = '';
+        coordsRight.innerHTML = '';
         coordsTop.appendChild(document.createElement('div'));
-        for (let c = 0; c < 8; c++) { const d = document.createElement('div'); d.textContent = files[flipBoard ? 7 - c : c]; coordsTop.appendChild(d); }
+        for (let c = 0; c < 8; c++) { const d = document.createElement('div');
+            d.textContent = files[flipBoard ? 7 - c : c];
+            coordsTop.appendChild(d); }
         coordsTop.appendChild(document.createElement('div'));
-        for (let r = 0; r < 8; r++) { const d = document.createElement('div'); d.textContent = flipBoard ? r + 1 : 8 - r; coordsLeft.appendChild(d); coordsRight.appendChild(d.cloneNode()); }
+        for (let r = 0; r < 8; r++) { const d = document.createElement('div');
+            d.textContent = flipBoard ? r + 1 : 8 - r;
+            coordsLeft.appendChild(d);
+            coordsRight.appendChild(d.cloneNode()); }
         coordsBottom.appendChild(document.createElement('div'));
-        for (let c = 0; c < 8; c++) { const d = document.createElement('div'); d.textContent = files[flipBoard ? 7 - c : c]; coordsBottom.appendChild(d); }
+        for (let c = 0; c < 8; c++) { const d = document.createElement('div');
+            d.textContent = files[flipBoard ? 7 - c : c];
+            coordsBottom.appendChild(d); }
         coordsBottom.appendChild(document.createElement('div'));
 
         const isPlayerWhite = playerColor === 'white';
@@ -1269,13 +1509,17 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
 
     function cellClicked(r, c) {
         if (gameOver || gameState.turn !== playerColor) return;
-        if (selectedCell && selectedCell.row === r && selectedCell.col === c) { selectedCell = null; legalMovesMap = []; render(); return; }
+        if (selectedCell && selectedCell.row === r && selectedCell.col === c) { selectedCell = null;
+            legalMovesMap = [];
+            render(); return; }
         if (selectedCell) {
             const move = legalMovesMap.find(m => m.row === r && m.col === c);
             if (move) { executePlayerMove(move); return; }
             const piece = gameState.board[r][c];
             if (piece && piece.color === playerColor) setSelected(r, c);
-            else { selectedCell = null; legalMovesMap = []; render(); }
+            else { selectedCell = null;
+                legalMovesMap = [];
+                render(); }
         } else {
             const piece = gameState.board[r][c];
             if (piece && piece.color === playerColor) setSelected(r, c);
@@ -1285,7 +1529,11 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function setSelected(r, c) {
         selectedCell = { row: r, col: c };
         legalMovesMap = getLegalMoves(gameState).filter(m => m.from[0] === r && m.from[1] === c).map(m => ({
-            row: m.to[0], col: m.to[1], capture: !!(m.capture || m.enPassant), promotion: m.promotion, fullMove: m
+            row: m.to[0],
+            col: m.to[1],
+            capture: !!(m.capture || m.enPassant),
+            promotion: m.promotion,
+            fullMove: m
         }));
         render();
     }
@@ -1298,18 +1546,28 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         if (move.piece.type === 'pawn' && move.to[0] === promoRow) {
             requestPromotion().then(p => {
                 const nm = { ...move, promotion: p };
-                gameState = makeMove(gameState, nm); recordMoveSafe(nm); updateGameHistory(gameState);
-                selectedCell = null; legalMovesMap = []; render();
+                gameState = makeMove(gameState, nm);
+                recordMoveSafe(nm);
+                updateGameHistory(gameState);
+                selectedCell = null;
+                legalMovesMap = [];
+                render();
                 highlightPlayerMove(move.from[0], move.from[1], move.to[0], move.to[1]);
                 pushSnapshot();
-                if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+                if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white';
+                    setTimeout(computerMove, 60); }
             });
         } else {
-            gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
-            selectedCell = null; legalMovesMap = []; render();
+            gameState = makeMove(gameState, move);
+            recordMoveSafe(move);
+            updateGameHistory(gameState);
+            selectedCell = null;
+            legalMovesMap = [];
+            render();
             highlightPlayerMove(move.from[0], move.from[1], move.to[0], move.to[1]);
             pushSnapshot();
-            if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+            if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white';
+                setTimeout(computerMove, 60); }
         }
     }
 
@@ -1320,18 +1578,28 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         if (move.piece.type === 'pawn' && move.to[0] === promoRow) {
             requestPromotion().then(p => {
                 const nm = { ...move, promotion: p };
-                gameState = makeMove(gameState, nm); recordMoveSafe(nm); updateGameHistory(gameState);
-                selectedCell = null; legalMovesMap = []; render();
+                gameState = makeMove(gameState, nm);
+                recordMoveSafe(nm);
+                updateGameHistory(gameState);
+                selectedCell = null;
+                legalMovesMap = [];
+                render();
                 highlightPlayerMove(move.from[0], move.from[1], move.to[0], move.to[1]);
                 pushSnapshot();
-                if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+                if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white';
+                    setTimeout(computerMove, 60); }
             });
         } else {
-            gameState = makeMove(gameState, move); recordMoveSafe(move); updateGameHistory(gameState);
-            selectedCell = null; legalMovesMap = []; render();
+            gameState = makeMove(gameState, move);
+            recordMoveSafe(move);
+            updateGameHistory(gameState);
+            selectedCell = null;
+            legalMovesMap = [];
+            render();
             highlightPlayerMove(move.from[0], move.from[1], move.to[0], move.to[1]);
             pushSnapshot();
-            if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white'; setTimeout(computerMove, 60); }
+            if (!checkGameOver()) { gameState.turn = playerColor === 'white' ? 'black' : 'white';
+                setTimeout(computerMove, 60); }
         }
     }
 
@@ -1356,9 +1624,12 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             document.getElementById('status').textContent = isKingInCheck(gameState, gameState.turn) ? (gameState.turn === playerColor ? 'كش ملك! خسرت!' : 'كش ملك! فزت!') : 'تعادل (ردب)!';
             return true;
         }
-        if (gameState.halfMoveClock >= 100) { gameOver = true; document.getElementById('status').textContent = 'تعادل (قاعدة 50 نقلة)'; return true; }
-        if (isRepetitionDraw(gameState)) { gameOver = true; document.getElementById('status').textContent = 'تعادل (تكرار)'; return true; }
-        if (isInsufficientMaterial(gameState.board)) { gameOver = true; document.getElementById('status').textContent = 'تعادل (نقص مادة)'; return true; }
+        if (gameState.halfMoveClock >= 100) { gameOver = true;
+            document.getElementById('status').textContent = 'تعادل (قاعدة 50 نقلة)'; return true; }
+        if (isRepetitionDraw(gameState)) { gameOver = true;
+            document.getElementById('status').textContent = 'تعادل (تكرار)'; return true; }
+        if (isInsufficientMaterial(gameState.board)) { gameOver = true;
+            document.getElementById('status').textContent = 'تعادل (نقص مادة)'; return true; }
         return false;
     }
 
@@ -1385,15 +1656,23 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function startGame(asWhite) {
         playerColor = asWhite ? 'white' : 'black';
         gameState = fenToBoard(START_FEN);
-        selectedCell = null; legalMovesMap = []; gameOver = false;
-        gameHistory = []; positionCount.clear(); moveHistoryStr = [];
+        selectedCell = null;
+        legalMovesMap = [];
+        gameOver = false;
+        gameHistory = [];
+        positionCount.clear();
+        moveHistoryStr = [];
         updateGameHistory(gameState);
-        lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
+        lastComputerMoveHighlight = null;
+        historyStack = [];
+        redoStack = [];
+        lastComputerDepth = 0;
         pushSnapshot();
         clearAllEffects();
         transTable = new Map();
         document.getElementById('promo-overlay').style.display = 'none';
-        updateOpeningDisplaySafe(); render();
+        updateOpeningDisplaySafe();
+        render();
         if (asWhite) {
             gameState.turn = 'white';
             document.getElementById('status').innerHTML = 'دورك (أبيض) <span class="opening-name"></span>';
@@ -1408,17 +1687,27 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     document.getElementById('startBlack').addEventListener('click', () => startGame(false));
     document.getElementById('bigStart').addEventListener('click', () => startGame(true));
     document.getElementById('reset').addEventListener('click', () => {
-        playerColor = 'white'; gameState = fenToBoard(START_FEN);
-        selectedCell = null; legalMovesMap = []; gameOver = false;
-        gameHistory = []; positionCount.clear(); moveHistoryStr = [];
+        playerColor = 'white';
+        gameState = fenToBoard(START_FEN);
+        selectedCell = null;
+        legalMovesMap = [];
+        gameOver = false;
+        gameHistory = [];
+        positionCount.clear();
+        moveHistoryStr = [];
         updateGameHistory(gameState);
-        lastComputerMoveHighlight = null; historyStack = []; redoStack = []; lastComputerDepth = 0;
-        pushSnapshot(); clearAllEffects();
+        lastComputerMoveHighlight = null;
+        historyStack = [];
+        redoStack = [];
+        lastComputerDepth = 0;
+        pushSnapshot();
+        clearAllEffects();
         transTable = new Map();
         document.getElementById('status').innerHTML = 'اختر وضع اللعب <span class="opening-name"></span>';
         document.getElementById('suggestions-list').innerHTML = '<div style="color:#aaa;text-align:center;">اضغط 💡 لتحليل المحرك</div>';
         document.getElementById('computer-plan').style.display = 'none';
-        updateOpeningDisplaySafe(); render();
+        updateOpeningDisplaySafe();
+        render();
     });
     document.getElementById('undoBtn').addEventListener('click', undoMove);
     document.getElementById('redoBtn').addEventListener('click', redoMove);
@@ -1443,7 +1732,8 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         try {
             if (stockfish?.worker && !stockfish.isReady) {
                 let w = 0;
-                while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100)); w += 100; }
+                while (!stockfish?.isReady && w < 10000) { await new Promise(r => setTimeout(r, 100));
+                    w += 100; }
                 if (!stockfish?.isReady) throw new Error('المحرك غير جاهز');
             }
             if (stockfish?.worker) {
@@ -1451,14 +1741,18 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                 const res = await stockfish.analyze(fen, 2500);
                 if (!res.length) throw new Error('لا توجد نتائج');
                 res.sort((a, b) => b.score - a.score);
-                const uniq = []; const seen = new Set();
-                for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove); uniq.push(r); } if (uniq.length >= 3) break; }
+                const uniq = [];
+                const seen = new Set();
+                for (const r of res) { if (!seen.has(r.bestMove)) { seen.add(r.bestMove);
+                        uniq.push(r); } if (uniq.length >= 3) break; }
                 const movesToDraw = [];
                 let html = '';
                 for (const r of uniq) {
                     const uci = r.bestMove;
-                    const fc = uci.charCodeAt(0) - 97, fr = 8 - parseInt(uci[1]);
-                    const tc = uci.charCodeAt(2) - 97, tr = 8 - parseInt(uci[3]);
+                    const fc = uci.charCodeAt(0) - 97,
+                        fr = 8 - parseInt(uci[1]);
+                    const tc = uci.charCodeAt(2) - 97,
+                        tr = 8 - parseInt(uci[3]);
                     const promoChar = uci[4];
                     const promo = promoChar ? { q: 'queen', r: 'rook', b: 'bishop', n: 'knight' }[promoChar] : null;
                     const move = getLegalMoves(gameState).find(m =>
@@ -1471,9 +1765,9 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                     const evalPawn = (r.score / 100).toFixed(2);
                     const cls = evalPawn >= 0 ? 'positive' : 'negative';
                     html += `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
-                        <span class="suggestion-move">${notation}</span>
-                        <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                    </div>`;
+                                <span class="suggestion-move">${notation}</span>
+                                <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
+                            </div>`;
                 }
                 listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
                 drawArrows(movesToDraw);
@@ -1481,7 +1775,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
             } else {
                 displayLocalSuggestions();
             }
-        } catch(e) {
+        } catch (e) {
             console.warn(e);
             displayLocalSuggestions();
         } finally {
@@ -1498,6 +1792,7 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         let index = 0;
         const moves = getLegalMoves(gameState).slice(0, 10);
         const results = [];
+
         function processNext() {
             if (index >= moves.length) {
                 results.sort((a, b) => b.score - a.score);
@@ -1506,15 +1801,17 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
                 let html = '';
                 for (const s of top) {
                     const m = s.move;
-                    const fromCol = 'abcdefgh'[m.from[1]], fromRow = 8 - m.from[0];
-                    const toCol = 'abcdefgh'[m.to[1]], toRow = 8 - m.to[0];
+                    const fromCol = 'abcdefgh'[m.from[1]],
+                        fromRow = 8 - m.from[0];
+                    const toCol = 'abcdefgh'[m.to[1]],
+                        toRow = 8 - m.to[0];
                     const notation = fromCol + fromRow + toCol + toRow + (m.promotion ? '=' + m.promotion[0].toUpperCase() : '');
                     const evalPawn = (s.score / 100).toFixed(2);
                     const cls = evalPawn >= 0 ? 'positive' : 'negative';
                     html += `<div class="suggestion-entry" data-fr="${m.from[0]}" data-fc="${m.from[1]}" data-tr="${m.to[0]}" data-tc="${m.to[1]}" data-promo="${m.promotion||''}">
-                        <span class="suggestion-move">${notation}</span>
-                        <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                    </div>`;
+                                <span class="suggestion-move">${notation}</span>
+                                <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
+                            </div>`;
                 }
                 listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
                 drawArrows(movesToDraw);
@@ -1534,7 +1831,10 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
     function attachSuggestionEvents() {
         document.querySelectorAll('.suggestion-entry').forEach(el => {
             el.addEventListener('click', function() {
-                const fr = +this.dataset.fr, fc = +this.dataset.fc, tr = +this.dataset.tr, tc = +this.dataset.tc;
+                const fr = +this.dataset.fr,
+                    fc = +this.dataset.fc,
+                    tr = +this.dataset.tr,
+                    tc = +this.dataset.tc;
                 const promo = this.dataset.promo;
                 const move = getLegalMoves(gameState).find(m =>
                     m.from[0] === fr && m.from[1] === fc && m.to[0] === tr && m.to[1] === tc &&
@@ -1551,6 +1851,9 @@ const stockfishUrl = URL.createObjectURL(stockfishBlob);
         });
     }
 
-    historyStack = []; redoStack = []; pushSnapshot(); render();
+    historyStack = [];
+    redoStack = [];
+    pushSnapshot();
+    render();
     initStockfish();
 })();
