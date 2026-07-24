@@ -1772,25 +1772,25 @@
     // ================== Stockfish 18 Lite Engine Integration ==================
     class StockfishEngine {
         constructor() {
-            try {
-                this.worker = new Worker('stockfish-18-lite-single.js');
-            } catch (e) {
-                document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل stockfish-18-lite-single.js';
-                return;
-            }
-            this.worker.onmessage = (e) => this.handleMessage(e.data);
-            this.worker.onerror = () => document.getElementById('engine-status').textContent =
-                '❌ خطأ في محرك Stockfish.';
-            this.isReady = false;
-            this.pendingResolve = null;
-            this.pvs = [];
-            this.currentListener = null;
-            this.send('uci');
-            this.send('setoption name Threads value 1');
-            this.send('setoption name Hash value 32');
-            this.send('setoption name MultiPV value 1');
-            this.send('isready');
-        }
+    try {
+        this.worker = new Worker('stockfish-18-single.js');
+    } catch (e) {
+        document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل stockfish-18-single.js';
+        return;
+    }
+    this.worker.onmessage = (e) => this.handleMessage(e.data);
+    this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
+    this.isReady = false;
+    this.pendingResolve = null;
+    this.pvs = [];
+    this.currentListener = null;
+    this.send('uci');
+    this.send('setoption name Threads value 1');
+    this.send('setoption name Hash value 128');    // زيادة الذاكرة
+    this.send('setoption name MultiPV value 1');
+    this.send('setoption name Use NNUE value true'); // تفعيل الشبكة العصبية
+    this.send('isready');
+}
         send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
         handleMessage(line) {
             if (line === 'readyok') {
