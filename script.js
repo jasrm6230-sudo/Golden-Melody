@@ -2018,7 +2018,7 @@
                 throw new Error('محرك Stockfish غير محمل. تأكد من وجود الملفات في نفس المجلد.');
             }
             let timeout = 0;
-            while (!stockfish.isReady && timeout < 10000) {
+            while (!stockfish.isReady && timeout < 20000) {
                 await new Promise(r => setTimeout(r, 100));
                 timeout += 100;
             }
