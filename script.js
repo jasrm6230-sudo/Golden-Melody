@@ -1773,9 +1773,9 @@
     class StockfishEngine {
         constructor() {
     try {
-        this.worker = new Worker('stockfish-18-single.js');
+        this.worker = new Worker('https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.js');
     } catch (e) {
-        document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل stockfish-18-single.js';
+        document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish من CDN';
         return;
     }
     this.worker.onmessage = (e) => this.handleMessage(e.data);
