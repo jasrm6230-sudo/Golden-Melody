@@ -1770,26 +1770,32 @@
     });
 
     // ================== Stockfish 18 Lite Engine Integration ==================
-    class StockfishEngine {
-        constructor() {
+    class StockfishEngine {constructor() {
+    // توجيه المحرك لتحميل ملف wasm من نفس الإصدار على CDN
+    self.locateFile = (file) => `https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/${file}`;
+
     try {
+        // تحميل محرك Stockfish الكامل من CDN
         this.worker = new Worker('https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.js');
     } catch (e) {
         document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish من CDN';
         return;
     }
+
     this.worker.onmessage = (e) => this.handleMessage(e.data);
     this.worker.onerror = () => document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
     this.isReady = false;
     this.pendingResolve = null;
     this.pvs = [];
     this.currentListener = null;
+
+    // إعدادات المحرك (UCI)
     this.send('uci');
-    this.send('setoption name Threads value 1');
-    this.send('setoption name Hash value 128');    // زيادة الذاكرة
-    this.send('setoption name MultiPV value 1');
-    this.send('setoption name Use NNUE value true'); // تفعيل الشبكة العصبية
-    this.send('isready');
+    this.send('setoption name Threads value 1');        // خيط واحد (لأن Worker يعمل بخيط واحد)
+    this.send('setoption name Hash value 128');          // ذاكرة التخزين المؤقت 128 ميغابايت
+    this.send('setoption name MultiPV value 1');         // أفضل نقلة واحدة فقط (للاستخدام العادي)
+    this.send('setoption name Use NNUE value true');     // تفعيل الشبكة العصبية (قد يكون افتراضياً)
+    this.send('isready');                                // طلب تأكيد الجاهزية
 }
         send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
         handleMessage(line) {
