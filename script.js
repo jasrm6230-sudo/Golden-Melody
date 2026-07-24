@@ -1772,68 +1772,101 @@
     // ================== Stockfish 18 Lite Engine Integration ==================
     class StockfishEngine {
     constructor() {
-        try {
-            // تحميل الـ Worker من الملف المحلي
-            this.worker = new Worker('stockfish-worker.js');
-        } catch (e) {
-            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish.';
-            return;
-        }
-
-        this.worker.onmessage = (e) => this.handleMessage(e.data);
-        this.worker.onerror = () => {
-            document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
-        };
-
         this.isReady = false;
         this.pendingResolve = null;
         this.pvs = [];
         this.currentListener = null;
+        this.worker = null;
 
-        this.send('uci');
-        this.send('setoption name Threads value 1');
-        this.send('setoption name Hash value 128');
-        this.send('setoption name MultiPV value 1');
-        this.send('isready');
+        const stockfishJsUrl = 'https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.js';
+        
+        fetch(stockfishJsUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('فشل تحميل stockfish.js');
+                return response.text();
+            })
+            .then(scriptText => {
+                // إضافة دالة locateFile لتوجيه تحميل wasm
+                const fullScript = `
+                    self.locateFile = (file) => 'https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/' + file;
+                    ${scriptText}
+                `;
+                const blob = new Blob([fullScript], { type: 'application/javascript' });
+                this.worker = new Worker(URL.createObjectURL(blob));
+                
+                this.worker.onmessage = (e) => this.handleMessage(e.data);
+                this.worker.onerror = () => {
+                    document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
+                };
+
+                this.send('uci');
+                this.send('setoption name Threads value 1');
+                this.send('setoption name Hash value 128');
+                this.send('setoption name MultiPV value 1');
+                this.send('isready');
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish.';
+            });
     }
-        send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
-        handleMessage(line) {
-            if (line === 'readyok') {
-                this.isReady = true;
-                document.getElementById('engine-status').textContent = '✅ Stockfish 18 Lite جاهز (تحليل ممتاز)';
-            } else if (line.startsWith('bestmove')) {
-                if (this.pendingResolve) { this.pendingResolve(this.pvs);
-                    this.pendingResolve = null;
-                    this.pvs = []; }
-            } else if (line.startsWith('info') && line.includes(' pv ')) {
-                const sc = line.match(/score cp (-?\d+)/);
-                const pv = line.match(/ pv (.+)/);
-                if (sc && pv) {
-                    const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
-                    const moves = pv[1].trim().split(' ');
-                    const best = moves[0];
-                    const ex = this.pvs.find(p => p.bestMove === best);
-                    if (ex) { if (depth >= ex.depth) { ex.depth = depth;
-                            ex.score = parseInt(sc[1]);
-                            ex.moves = moves; } } else this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best,
-                        moves });
+    
+    send(cmd) {
+        if (this.worker) this.worker.postMessage(cmd);
+    }
+    
+    handleMessage(line) {
+        if (line === 'readyok') {
+            this.isReady = true;
+            document.getElementById('engine-status').textContent = '✅ Stockfish NNUE جاهز (تحليل ممتاز)';
+        } else if (line.startsWith('bestmove')) {
+            if (this.pendingResolve) {
+                this.pendingResolve(this.pvs);
+                this.pendingResolve = null;
+                this.pvs = [];
+            }
+        } else if (line.startsWith('info') && line.includes(' pv ')) {
+            const sc = line.match(/score cp (-?\d+)/);
+            const pv = line.match(/ pv (.+)/);
+            if (sc && pv) {
+                const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
+                const moves = pv[1].trim().split(' ');
+                const best = moves[0];
+                const ex = this.pvs.find(p => p.bestMove === best);
+                if (ex) {
+                    if (depth >= ex.depth) {
+                        ex.depth = depth;
+                        ex.score = parseInt(sc[1]);
+                        ex.moves = moves;
+                    }
+                } else {
+                    this.pvs.push({ depth, score: parseInt(sc[1]), bestMove: best, moves });
                 }
             }
         }
-        analyze(fen, ms = 2500) {
-            if (!this.worker) return Promise.resolve([]);
-            this.pvs = [];
-            this.send('ucinewgame');
-            this.send(`position fen ${fen}`);
-            this.send(`go movetime ${ms}`);
-            return new Promise(res => {
-                this.pendingResolve = res;
-                setTimeout(() => { if (this.pendingResolve) { this.pendingResolve(this.pvs);
-                        this.pendingResolve = null; } }, ms + 500);
-            });
-        }
-        destroy() { if (this.worker) this.worker.terminate(); }
     }
+    
+    analyze(fen, ms = 2500) {
+        if (!this.worker) return Promise.resolve([]);
+        this.pvs = [];
+        this.send('ucinewgame');
+        this.send(`position fen ${fen}`);
+        this.send(`go movetime ${ms}`);
+        return new Promise(res => {
+            this.pendingResolve = res;
+            setTimeout(() => {
+                if (this.pendingResolve) {
+                    this.pendingResolve(this.pvs);
+                    this.pendingResolve = null;
+                }
+            }, ms + 500);
+        });
+    }
+    
+    destroy() {
+        if (this.worker) this.worker.terminate();
+    }
+}
 
     let stockfish = null;
 
