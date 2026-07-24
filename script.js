@@ -1773,30 +1773,27 @@
     class StockfishEngine {
     constructor() {
         try {
-            // 1. تحميل Worker من الملف المحلي الذي يقوم بجلب المحرك من Lichess
+            // تحميل الـ Worker من الملف المحلي
             this.worker = new Worker('stockfish-worker.js');
         } catch (e) {
-            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish (تأكد من وجود stockfish-worker.js)';
+            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish.';
             return;
         }
 
-        // 2. إعداد استقبال الرسائل من المحرك
         this.worker.onmessage = (e) => this.handleMessage(e.data);
         this.worker.onerror = () => {
             document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
         };
 
-        // 3. متغيرات الحالة
         this.isReady = false;
         this.pendingResolve = null;
         this.pvs = [];
         this.currentListener = null;
 
-        // 4. إرسال أوامر التهيئة UCI
         this.send('uci');
-        this.send('setoption name Threads value 1');       // خيط واحد (مناسب للمتصفح)
-        this.send('setoption name Hash value 128');         // ذاكرة 128 ميجا
-        this.send('setoption name MultiPV value 1');        // سنطلب عدة خطوط لاحقاً عند الاقتراحات
+        this.send('setoption name Threads value 1');
+        this.send('setoption name Hash value 128');
+        this.send('setoption name MultiPV value 1');
         this.send('isready');
     }
         send(cmd) { if (this.worker) this.worker.postMessage(cmd); }
