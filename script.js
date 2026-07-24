@@ -1776,7 +1776,7 @@
 
     try {
         // تحميل محرك Stockfish الكامل من CDN
-        this.worker = new Worker('https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.js');
+        this.worker = new Worker('stockfish-worker.js');
     } catch (e) {
         document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish من CDN';
         return;
