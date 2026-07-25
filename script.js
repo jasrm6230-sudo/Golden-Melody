@@ -1821,8 +1821,10 @@
         this.style.color = trapModeActive ? '#000' : '#ffaa00';
     });
 
-    // ================== Stockfish 18 Lite Engine Integration ==================
-  class StockfishEngine {
+ 
+// ================== Stockfish 18 Lite Engine Integration ==================
+
+class StockfishEngine {
     constructor() {
         try {
             this.worker = new Worker('lozza.js');
@@ -1840,7 +1842,6 @@
         this.pvs = [];
         this.currentListener = null;
 
-        // Lozza يدعم UCI بالكامل
         this.send('uci');
         this.send('setoption name Hash value 64');
         this.send('isready');
