@@ -1948,98 +1948,39 @@ class StockfishEngine {
     }
 
     function computerMove() {
-        if (gameOver) return;
-        clearAllEffects();
-        const fen = boardToFen(gameState);
-        const useStockfish = stockfish && stockfish.worker && stockfish.isReady;
-        const doMove = (move) => {
-            if (!move) { gameOver = true;
-                document.getElementById('status').textContent = 'تعادل'; return; }
-            gameState = makeMove(gameState, move);
-            recordMoveSafe(move);
-            lastComputerMoveHighlight = { fromRow: move.from[0], fromCol: move.from[1], toRow: move.to[0], toCol: move
-                    .to[1] };
-            updateGameHistory(gameState);
-            render();
-            pushSnapshot();
-            if (!checkGameOver()) {
-                gameState.turn = playerColor;
-                document.getElementById('status').innerHTML = (playerColor === 'white' ? 'دورك (أبيض)' :
-                        'دورك (أسود)') +
-                    ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
-                updateOpeningDisplaySafe();
-            }
-        };
+    if (gameOver) return;
+    clearAllEffects();
 
-        if (!trapModeActive) {
-            if (useStockfish) {
-                if (stockfish.currentListener) stockfish.worker.removeEventListener('message', stockfish
-            .currentListener);
-                const listener = (e) => {
-                    if (e.data.startsWith('bestmove')) {
-                        const best = e.data.split(' ')[1];
-                        stockfish.worker.removeEventListener('message', listener);
-                        stockfish.currentListener = null;
-                        if (best && best !== '(none)') { lastComputerDepth = 'SF';
-                            doMove(uciToMove(best, gameState)); } else doMove(null);
-                    }
-                };
-                stockfish.currentListener = listener;
-                stockfish.worker.addEventListener('message', listener);
-                stockfish.send('ucinewgame');
-                stockfish.send(`position fen ${fen}`);
-                stockfish.send(`go movetime ${getDynamicStockfishTime(gameState)}`);
-            } else {
-                const move = getBestMove(gameState);
-                doMove(move);
-            }
-        } else {
-            const timeLimit = SEARCH_TIME_PER_MOVE * 1.5;
-            if (useStockfish) {
-                if (stockfish.currentListener) stockfish.worker.removeEventListener('message', stockfish
-            .currentListener);
-                const candidates = [];
-                const listener = (e) => {
-                    const line = e.data;
-                    if (line.startsWith('bestmove')) {
-                        stockfish.worker.removeEventListener('message', listener);
-                        stockfish.currentListener = null;
-                        processCandidates(candidates, doMove);
-                    } else if (line.startsWith('info') && line.includes(' pv ')) {
-                        const depth = parseInt(line.match(/depth (\d+)/)?.[1] || '0');
-                        const scoreCp = line.match(/score cp (-?\d+)/);
-                        const pvMatch = line.match(/ pv (.+)/);
-                        if (scoreCp && pvMatch) {
-                            const uci = pvMatch[1].trim().split(' ')[0];
-                            const move = uciToMove(uci, gameState);
-                            if (move) {
-                                const ex = candidates.find(c => c.move.from[0] === move.from[0] && c.move
-                                    .from[1] === move.from[1] && c.move.to[0] === move.to[0] && c.move
-                                    .to[1] === move.to[1]);
-                                if (!ex) candidates.push({ move, score: parseInt(scoreCp[1]), depth });
-                                else if (depth > ex.depth) { ex.score = parseInt(scoreCp[1]);
-                                    ex.depth = depth; }
-                            }
-                        }
-                    }
-                };
-                stockfish.currentListener = listener;
-                stockfish.worker.addEventListener('message', listener);
-                stockfish.send('ucinewgame');
-                stockfish.send(`position fen ${fen}`);
-                stockfish.send('setoption name MultiPV value 15');
-                stockfish.send(`go movetime ${timeLimit}`);
-            } else {
-                const moves = getLegalMoves(gameState);
-                const scored = moves.map(m => {
-                    const next = makeMove(gameState, m);
-                    const res = iterativeDeepening(next, 300, 8);
-                    return { move: m, score: -res.score };
-                }).sort((a, b) => b.score - a.score);
-                processCandidates(scored.slice(0, 12), doMove);
-            }
+    const doMove = (move) => {
+        if (!move) {
+            gameOver = true;
+            document.getElementById('status').textContent = 'تعادل';
+            return;
         }
-    }
+        gameState = makeMove(gameState, move);
+        recordMoveSafe(move);
+        lastComputerMoveHighlight = {
+            fromRow: move.from[0],
+            fromCol: move.from[1],
+            toRow: move.to[0],
+            toCol: move.to[1]
+        };
+        updateGameHistory(gameState);
+        render();
+        pushSnapshot();
+        if (!checkGameOver()) {
+            gameState.turn = playerColor;
+            document.getElementById('status').innerHTML =
+                (playerColor === 'white' ? 'دورك (أبيض)' : 'دورك (أسود)') +
+                ` (عمق الحاسوب: ${lastComputerDepth}) <span class="opening-name"></span>`;
+            updateOpeningDisplaySafe();
+        }
+    };
+
+    // نستخدم المحرك المدمج (Lozza) دائماً
+    const move = getBestMove(gameState);
+    doMove(move);
+}
 
     // ================== اقتراحات حصراً من Stockfish ==================
     async function displaySuggestions() {
