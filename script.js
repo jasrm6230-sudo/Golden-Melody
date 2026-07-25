@@ -1822,29 +1822,27 @@
     });
 
     // ================== Stockfish 18 Lite Engine Integration ==================
-    class StockfishEngine {
+  class StockfishEngine {
     constructor() {
         try {
-            this.worker = new Worker('stockfish-18-lite-single.js');
+            this.worker = new Worker('lozza.js');
         } catch (e) {
-            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish المحلي. تأكد من وجود الملفات.';
+            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Lozza. تأكد من وجود lozza.js';
             return;
         }
         this.worker.onmessage = (e) => this.handleMessage(e.data);
         this.worker.onerror = (e) => {
-            console.error('Stockfish worker error:', e);
-            document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
+            console.error('Lozza worker error:', e);
+            document.getElementById('engine-status').textContent = '❌ خطأ في محرك Lozza.';
         };
         this.isReady = false;
         this.pendingResolve = null;
         this.pvs = [];
         this.currentListener = null;
 
-        // إعدادات المحرك
+        // Lozza يدعم UCI بالكامل
         this.send('uci');
-        this.send('setoption name Threads value 1');
-        this.send('setoption name Hash value 64'); // من الأفضل 64 لتفادي مشاكل الذاكرة
-        this.send('setoption name MultiPV value 1');
+        this.send('setoption name Hash value 64');
         this.send('isready');
     }
 
@@ -1855,7 +1853,7 @@
     handleMessage(line) {
         if (line === 'readyok') {
             this.isReady = true;
-            document.getElementById('engine-status').textContent = '✅ Stockfish Lite جاهز';
+            document.getElementById('engine-status').textContent = '✅ Lozza جاهز (قوي جداً)';
         } else if (line.startsWith('bestmove')) {
             if (this.pendingResolve) {
                 this.pendingResolve(this.pvs);
@@ -1899,6 +1897,11 @@
             }, ms + 500);
         });
     }
+
+    destroy() {
+        if (this.worker) this.worker.terminate();
+    }
+}
 
     destroy() {
         if (this.worker) this.worker.terminate();
