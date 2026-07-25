@@ -1984,76 +1984,63 @@ class StockfishEngine {
 
     // ================== اقتراحات حصراً من Stockfish ==================
     async function displaySuggestions() {
-        if (gameOver || gameState.turn !== playerColor) return;
-        if (suggestionLoading) return;
-        const listDiv = document.getElementById('suggestions-list');
-        document.getElementById('computer-plan').style.display = 'none';
-        listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل بواسطة Stockfish...</div>';
-        suggestionLoading = true;
-        document.getElementById('suggestion-btn').disabled = true;
-        clearAllEffects();
+    if (gameOver || gameState.turn !== playerColor) return;
+    if (suggestionLoading) return;
+    const listDiv = document.getElementById('suggestions-list');
+    document.getElementById('computer-plan').style.display = 'none';
+    listDiv.innerHTML = '<div style="color:#ffcc00;text-align:center;">⏳ جاري التحليل...</div>';
+    suggestionLoading = true;
+    document.getElementById('suggestion-btn').disabled = true;
+    clearAllEffects();
 
-        try {
-            if (!stockfish || !stockfish.worker) {
-                throw new Error('محرك Stockfish غير محمل. تأكد من وجود الملفات في نفس المجلد.');
-            }
-            let timeout = 0;
-            while (!stockfish.isReady && timeout < 20000) {
-                await new Promise(r => setTimeout(r, 100));
-                timeout += 100;
-            }
-            if (!stockfish.isReady) throw new Error('المحرك غير جاهز بعد. حاول مرة أخرى.');
-
-            const fen = boardToFen(gameState);
-            const res = await stockfish.analyze(fen, 2500);
-            if (!res.length) throw new Error('لم يُرجع المحرك أي اقتراحات.');
-
-            res.sort((a, b) => b.score - a.score);
-            const uniq = [];
-            const seen = new Set();
-            for (const r of res) {
-                if (!seen.has(r.bestMove)) { seen.add(r.bestMove);
-                    uniq.push(r); }
-                if (uniq.length >= 3) break;
-            }
-
-            const movesToDraw = [];
-            let html = '';
-            for (const r of uniq) {
-                const uci = r.bestMove;
-                const fc = uci.charCodeAt(0) - 97,
-                    fr = 8 - parseInt(uci[1]);
-                const tc = uci.charCodeAt(2) - 97,
-                    tr = 8 - parseInt(uci[3]);
-                const promoChar = uci[4];
-                const promo = promoChar ? { q: 'queen', r: 'rook', b: 'bishop', n: 'knight' } [promoChar] : null;
-                const move = getLegalMoves(gameState).find(m =>
-                    m.from[0] === fr && m.from[1] === fc && m.to[0] === tr && m.to[1] === tc &&
-                    ((!promo && !m.promotion) || (promo && m.promotion === promo))
-                );
-                if (!move) continue;
-                movesToDraw.push(move);
-                const notation = moveToShortAlgebraic(move, gameState);
-                const evalPawn = (r.score / 100).toFixed(2);
-                const cls = evalPawn >= 0 ? 'positive' : 'negative';
-                html +=
-                    `<div class="suggestion-entry" data-fr="${fr}" data-fc="${fc}" data-tr="${tr}" data-tc="${tc}" data-promo="${move.promotion||''}">
-                        <span class="suggestion-move">${notation}</span>
-                        <span class="suggestion-eval ${cls}">${evalPawn>0?'+':''}${evalPawn}</span>
-                    </div>`;
-            }
-            listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
-            drawArrows(movesToDraw);
-            attachSuggestionEvents();
-        } catch (e) {
-            console.error(e);
-            listDiv.innerHTML = `<div style="color:#ff6666;">❌ ${e.message}</div>`;
-            document.getElementById('engine-status').textContent = '⚠️ تعذر الحصول على اقتراحات.';
-        } finally {
-            suggestionLoading = false;
-            document.getElementById('suggestion-btn').disabled = false;
+    try {
+        // الحصول على جميع النقلات القانونية
+        const moves = getLegalMoves(gameState);
+        if (moves.length === 0) {
+            listDiv.innerHTML = '<div style="color:#aaa;">لا توجد نقلات قانونية.</div>';
+            return;
         }
+
+        // تقييم كل نقلة باستخدام البحث المحدود (عمق 4)
+        const scored = moves.map(m => {
+            const next = makeMove(gameState, m);
+            const res = iterativeDeepening(next, 300, 4); // وقت 300ms، عمق 4
+            return { move: m, score: -res.score };
+        });
+
+        // ترتيب تنازلي حسب التقييم
+        scored.sort((a, b) => b.score - a.score);
+        const top = scored.slice(0, 3); // أفضل 3 نقلات
+
+        const movesToDraw = [];
+        let html = '';
+        for (const item of top) {
+            const move = item.move;
+            movesToDraw.push(move);
+            const notation = moveToShortAlgebraic(move, gameState);
+            const evalPawn = (item.score / 100).toFixed(2);
+            const cls = item.score >= 0 ? 'positive' : 'negative';
+            html += `
+                <div class="suggestion-entry" 
+                     data-fr="${move.from[0]}" data-fc="${move.from[1]}"
+                     data-tr="${move.to[0]}" data-tc="${move.to[1]}"
+                     data-promo="${move.promotion || ''}">
+                    <span class="suggestion-move">${notation}</span>
+                    <span class="suggestion-eval ${cls}">${evalPawn > 0 ? '+' : ''}${evalPawn}</span>
+                </div>`;
+        }
+
+        listDiv.innerHTML = html || '<div style="color:#aaa;">لا توجد اقتراحات.</div>';
+        drawArrows(movesToDraw);
+        attachSuggestionEvents();
+    } catch (e) {
+        console.error(e);
+        listDiv.innerHTML = `<div style="color:#ff6666;">❌ خطأ: ${e.message}</div>`;
+    } finally {
+        suggestionLoading = false;
+        document.getElementById('suggestion-btn').disabled = false;
     }
+}
 
     function attachSuggestionEvents() {
         document.querySelectorAll('.suggestion-entry').forEach(el => {
