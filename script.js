@@ -1903,11 +1903,6 @@
     }
 }
 
-    destroy() {
-        if (this.worker) this.worker.terminate();
-    }
-}
-
     let stockfish = null;
 
     function initStockfish() { if (!stockfish) stockfish = new StockfishEngine(); }
