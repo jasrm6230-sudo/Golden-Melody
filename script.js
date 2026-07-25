@@ -1823,25 +1823,27 @@
 
  
 // ================== Stockfish 18 Lite Engine Integration ==================
-
 class StockfishEngine {
     constructor() {
         try {
             this.worker = new Worker('lozza.js');
         } catch (e) {
             document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Lozza. تأكد من وجود lozza.js';
+            this.worker = null;
             return;
         }
         this.worker.onmessage = (e) => this.handleMessage(e.data);
         this.worker.onerror = (e) => {
             console.error('Lozza worker error:', e);
             document.getElementById('engine-status').textContent = '❌ خطأ في محرك Lozza.';
+            this.worker = null;
         };
         this.isReady = false;
         this.pendingResolve = null;
         this.pvs = [];
         this.currentListener = null;
 
+        // تهيئة المحرك
         this.send('uci');
         this.send('setoption name Hash value 64');
         this.send('isready');
@@ -1852,6 +1854,7 @@ class StockfishEngine {
     }
 
     handleMessage(line) {
+        console.log('Lozza:', line); // لتتبع الردود
         if (line === 'readyok') {
             this.isReady = true;
             document.getElementById('engine-status').textContent = '✅ Lozza جاهز (قوي جداً)';
@@ -1883,7 +1886,7 @@ class StockfishEngine {
     }
 
     analyze(fen, ms = 2500) {
-        if (!this.worker) return Promise.resolve([]);
+        if (!this.worker || !this.isReady) return Promise.resolve([]);
         this.pvs = [];
         this.send('ucinewgame');
         this.send(`position fen ${fen}`);
