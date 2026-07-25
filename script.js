@@ -1402,18 +1402,70 @@
         2; }
 
     function getDynamicStockfishTime(state) {
-        const legalMoves = getLegalMoves(state).length;
-        let pieceCount = 0;
-        for (let r = 0; r < 8; r++)
-            for (let c = 0; c < 8; c++)
-                if (state.board[r][c]) pieceCount++;
-        let baseTime = 2000;
-        baseTime += legalMoves * 50;
-        if (pieceCount > 20) baseTime += 300;
-        if (pieceCount < 10) baseTime += 500;
-        const levelFactor = currentDifficulty === 'easy' ? 1 : (currentDifficulty === 'hard' ? 2 : 1.5);
-        return Math.min(baseTime * levelFactor, 30000);
+    // عدد النقلات القانونية والقطع على الرقعة
+    const legalMoves = getLegalMoves(state).length;
+    let pieceCount = 0;
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if (state.board[r][c]) pieceCount++;
+        }
     }
+
+    // مرحلة اللعب (0 = افتتاح، 1 = نهاية لعب)
+    const phase = gamePhase(state.board);
+
+    // وقت أساسي (ملي ثانية) حسب المرحلة
+    let baseTime;
+    if (phase < 0.3) {
+        // الافتتاح: نقلات سريعة لكن بدقة
+        baseTime = 1000;
+    } else if (phase < 0.7) {
+        // وسط اللعب: الأكثر تعقيدًا ويحتاج وقتًا أطول
+        baseTime = 2000;
+    } else {
+        // نهاية اللعب: دقة عالية جدًا مع قطع أقل
+        baseTime = 1600;
+    }
+
+    // زيادات التعقيد
+    if (legalMoves > 40) baseTime += 600;
+    else if (legalMoves > 25) baseTime += 350;
+
+    // كثافة القطع
+    if (pieceCount > 26) baseTime += 500;    // افتتاحية مزدحمة
+    else if (pieceCount > 20) baseTime += 300;
+    else if (pieceCount < 10) baseTime += 400; // نهاية لعب دقيقة
+
+    // --- تحسينات إضافية للقوة ---
+    // هل هناك كش ملك؟ (زيادة الوقت لأن الموقف حرج)
+    if (isKingInCheck(state, state.turn)) {
+        baseTime += 300;
+    }
+
+    // مواقف معقدة (نقلات كثيرة وقطع كثيرة)
+    if (legalMoves > 30 && pieceCount > 20) {
+        baseTime += 200;
+    }
+
+    // نهاية لعب مع قطع قليلة جدًا (دقة متناهية)
+    if (phase > 0.8 && pieceCount < 8) {
+        baseTime += 200;
+    }
+
+    // عامل الصعوبة
+    let levelFactor;
+    switch (currentDifficulty) {
+        case 'easy':   levelFactor = 0.6; break;   // سريع جدًا
+        case 'medium': levelFactor = 1.2; break;   // متوازن
+        case 'hard':   levelFactor = 2.5; break;   // عميق جدًا
+        default:       levelFactor = 1.2;
+    }
+
+    let time = baseTime * levelFactor;
+
+    // الحدود الدنيا والعليا (300ms إلى 30 ثانية)
+    return Math.min(Math.max(time, 300), 30000);
+}
 
     function getAdaptiveTime(state) {
         let pieceCount = 0;
@@ -1772,53 +1824,38 @@
     // ================== Stockfish 18 Lite Engine Integration ==================
     class StockfishEngine {
     constructor() {
+        try {
+            this.worker = new Worker('stockfish-18-lite-single.js');
+        } catch (e) {
+            document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish المحلي. تأكد من وجود الملفات.';
+            return;
+        }
+        this.worker.onmessage = (e) => this.handleMessage(e.data);
+        this.worker.onerror = (e) => {
+            console.error('Stockfish worker error:', e);
+            document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
+        };
         this.isReady = false;
         this.pendingResolve = null;
         this.pvs = [];
         this.currentListener = null;
-        this.worker = null;
 
-        const stockfishJsUrl = 'https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.js';
-        
-        fetch(stockfishJsUrl)
-            .then(response => {
-                if (!response.ok) throw new Error('فشل تحميل stockfish.js');
-                return response.text();
-            })
-            .then(scriptText => {
-                // إضافة دالة locateFile لتوجيه تحميل wasm
-                const fullScript = `
-                    self.locateFile = (file) => 'https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/' + file;
-                    ${scriptText}
-                `;
-                const blob = new Blob([fullScript], { type: 'application/javascript' });
-                this.worker = new Worker(URL.createObjectURL(blob));
-                
-                this.worker.onmessage = (e) => this.handleMessage(e.data);
-                this.worker.onerror = () => {
-                    document.getElementById('engine-status').textContent = '❌ خطأ في محرك Stockfish.';
-                };
-
-                this.send('uci');
-                this.send('setoption name Threads value 1');
-                this.send('setoption name Hash value 128');
-                this.send('setoption name MultiPV value 1');
-                this.send('isready');
-            })
-            .catch(error => {
-                console.error(error);
-                document.getElementById('engine-status').textContent = '⚠️ تعذر تحميل محرك Stockfish.';
-            });
+        // إعدادات المحرك
+        this.send('uci');
+        this.send('setoption name Threads value 1');
+        this.send('setoption name Hash value 64'); // من الأفضل 64 لتفادي مشاكل الذاكرة
+        this.send('setoption name MultiPV value 1');
+        this.send('isready');
     }
-    
+
     send(cmd) {
         if (this.worker) this.worker.postMessage(cmd);
     }
-    
+
     handleMessage(line) {
         if (line === 'readyok') {
             this.isReady = true;
-            document.getElementById('engine-status').textContent = '✅ Stockfish NNUE جاهز (تحليل ممتاز)';
+            document.getElementById('engine-status').textContent = '✅ Stockfish Lite جاهز';
         } else if (line.startsWith('bestmove')) {
             if (this.pendingResolve) {
                 this.pendingResolve(this.pvs);
@@ -1845,7 +1882,7 @@
             }
         }
     }
-    
+
     analyze(fen, ms = 2500) {
         if (!this.worker) return Promise.resolve([]);
         this.pvs = [];
@@ -1862,7 +1899,7 @@
             }, ms + 500);
         });
     }
-    
+
     destroy() {
         if (this.worker) this.worker.terminate();
     }
