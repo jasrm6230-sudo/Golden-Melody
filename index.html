@@ -2032,6 +2032,20 @@ function attachWorkerHandlers(w){
       else { setBookStatus('فشل تحميل الكتاب', ''); }
     }
     else if(d.type==='polyglotReady'){}
+else if(d.type === 'bookDiag'){
+  var g = d.diag;
+  setBookStatus(
+    'DEBUG:\n' +
+    'loaded='   + g.loaded   + '\n' +
+    'polyReady='+ g.polyReady+ '\n' +
+    'key='      + g.key      + '\n' +
+    'entries='  + g.entries  + '\n' +
+    'from='     + g.from + ' to=' + g.to + '\n' +
+    'legal='    + g.legal    + '\n' +
+    'found='    + g.found,
+    ''
+  );
+}
     else if(d.type==='bestmove'){d.side=w._sideAtSearch;onEngineResult(d);}
   };
   w.onerror=function(ev){
@@ -2288,36 +2302,44 @@ function buildWorker(){
     '  }\n' +
     '  return map;\n' +
     '}\n' +
-    'function pickBookMove(){\n' +
-    '  if (!book) return null;\n' +
-    '  if (!self.Engine.isPolyglotReady || !self.Engine.isPolyglotReady()) return null;\n' +
-    '  var key = self.Engine.polyglotHash();\n' +
-    '  if (!key) return null;\n' +
-    '  var entries = book.get(key);\n' +
-    '  if (!entries || !entries.length) return null;\n' +
-    '  var total = 0;\n' +
-    '  for (var j = 0; j < entries.length; j++) total += entries[j].w;\n' +
-    '  var r = Math.random() * total;\n' +
-    '  var chosen = entries[entries.length-1].mv;\n' +
-    '  for (var k = 0; k < entries.length; k++) {\n' +
-    '    r -= entries[k].w;\n' +
-    '    if (r <= 0) { chosen = entries[k].mv; break; }\n' +
-    '  }\n' +
-    '  var from = chosen & 63;\n' +
-    '  var to = (chosen >> 6) & 63;\n' +
-    '  var promo = (chosen >> 12) & 7;\n' +
-    '  var promoMap = [0, self.Engine.KNIGHT, self.Engine.BISHOP, self.Engine.ROOK, self.Engine.QUEEN];\n' +
-    '  var fromE = (7 - (from >> 3)) * 8 + (from & 7);\n' +
-    '  var toE   = (7 - (to   >> 3)) * 8 + (to   & 7);\n' +
-    '  var p = promoMap[promo] || 0;\n' +
-    '  var m = (fromE | (toE << 6) | (p << 12)) | 0;\n' +
-    '  var legal = self.Engine.legalMoves();\n' +
-    '  for (var l = 0; l < legal.length; l++) {\n' +
-    '    if (legal[l] === m) return m;\n' +
-    '    if (promo && (legal[l] & 0x7FFF) === (m & 0x7FFF)) return legal[l];\n' +
-    '  }\n' +
-    '  return null;\n' +
-    '}\n' +
+    'function postDiag(d){ self.postMessage({type:"bookDiag", diag:d}); }\n' +
+'function pickBookMove(){\n' +
+'  var diag = {loaded:!!book, polyReady:false, key:null, entries:0, from:-1, to:-1, legal:0, found:false};\n' +
+'  if (!book) { postDiag(diag); return null; }\n' +
+'  if (!self.Engine.isPolyglotReady || !self.Engine.isPolyglotReady()) { postDiag(diag); return null; }\n' +
+'  diag.polyReady = true;\n' +
+'  var key = self.Engine.polyglotHash();\n' +
+'  diag.key = key;\n' +
+'  if (!key) { postDiag(diag); return null; }\n' +
+'  var entries = book.get(key);\n' +
+'  if (!entries || !entries.length) { postDiag(diag); return null; }\n' +
+'  diag.entries = entries.length;\n' +
+'  var total = 0;\n' +
+'  for (var j = 0; j < entries.length; j++) total += entries[j].w;\n' +
+'  var r = Math.random() * total;\n' +
+'  var chosen = entries[entries.length-1].mv;\n' +
+'  for (var k = 0; k < entries.length; k++) {\n' +
+'    r -= entries[k].w;\n' +
+'    if (r <= 0) { chosen = entries[k].mv; break; }\n' +
+'  }\n' +
+'  var from = chosen & 63;\n' +
+'  var to = (chosen >> 6) & 63;\n' +
+'  var promo = (chosen >> 12) & 7;\n' +
+'  diag.from = from; diag.to = to;\n' +
+'  var promoMap = [0, self.Engine.KNIGHT, self.Engine.BISHOP, self.Engine.ROOK, self.Engine.QUEEN];\n' +
+'  var fromE = (7 - (from >> 3)) * 8 + (from & 7);\n' +
+'  var toE   = (7 - (to   >> 3)) * 8 + (to   & 7);\n' +
+'  var p = promoMap[promo] || 0;\n' +
+'  var m = (fromE | (toE << 6) | (p << 12)) | 0;\n' +
+'  var legal = self.Engine.legalMoves();\n' +
+'  diag.legal = legal.length;\n' +
+'  for (var l = 0; l < legal.length; l++) {\n' +
+'    if (legal[l] === m) { diag.found = true; postDiag(diag); return m; }\n' +
+'    if (promo && (legal[l] & 0x7FFF) === (m & 0x7FFF)) { diag.found = true; postDiag(diag); return legal[l]; }\n' +
+'  }\n' +
+'  postDiag(diag);\n' +
+'  return null;\n' +
+'}\n' +
     'self.onmessage = function(e){\n' +
     '  var d = e.data;\n' +
     '  if (d.cmd === "setPolyglotConstants") {\n' +
