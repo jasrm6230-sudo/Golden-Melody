@@ -526,7 +526,7 @@ function polyglotHash(){
     var p = board[i];
     if (p === 0) continue;
     var type = p & 7, color = p >> 3;
-    var pieceIdx = (6 - type) * 2 + (color === BLACK ? 0 : 1);
+    var pieceIdx = (type - 1) * 2 + (color === BLACK ? 0 : 1);
     var rank = i >> 3, f = i & 7;
     var sq = (7 - rank) * 8 + f;
     var idx = (pieceIdx * 64 + sq) * 2;
