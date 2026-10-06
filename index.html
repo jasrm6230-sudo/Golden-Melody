@@ -2036,13 +2036,13 @@ else if(d.type === 'bookDiag'){
   var g = d.diag;
   setBookStatus(
     'DEBUG:\n' +
-    'loaded='   + g.loaded   + '\n' +
-    'polyReady='+ g.polyReady+ '\n' +
-    'key='      + g.key      + '\n' +
-    'entries='  + g.entries  + '\n' +
-    'from='     + g.from + ' to=' + g.to + '\n' +
-    'legal='    + g.legal    + '\n' +
-    'found='    + g.found,
+    'fenIn=' + g.fenIn + '\n' +
+    'side=' + g.side + '\n' +
+    'kW=' + g.kw + ' kB=' + g.kb + '\n' +
+    'npW=' + g.npW + ' npB=' + g.npB + '\n' +
+    'key=' + g.key + '\n' +
+    'legal=' + g.legal + '\n' +
+    'entries=' + g.entries,
     ''
   );
 }
@@ -2305,6 +2305,13 @@ function buildWorker(){
     'function postDiag(d){ self.postMessage({type:"bookDiag", diag:d}); }\n' +
 'function pickBookMove(){\n' +
 '  var diag = {loaded:!!book, polyReady:false, key:null, entries:0, from:-1, to:-1, legal:0, found:false};\n' +
+'  diag.fenIn = self.Engine.getFen();\n' +
+'  diag.side = self.Engine.getSide();\n' +
+'  diag.kw = self.Engine.getKingSq(0);\n' +
+'  diag.kb = self.Engine.getKingSq(1);\n' +
+'  diag.npW = 0; diag.npB = 0;\n' +
+'  var _b = self.Engine.getBoard();\n' +
+'  for (var _i = 0; _i < 64; _i++) { if (_b[_i] !== 0) { if ((_b[_i] >> 3) === 0) diag.npW++; else diag.npB++; } }\n' +
 '  if (!book) { postDiag(diag); return null; }\n' +
 '  if (!self.Engine.isPolyglotReady || !self.Engine.isPolyglotReady()) { postDiag(diag); return null; }\n' +
 '  diag.polyReady = true;\n' +
