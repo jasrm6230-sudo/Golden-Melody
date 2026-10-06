@@ -526,7 +526,7 @@ function polyglotHash(){
     var p = board[i];
     if (p === 0) continue;
     var type = p & 7, color = p >> 3;
-    var pieceIdx = (type - 1) * 2 + (color === BLACK ? 0 : 1);
+    var pieceIdx = (6 - type) * 2 + (color === BLACK ? 0 : 1);
     var rank = i >> 3, f = i & 7;
     var sq = (7 - rank) * 8 + f;
     var idx = (pieceIdx * 64 + sq) * 2;
@@ -2034,16 +2034,13 @@ function attachWorkerHandlers(w){
     else if(d.type==='polyglotReady'){}
 else if(d.type === 'bookDiag'){
   var g = d.diag;
+  var validHash = (g.key === '1179337752:379082908'); // hash الموضع الابتدائي المتوقع
   setBookStatus(
     'DEBUG:\n' +
-    'fenIn=' + g.fenIn + '\n' +
-    'side=' + g.side + '\n' +
-    'kW=' + g.kw + ' kB=' + g.kb + '\n' +
-    'npW=' + g.npW + ' npB=' + g.npB + '\n' +
     'key=' + g.key + '\n' +
-    'legal=' + g.legal + '\n' +
+    'startMatch=' + validHash + '\n' +
     'entries=' + g.entries,
-    ''
+    validHash ? 'ok' : ''
   );
 }
     else if(d.type==='bestmove'){d.side=w._sideAtSearch;onEngineResult(d);}
