@@ -375,6 +375,13 @@ function mFlag(m){return (m>>15)&7}
 function idxToAlg(i){return 'abcdefgh'[i&7]+(8-(i>>3))}
 function algToIdx(s){return (8-parseInt(s[1],10))*8+(s.charCodeAt(0)-97)}
 function sqColor(s){return ((s>>3)+(s&7))&1}
+function ctz(x){ return 31 - Math.clz32(x & -x); }
+function popcount32(x){
+  x = x - ((x >> 1) & 0x55555555);
+  x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+  x = (x + (x >> 4)) & 0x0f0f0f0f;
+  return ((x * 0x01010101) >>> 24);
+}
 var PIECE_CHARS=['','P','N','B','R','Q','K','','','p','n','b','r','q','k'];
 
 var board=new Int8Array(64);
@@ -914,6 +921,16 @@ var EG_KING=[-74,-35,-18,-18,-11,15,4,-17,-12,17,14,17,17,38,23,11,10,17,23,15,2
 
 var MG_PST=[null,MG_PAWN,MG_KNIGHT,MG_BISHOP,MG_ROOK,MG_QUEEN,MG_KING];
 var EG_PST=[null,EG_PAWN,EG_KNIGHT,EG_BISHOP,EG_ROOK,EG_QUEEN,EG_KING];
+var MG_PST_FLAT=new Int16Array(7*64);
+var EG_PST_FLAT=new Int16Array(7*64);
+(function(){
+  for(var _t=1;_t<=6;_t++){
+    for(var _s=0;_s<64;_s++){
+      MG_PST_FLAT[_t*64+_s]=MG_PST[_t][_s];
+      EG_PST_FLAT[_t*64+_s]=EG_PST[_t][_s];
+    }
+  }
+})();
 
 var ATK_KNIGHT=new Array(64);
 var ATK_KING=new Array(64);
@@ -961,15 +978,29 @@ function mobilityKnight(sq,us){
   return c;
 }
 function mobilityBishop(sq,us){
-  var rays=RAY_BISHOP[sq],them=us^1,c=0;
-  for(var d=0;d<4;d++){var ray=rays[d];
-    for(var i=0;i<ray.length;i++){var s=ray[i],p=board[s];if(p===0){c++;continue}if((p>>3)===them)c++;break;}}
+  var rays=RAY_BISHOP[sq],them=us^1,c=0,b=board;
+  for(var d=0;d<4;d++){
+    var ray=rays[d],L=ray.length;
+    for(var i=0;i<L;i++){
+      var s=ray[i],p=b[s];
+      if(p===0){c++;continue}
+      if((p>>3)===them)c++;
+      break;
+    }
+  }
   return c;
 }
 function mobilityRook(sq,us){
-  var rays=RAY_ROOK[sq],them=us^1,c=0;
-  for(var d=0;d<4;d++){var ray=rays[d];
-    for(var i=0;i<ray.length;i++){var s=ray[i],p=board[s];if(p===0){c++;continue}if((p>>3)===them)c++;break;}}
+  var rays=RAY_ROOK[sq],them=us^1,c=0,b=board;
+  for(var d=0;d<4;d++){
+    var ray=rays[d],L=ray.length;
+    for(var i=0;i<L;i++){
+      var s=ray[i],p=b[s];
+      if(p===0){c++;continue}
+      if((p>>3)===them)c++;
+      break;
+    }
+  }
   return c;
 }
 
@@ -1177,7 +1208,7 @@ function pawnShield(kSq,pawnCnt,pawnMinMax,color){
 }
 
 function evaluate(){
-  if(countNonKing()<=4){var eg=endgameEval();if(eg!==null)return eg}
+    if(nonKingCount<=4){var eg=endgameEval();if(eg!==null)return eg}
   var i,sq,p,c,t,f,r,rel,pstIdx;
   var mgW=0,egW=0,mgB=0,egB=0,phase=0;
   var wKing=-1,bKing=-1;
@@ -1197,8 +1228,8 @@ function evaluate(){
       if(c===WHITE) wMaterial += MG_VALUE[t];
       else bMaterial += MG_VALUE[t];
     }
-    var mgVal=MG_VALUE[t]+MG_PST[t][pstIdx];
-    var egVal=EG_VALUE[t]+EG_PST[t][pstIdx];
+        var mgVal=MG_VALUE[t]+MG_PST_FLAT[t*64+pstIdx];
+    var egVal=EG_VALUE[t]+EG_PST_FLAT[t*64+pstIdx];
     if(c===WHITE){mgW+=mgVal;egW+=egVal;wPSq[wNP]=sq;wPTy[wNP]=t;wNP++;}
     else{mgB+=mgVal;egB+=egVal;bPSq[bNP]=sq;bPTy[bNP]=t;bNP++;}
     if(t===PAWN){
@@ -1287,14 +1318,18 @@ function evaluate(){
       var wkF=wKing&7; var bonusB=35;
       if(wkF===0||wkF===7) bonusB=(bonusB*3)>>1;
       for(var pfB=wkF-1;pfB<=wkF+1;pfB++){if(pfB<0||pfB>7)continue;if(board[48+pfB]===pc(PAWN,WHITE)) bonusB+=15;}
-      mgB+=bonusB; egB+=(bonusB*17)/10|0;
+            mgB+=bonusB; egB+=(bonusB*17)/10|0;
     }
   }
   var ph0 = phase>24?24:phase;
-  mgW -= kingSafety(wKing, BLACK, ph0, bPSq, bPTy, bNP);
-  mgB -= kingSafety(bKing, WHITE, ph0, wPSq, wPTy, wNP);
-  mgW += pawnShield(wKing,wPawnCnt,wPawnMax,WHITE);
-  mgB += pawnShield(bKing,bPawnCnt,bPawnMin,BLACK);
+  if(ph0 > 8){
+    mgW -= kingSafety(wKing, BLACK, ph0, bPSq, bPTy, bNP);
+    mgB -= kingSafety(bKing, WHITE, ph0, wPSq, wPTy, wNP);
+  }
+  if(ph0 > 4){
+    mgW += pawnShield(wKing,wPawnCnt,wPawnMax,WHITE);
+    mgB += pawnShield(bKing,bPawnCnt,bPawnMin,BLACK);
+  }
   if(ph0 > 12){
     if(wQSq >= 0){
       var nearSupport = false;
@@ -2390,6 +2425,26 @@ renderPieces();renderHighlights();updateStatus();
 stateTxt.textContent='دورك';
 
 setBookStatus('جاري تحميل ثوابت Polyglot...','loading');
+// === Benchmark على الشاشة ===
+setTimeout(function(){
+  try{
+    var start = performance.now();
+    var totalNodes = 0;
+    for(var i = 0; i < 5; i++){
+      E.setFen(E.START_FEN, {newGame:true});
+      var r = E.search(5, 0);
+      totalNodes += r.nodes || 0;
+    }
+    var sec = (performance.now() - start) / 1000;
+    var nps = Math.round(totalNodes / sec);
+    var msg = '⚡ ' + nps.toLocaleString('en-US') + ' عقدة/ث\n'
+            + '⏱ ' + sec.toFixed(2) + ' ث لـ ' + totalNodes.toLocaleString('en-US') + ' عقدة\n'
+            + '🎯 عمق 5';
+    setBookStatus(msg, nps > 200000 ? 'ok' : '');
+  }catch(e){
+    setBookStatus('Benchmark فشل: ' + e.message, '');
+  }
+}, 2000);
 showProgress(true);
 
 waitForPolyglot().then(function(pg){
